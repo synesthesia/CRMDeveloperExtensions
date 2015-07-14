@@ -33,6 +33,11 @@
             this.label2 = new System.Windows.Forms.Label();
             this.DefaultKeyFileName = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.AllowPublishManaged = new System.Windows.Forms.CheckBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.DefaultWebBrowser = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // DefaultSdkVersion
@@ -45,7 +50,7 @@
             "CRM 2013 SP1 (6.1.X)",
             "CRM 2015 (7.0.X)",
             "CRM 2015 (7.1.X)"});
-            this.DefaultSdkVersion.Location = new System.Drawing.Point(151, 25);
+            this.DefaultSdkVersion.Location = new System.Drawing.Point(151, 38);
             this.DefaultSdkVersion.Name = "DefaultSdkVersion";
             this.DefaultSdkVersion.Size = new System.Drawing.Size(163, 21);
             this.DefaultSdkVersion.TabIndex = 1;
@@ -54,7 +59,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(14, 25);
+            this.label1.Location = new System.Drawing.Point(17, 42);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(131, 13);
             this.label1.TabIndex = 2;
@@ -63,7 +68,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(14, 64);
+            this.label2.Location = new System.Drawing.Point(17, 70);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(112, 13);
             this.label2.TabIndex = 3;
@@ -71,7 +76,7 @@
             // 
             // DefaultKeyFileName
             // 
-            this.DefaultKeyFileName.Location = new System.Drawing.Point(151, 61);
+            this.DefaultKeyFileName.Location = new System.Drawing.Point(151, 66);
             this.DefaultKeyFileName.Name = "DefaultKeyFileName";
             this.DefaultKeyFileName.Size = new System.Drawing.Size(134, 20);
             this.DefaultKeyFileName.TabIndex = 4;
@@ -81,16 +86,73 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(287, 65);
+            this.label3.Location = new System.Drawing.Point(287, 70);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(27, 13);
             this.label3.TabIndex = 5;
             this.label3.Text = ".snk";
             // 
+            // AllowPublishManaged
+            // 
+            this.AllowPublishManaged.AutoSize = true;
+            this.AllowPublishManaged.Location = new System.Drawing.Point(17, 129);
+            this.AllowPublishManaged.Name = "AllowPublishManaged";
+            this.AllowPublishManaged.Size = new System.Drawing.Size(230, 17);
+            this.AllowPublishManaged.TabIndex = 6;
+            this.AllowPublishManaged.Text = "Allow Publishing Managed Web Resources";
+            this.AllowPublishManaged.UseVisualStyleBackColor = true;
+            this.AllowPublishManaged.CheckedChanged += new System.EventHandler(this.AllowPublishManaged_CheckedChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(17, 22);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(56, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Templates";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(17, 108);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(124, 13);
+            this.label5.TabIndex = 8;
+            this.label5.Text = "Web Resource Deployer";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(17, 156);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(85, 13);
+            this.label6.TabIndex = 9;
+            this.label6.Text = "External Content";
+            // 
+            // DefaultWebBrowser
+            // 
+            this.DefaultWebBrowser.AutoSize = true;
+            this.DefaultWebBrowser.Location = new System.Drawing.Point(17, 177);
+            this.DefaultWebBrowser.Name = "DefaultWebBrowser";
+            this.DefaultWebBrowser.Size = new System.Drawing.Size(149, 17);
+            this.DefaultWebBrowser.TabIndex = 10;
+            this.DefaultWebBrowser.Text = "Use Default Web Browser";
+            this.DefaultWebBrowser.UseVisualStyleBackColor = true;
+            this.DefaultWebBrowser.CheckedChanged += new System.EventHandler(this.DefaultWebBrowser_CheckedChanged);
+            // 
             // OptionsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.DefaultWebBrowser);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.AllowPublishManaged);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.DefaultKeyFileName);
             this.Controls.Add(this.label2);
@@ -110,5 +172,10 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox DefaultKeyFileName;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox AllowPublishManaged;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.CheckBox DefaultWebBrowser;
     }
 }

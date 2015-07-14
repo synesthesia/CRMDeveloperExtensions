@@ -10,84 +10,56 @@ using System.Xml;
 
 namespace TemplateMenuCommands
 {
-    /// <summary>
-    /// This is the class that implements the package exposed by this assembly.
-    ///
-    /// The minimum requirement for a class to be considered a valid package for Visual Studio
-    /// is to implement the IVsPackage interface and register itself with the shell.
-    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
-    /// to do it: it derives from the Package class that provides the implementation of the 
-    /// IVsPackage interface and uses the registration attributes defined in the framework to 
-    /// register itself and its components with the shell.
-    /// </summary>
-    // This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is
-    // a package.
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    // This attribute is used to register the information needed to show this package
-    // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(GuidList.guidMenuCommandsPkgString)]
+    [Guid(GuidList.GuidMenuCommandsPkgString)]
     [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
     public sealed class TemplateMenuCommandsPackage : Package
     {
+        private DTE _dte;
         private string _projectType;
         private string _testType;
 
-        /// <summary>
-        /// Default constructor of the package.
-        /// Inside this method you can place any initialization code that does not require 
-        /// any Visual Studio service because at this point the package object is created but 
-        /// not sited yet inside Visual Studio environment. The place to do all the other 
-        /// initialization is the Initialize method.
-        /// </summary>
-        public TemplateMenuCommandsPackage()
-        {
-        }
-
-        /////////////////////////////////////////////////////////////////////////////
-        // Overridden Package Implementation
-        #region Package Members
-
-        /// <summary>
-        /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
-        /// </summary>
         protected override void Initialize()
         {
             base.Initialize();
 
+            _dte = GetGlobalService(typeof(DTE)) as DTE;
+            if (_dte == null)
+                return;
+
             // Add our command handlers for menu (commands must exist in the .vsct file)
             OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (null != mcs)
+            if (mcs != null)
             {
                 // Create the command for the menu items.
-                CommandID pluginMenuCommandId1 = new CommandID(GuidList.guidMenuCommandsCmdSet, (int)PkgCmdIDList.cmdidAddItem1);
+                CommandID pluginMenuCommandId1 = new CommandID(GuidList.GuidMenuCommandsCmdSet, (int)PkgCmdIDList.CmdidAddItem1);
                 OleMenuCommand pluginMenuItem1 = new OleMenuCommand(MenuItem1Callback, pluginMenuCommandId1);
                 pluginMenuItem1.BeforeQueryStatus += menuItem1_BeforeQueryStatus;
                 mcs.AddCommand(pluginMenuItem1);
 
-                CommandID pluginMenuCommandId2 = new CommandID(GuidList.guidMenuCommandsCmdSet, (int)PkgCmdIDList.cmdidAddItem2);
+                CommandID pluginMenuCommandId2 = new CommandID(GuidList.GuidMenuCommandsCmdSet, (int)PkgCmdIDList.CmdidAddItem2);
                 OleMenuCommand pluginMenuItem2 = new OleMenuCommand(MenuItem2Callback, pluginMenuCommandId2);
                 pluginMenuItem2.BeforeQueryStatus += menuItem2_BeforeQueryStatus;
                 mcs.AddCommand(pluginMenuItem2);
 
-                CommandID pluginMenuCommandId3 = new CommandID(GuidList.guidMenuCommandsCmdSet, (int)PkgCmdIDList.cmdidAddItem3);
+                CommandID pluginMenuCommandId3 = new CommandID(GuidList.GuidMenuCommandsCmdSet, (int)PkgCmdIDList.CmdidAddItem3);
                 OleMenuCommand pluginMenuItem3 = new OleMenuCommand(MenuItem3Callback, pluginMenuCommandId3);
                 pluginMenuItem3.BeforeQueryStatus += menuItem3_BeforeQueryStatus;
                 mcs.AddCommand(pluginMenuItem3);
             }
         }
-        #endregion
 
         private void menuItem1_BeforeQueryStatus(object sender, EventArgs e)
         {
             OleMenuCommand menuCommand = sender as OleMenuCommand;
             if (menuCommand == null) return;
 
-            //Determine if the Project -> Add Item should be displayed and which what text
-            GetCrmProject();
+            //Determine if the Project -> Add Item should be displayed and with what text
+            if (string.IsNullOrEmpty(_projectType))
+                GetCrmProject();
+
             if (_projectType == "PLUGIN" || _projectType == "WORKFLOW")
                 menuCommand.Visible = true;
             else
@@ -132,8 +104,10 @@ namespace TemplateMenuCommands
             OleMenuCommand menuCommand = sender as OleMenuCommand;
             if (menuCommand == null) return;
 
-            //Determine if the Project -> Add Item should be displayed and which what text
-            GetCrmProject();
+            //Determine if the Project -> Add Item should be displayed and with what text
+            if (string.IsNullOrEmpty(_projectType))
+                GetCrmProject();
+
             menuCommand.Visible = _projectType == "WEBRESOURCE";
         }
 
@@ -142,8 +116,10 @@ namespace TemplateMenuCommands
             OleMenuCommand menuCommand = sender as OleMenuCommand;
             if (menuCommand == null) return;
 
-            //Determine if the Project -> Add Item should be displayed and which what text
-            GetCrmProject();
+            //Determine if the Project -> Add Item should be displayed and with what text
+            if (string.IsNullOrEmpty(_projectType))
+                GetCrmProject();
+
             menuCommand.Visible = _projectType == "WEBRESOURCE";
         }
 
@@ -152,13 +128,12 @@ namespace TemplateMenuCommands
         /// </summary>
         private void GetCrmProject()
         {
-            var dte = GetGlobalService(typeof(DTE)) as DTE;
-            if (dte == null) return;
+            _projectType = null;
 
-            Array activeSolutionProjects = (Array)dte.ActiveSolutionProjects;
+            Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
             if (activeSolutionProjects == null || activeSolutionProjects.Length <= 0) return;
 
-            var project = (Project)((Array)(dte.ActiveSolutionProjects)).GetValue(0);
+            var project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
 
             var path = Path.GetDirectoryName(project.FullName);
             if (!File.Exists(path + "\\Properties\\settings.settings")) return;
@@ -192,22 +167,14 @@ namespace TemplateMenuCommands
             }
         }
 
-        /// <summary>
-        /// This function is the callback used to execute a command when the a menu item is clicked.
-        /// See the Initialize method to see how the menu item is associated to this function using
-        /// the OleMenuCommandService service and the MenuCommand class.
-        /// </summary>
         private void MenuItem1Callback(object sender, EventArgs e)
         {
             bool isUnit = (_testType == "UNIT" || _testType == "NUNIT");
             bool isNunit = _testType == "NUNIT";
 
-            var dte = GetGlobalService(typeof(DTE)) as DTE;
-            if (dte == null) return;
-
-            ProjectItem selectedProjectItem = dte.SelectedItems.Item(1).ProjectItem;
-            Solution2 solution = (Solution2)dte.Application.Solution;
-            Project project = (Project)((Array)(dte.ActiveSolutionProjects)).GetValue(0);
+            ProjectItem selectedProjectItem = _dte.SelectedItems.Item(1).ProjectItem;
+            Solution2 solution = (Solution2)_dte.Application.Solution;
+            Project project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
 
             //Get the exsting class file names so it won't get duplicated when creating a new item
             List<string> fileNames = new List<string>();
@@ -310,7 +277,7 @@ namespace TemplateMenuCommands
             if (string.IsNullOrEmpty(templateName)) return;
 
             var item = solution.GetProjectItemTemplate(templateName, "CSharp");
-            dte.StatusBar.Text = @"Adding class from template...";
+            _dte.StatusBar.Text = @"Adding class from template...";
 
             if (selectedProjectItem == null)
                 project.ProjectItems.AddFromTemplate(item, namer.FileName);
@@ -318,19 +285,11 @@ namespace TemplateMenuCommands
                 selectedProjectItem.ProjectItems.AddFromTemplate(item, namer.FileName);
         }
 
-        /// <summary>
-        /// This function is the callback used to execute a command when the a menu item is clicked.
-        /// See the Initialize method to see how the menu item is associated to this function using
-        /// the OleMenuCommandService service and the MenuCommand class.
-        /// </summary>
         private void MenuItem2Callback(object sender, EventArgs e)
         {
-            var dte = GetGlobalService(typeof(DTE)) as DTE;
-            if (dte == null) return;
-
-            ProjectItem selectedProjectItem = dte.SelectedItems.Item(1).ProjectItem;
-            Solution2 solution = (Solution2)dte.Application.Solution;
-            Project project = (Project)((Array)(dte.ActiveSolutionProjects)).GetValue(0);
+            ProjectItem selectedProjectItem = _dte.SelectedItems.Item(1).ProjectItem;
+            Solution2 solution = (Solution2)_dte.Application.Solution;
+            Project project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
 
             //Get the exsting file names so it won't get duplicated when creating a new item
             List<string> fileNames = new List<string>();
@@ -355,7 +314,7 @@ namespace TemplateMenuCommands
             string templateName = "HTML Web.csharp.zip";
 
             var item = solution.GetProjectItemTemplate(templateName, "CSharp");
-            dte.StatusBar.Text = @"Adding file from template...";
+            _dte.StatusBar.Text = @"Adding file from template...";
 
             if (selectedProjectItem == null)
                 project.ProjectItems.AddFromTemplate(item, namer.FileName);
@@ -363,19 +322,11 @@ namespace TemplateMenuCommands
                 selectedProjectItem.ProjectItems.AddFromTemplate(item, namer.FileName);
         }
 
-        /// <summary>
-        /// This function is the callback used to execute a command when the a menu item is clicked.
-        /// See the Initialize method to see how the menu item is associated to this function using
-        /// the OleMenuCommandService service and the MenuCommand class.
-        /// </summary>
         private void MenuItem3Callback(object sender, EventArgs e)
         {
-            var dte = GetGlobalService(typeof(DTE)) as DTE;
-            if (dte == null) return;
-
-            ProjectItem selectedProjectItem = dte.SelectedItems.Item(1).ProjectItem;
-            Solution2 solution = (Solution2)dte.Application.Solution;
-            Project project = (Project)((Array)(dte.ActiveSolutionProjects)).GetValue(0);
+            ProjectItem selectedProjectItem = _dte.SelectedItems.Item(1).ProjectItem;
+            Solution2 solution = (Solution2)_dte.Application.Solution;
+            Project project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
 
             //Get the exsting file names so it won't get duplicated when creating a new item
             List<string> fileNames = new List<string>();
@@ -401,7 +352,7 @@ namespace TemplateMenuCommands
             string templateName = "JavaScript Web.csharp.zip";
 
             var item = solution.GetProjectItemTemplate(templateName, "CSharp");
-            dte.StatusBar.Text = @"Adding file from template...";
+            _dte.StatusBar.Text = @"Adding file from template...";
 
             if (selectedProjectItem == null)
                 project.ProjectItems.AddFromTemplate(item, namer.FileName);

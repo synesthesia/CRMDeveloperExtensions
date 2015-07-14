@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
@@ -36,89 +37,98 @@ namespace TemplateWizards
 
         public void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
-            _dte = (DTE)automationObject;
-
-            if (replacementsDictionary.ContainsKey("$destinationdirectory$"))
-                _destDirectory = replacementsDictionary["$destinationdirectory$"];
-
-            if (replacementsDictionary.ContainsKey("$wizarddata$"))
+            try
             {
-                string wizardData = replacementsDictionary["$wizarddata$"];
-                ReadWizardData(wizardData);
-            }
+                _dte = (DTE)automationObject;
 
-            //If UnitTest Item - load the assembly & class names from the referenced project into the picker
-            if (_isUnitTestItem == "True")
-            {
-                List<string> referencedProjects = new List<string>();
-                Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
-                if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
+                if (replacementsDictionary.ContainsKey("$destinationdirectory$"))
+                    _destDirectory = replacementsDictionary["$destinationdirectory$"];
+
+                if (replacementsDictionary.ContainsKey("$wizarddata$"))
                 {
-                    VSProject vsproject = ((Project)activeSolutionProjects.GetValue(0)).Object;
-                    referencedProjects.AddRange(from Reference reference in vsproject.References where reference.SourceProject != null select reference.Name);
-
-                    List<ComboBoxItem> classItems = GetSourceProjectItems(referencedProjects);
-                    var testClassPickerform = new TestClassPicker(classItems);
-                    testClassPickerform.ShowDialog();
-
-                    replacementsDictionary.Add("$fullclassname$", testClassPickerform.FullClassname);
-                    replacementsDictionary.Add("$assemblyname$", testClassPickerform.AssemblyName);
+                    string wizardData = replacementsDictionary["$wizarddata$"];
+                    ReadWizardData(wizardData);
                 }
 
-                return;
-            }
-
-            //If UnitTest Project - load the projects into the picker
-            List<ComboBoxItem> projectItems = new List<ComboBoxItem>();
-            if (_isUnitTest == "True")
-                projectItems = GetSourceProjects();
-
-            var props = _dte.Properties["CRM Developer Extensions", "Settings"];
-            string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value;
-
-            //Display the form prompting for the SDK version and/or project to unit test against
-            var form = new SdkProjectPicker((_isUnitTest == "True"), projectItems, defaultSdkVersion);
-            form.ShowDialog();
-
-            _sdkVersion = form.Version;
-            _project = form.Project;
-            _isNunit = form.Nunit;
-
-            //If UnitTest Project - set the reference to the project being tested
-            if (_isUnitTest == "True")
-            {
-                if (string.IsNullOrEmpty(_project))
+                //If UnitTest Item - load the assembly & class names from the referenced project into the picker
+                if (_isUnitTestItem == "True")
                 {
-                    replacementsDictionary.Add("$referenceproject$", "False");
+                    List<string> referencedProjects = new List<string>();
+                    Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
+                    if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
+                    {
+                        VSProject vsproject = ((Project)activeSolutionProjects.GetValue(0)).Object;
+                        referencedProjects.AddRange(from Reference reference in vsproject.References
+                                                    where reference.SourceProject != null
+                                                    select reference.Name);
+
+                        List<ComboBoxItem> classItems = GetSourceProjectItems(referencedProjects);
+                        var testClassPickerform = new TestClassPicker(classItems);
+                        testClassPickerform.ShowDialog();
+
+                        replacementsDictionary.Add("$fullclassname$", testClassPickerform.FullClassname);
+                        replacementsDictionary.Add("$assemblyname$", testClassPickerform.AssemblyName);
+                    }
+
                     return;
                 }
 
-                Projects projects = _dte.Solution.Projects;
-                Solution solution = _dte.Solution;
-                foreach (Project project in projects)
-                {
-                    if (project.Name != _project) continue;
+                //If UnitTest Project - load the projects into the picker
+                List<ComboBoxItem> projectItems = new List<ComboBoxItem>();
+                if (_isUnitTest == "True")
+                    projectItems = GetSourceProjects();
 
-                    string path = string.Empty;
-                    string projectPath = Path.GetDirectoryName(project.FullName);
-                    string solutionPath = Path.GetDirectoryName(solution.FullName);
-                    if (!string.IsNullOrEmpty(projectPath) && !string.IsNullOrEmpty(solutionPath))
+                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value;
+
+                //Display the form prompting for the SDK version and/or project to unit test against
+                var form = new SdkProjectPicker((_isUnitTest == "True"), projectItems, defaultSdkVersion);
+                form.ShowDialog();
+
+                _sdkVersion = form.Version;
+                _project = form.Project;
+                _isNunit = form.Nunit;
+
+                //If UnitTest Project - set the reference to the project being tested
+                if (_isUnitTest == "True")
+                {
+                    if (string.IsNullOrEmpty(_project))
                     {
-                        if (projectPath.StartsWith(solutionPath))
-                            path = "..\\" + project.UniqueName;
-                        else
-                            path = project.FullName;
+                        replacementsDictionary.Add("$referenceproject$", "False");
+                        return;
                     }
 
-                    replacementsDictionary.Add("$referenceproject$", "True");
-                    replacementsDictionary.Add("$projectPath$", path);
-                    replacementsDictionary.Add("$projectId$", project.Kind);
-                    replacementsDictionary.Add("$projectName$", project.Name);
-                    break;
+                    Projects projects = _dte.Solution.Projects;
+                    Solution solution = _dte.Solution;
+                    foreach (Project project in projects)
+                    {
+                        if (project.Name != _project) continue;
+
+                        string path = string.Empty;
+                        string projectPath = Path.GetDirectoryName(project.FullName);
+                        string solutionPath = Path.GetDirectoryName(solution.FullName);
+                        if (!string.IsNullOrEmpty(projectPath) && !string.IsNullOrEmpty(solutionPath))
+                        {
+                            if (projectPath.StartsWith(solutionPath))
+                                path = "..\\" + project.UniqueName;
+                            else
+                                path = project.FullName;
+                        }
+
+                        replacementsDictionary.Add("$referenceproject$", "True");
+                        replacementsDictionary.Add("$projectPath$", path);
+                        replacementsDictionary.Add("$projectId$", project.Kind);
+                        replacementsDictionary.Add("$projectName$", project.Name);
+                        break;
+                    }
                 }
+                else
+                    replacementsDictionary.Add("$referenceproject$", "False");
             }
-            else
-                replacementsDictionary.Add("$referenceproject$", "False");
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Processing Template: " + ex.Message);
+            }
         }
 
         public void BeforeOpeningFile(ProjectItem projectItem)
@@ -127,74 +137,81 @@ namespace TemplateWizards
 
         public void ProjectFinishedGenerating(Project project)
         {
-            var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
-            if (componentModel == null) return;
-
-            var installer = componentModel.GetService<IVsPackageInstaller>();
-
-            //Install the proper NuGet packages based on the CRM SDK version and project types
-            switch (_sdkVersion)
+            try
             {
-                case "CRM 2011 (5.0.X)":
-                    InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "5.0.18");
-                    if (_crmProjectType == "Workflow")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "5.0.18");
-                    if (_needsClient == "True")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "5.0.18");
-                    break;
-                case "CRM 2013 (6.0.X)":
-                    InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "6.0.4");
-                    if (_crmProjectType == "Workflow")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "6.0.4");
-                    if (_needsClient == "True")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "6.0.4.1");
-                    break;
-                case "CRM 2013 SP1 (6.1.X)":
-                    InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "6.1.1");
-                    if (_crmProjectType == "Workflow")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "6.1.1");
-                    if (_needsClient == "True")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "6.0.4.1");
-                    break;
-                case "CRM 2015 (7.0.X)":
-                    project.DTE.SuppressUI = true;
-                    project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
-                    project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
-                    InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "7.0.1");
-                    if (_crmProjectType == "Workflow")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "7.0.1");
-                    if (_needsClient == "True")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.0.0.1");
-                    break;
-                case "CRM 2015 (7.1.X)":
-                    project.DTE.SuppressUI = true;
-                    project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
-                    project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
-                    InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", null);
-                    if (_crmProjectType == "Workflow")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", null);
-                    if (_needsClient == "True")
-                        InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", null);
-                    break;
+                var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
+                if (componentModel == null) return;
+
+                var installer = componentModel.GetService<IVsPackageInstaller>();
+
+                //Install the proper NuGet packages based on the CRM SDK version and project types
+                switch (_sdkVersion)
+                {
+                    case "CRM 2011 (5.0.X)":
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "5.0.18");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "5.0.18");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "5.0.18");
+                        break;
+                    case "CRM 2013 (6.0.X)":
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "6.0.4");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "6.0.4");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "6.0.4.1");
+                        break;
+                    case "CRM 2013 SP1 (6.1.X)":
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "6.1.1");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "6.1.1");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "6.0.4.1");
+                        break;
+                    case "CRM 2015 (7.0.X)":
+                        project.DTE.SuppressUI = true;
+                        project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
+                        project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "7.0.1");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "7.0.1");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.0.0.1");
+                        break;
+                    case "CRM 2015 (7.1.X)":
+                        project.DTE.SuppressUI = true;
+                        project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
+                        project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", null);
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", null);
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", null);
+                        break;
+                }
+
+                ExcludeSdkBinFolder(project);
+
+                if (_crmProjectType == "Plug-in" || _crmProjectType == "Workflow")
+                    GenerateNewKey(project);
+
+                if (_isUnitTest != "True") return;
+
+                InstallPackage(installer, project, "Moq", "4.2.1502.0911");
+                if (_isNunit)
+                {
+                    InstallPackage(installer, project, "NUnitTestAdapter.WithFramework", "2.0.0");
+                    AddSetting(project, "CRMTestType", "NUNIT");
+                }
+                else
+                    AddSetting(project, "CRMTestType", "UNIT");
+
+                ExcludePerformaceFolder(project);
             }
-
-            ExcludeSdkBinFolder(project);
-
-            if (_crmProjectType == "Plug-in" || _crmProjectType == "Workflow")
-                GenerateNewKey(project);
-
-            if (_isUnitTest != "True") return;
-
-            InstallPackage(installer, project, "Moq", "4.2.1502.0911");
-            if (_isNunit)
+            catch (Exception ex)
             {
-                InstallPackage(installer, project, "NUnitTestAdapter.WithFramework", "2.0.0");
-                AddSetting(project, "CRMTestType", "NUNIT");
+                MessageBox.Show("Error Processing Template: " + ex.Message);
             }
-            else
-                AddSetting(project, "CRMTestType", "UNIT");
-
-            ExcludePerformaceFolder(project);
         }
 
         /// <summary>
@@ -205,24 +222,31 @@ namespace TemplateWizards
         /// <param name="value">The value to set.</param>
         private static void AddSetting(Project project, string setting, string value)
         {
-            var path = Path.GetDirectoryName(project.FullName);
-            if (!File.Exists(path + "\\Properties\\settings.settings")) return;
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path + "\\Properties\\settings.settings");
-
-            XmlNodeList settings = doc.GetElementsByTagName("Settings");
-            if (settings.Count == 0) return;
-
-            XmlNodeList appSettings = settings[0].ChildNodes;
-            foreach (XmlNode node in appSettings)
+            try
             {
-                if (node.Attributes == null || node.Attributes["Name"].Value != setting) continue;
+                var path = Path.GetDirectoryName(project.FullName);
+                if (!File.Exists(path + "\\Properties\\settings.settings")) return;
 
-                XmlNode valueNode = node.FirstChild;
-                valueNode.InnerText = value;
-                doc.Save(path + "\\Properties\\settings.settings");
-                break;
+                XmlDocument doc = new XmlDocument();
+                doc.Load(path + "\\Properties\\settings.settings");
+
+                XmlNodeList settings = doc.GetElementsByTagName("Settings");
+                if (settings.Count == 0) return;
+
+                XmlNodeList appSettings = settings[0].ChildNodes;
+                foreach (XmlNode node in appSettings)
+                {
+                    if (node.Attributes == null || node.Attributes["Name"].Value != setting) continue;
+
+                    XmlNode valueNode = node.FirstChild;
+                    valueNode.InnerText = value;
+                    doc.Save(path + "\\Properties\\settings.settings");
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Processing Template: " + ex.Message);
             }
         }
 
@@ -235,11 +259,18 @@ namespace TemplateWizards
         /// <param name="version">The NuGet package version.</param>
         private void InstallPackage(IVsPackageInstaller installer, Project project, string package, string version)
         {
-            _dte.StatusBar.Text = @"Installing " + package + "...";
-            if (!string.IsNullOrEmpty(version))
-                installer.InstallPackage("http://packages.nuget.org", project, package, version, false);
-            else
-                installer.InstallPackage("http://packages.nuget.org", project, package, (Version)null, false);
+            try
+            {
+                _dte.StatusBar.Text = @"Installing " + package + "...";
+                if (!string.IsNullOrEmpty(version))
+                    installer.InstallPackage("http://packages.nuget.org", project, package, version, false);
+                else
+                    installer.InstallPackage("http://packages.nuget.org", project, package, (Version)null, false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Processing Template: Error Installing NuGet Package: " + ex.Message);
+            }
         }
 
         public void ProjectItemFinishedGenerating(ProjectItem projectItem)
@@ -262,41 +293,48 @@ namespace TemplateWizards
         /// <param name="project">The project.</param>
         private void GenerateNewKey(Project project)
         {
-            if (string.IsNullOrEmpty(_destDirectory))
-                return;
-
-            //Generate new key
-            _dte.StatusBar.Text = "Generating key...";
-
-            string keyFilePath = Path.Combine(_destDirectory, "MyKey.snk");
-            IntPtr buffer = IntPtr.Zero;
-
             try
             {
-                uint buffSize;
-                if (0 != StrongNameKeyGen(IntPtr.Zero, 0, out buffer, out buffSize))
-                    Marshal.ThrowExceptionForHR(StrongNameErrorInfo());
-                if (buffer == IntPtr.Zero)
-                    throw new InvalidOperationException("StrongNameKeyGen Failed");
+                if (string.IsNullOrEmpty(_destDirectory))
+                    return;
 
-                var keyBuffer = new byte[buffSize];
-                Marshal.Copy(buffer, keyBuffer, 0, (int)buffSize);
-                File.WriteAllBytes(keyFilePath, keyBuffer);
+                //Generate new key
+                _dte.StatusBar.Text = "Generating key...";
+
+                string keyFilePath = Path.Combine(_destDirectory, "MyKey.snk");
+                IntPtr buffer = IntPtr.Zero;
+
+                try
+                {
+                    uint buffSize;
+                    if (0 != StrongNameKeyGen(IntPtr.Zero, 0, out buffer, out buffSize))
+                        Marshal.ThrowExceptionForHR(StrongNameErrorInfo());
+                    if (buffer == IntPtr.Zero)
+                        throw new InvalidOperationException("StrongNameKeyGen Failed");
+
+                    var keyBuffer = new byte[buffSize];
+                    Marshal.Copy(buffer, keyBuffer, 0, (int)buffSize);
+                    File.WriteAllBytes(keyFilePath, keyBuffer);
+                }
+                finally
+                {
+                    StrongNameFreeBuffer(buffer);
+                }
+
+                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                string defaultKeyFileName = props.Item("DefaultProjectKeyFileName").Value;
+
+                foreach (ProjectItem item in project.ProjectItems)
+                {
+                    if (item.Name.ToUpper() != "MYKEY.SNK") continue;
+
+                    item.Name = defaultKeyFileName + ".snk";
+                    return;
+                }
             }
-            finally
+            catch (Exception ex)
             {
-                StrongNameFreeBuffer(buffer);
-            }
-
-            var props = _dte.Properties["CRM Developer Extensions", "Settings"];
-            string defaultKeyFileName = props.Item("DefaultProjectKeyFileName").Value;
-
-            foreach (ProjectItem item in project.ProjectItems)
-            {
-                if (item.Name.ToUpper() != "MYKEY.SNK") continue;
-
-                item.Name = defaultKeyFileName + ".snk";
-                return;
+                MessageBox.Show("Error Processing Template: Error Generating Key: " + ex.Message);
             }
         }
 
@@ -393,92 +431,100 @@ namespace TemplateWizards
         private static List<ComboBoxItem> GetSourceProjects()
         {
             List<ComboBoxItem> projectItems = new List<ComboBoxItem>();
-            var dte = Package.GetGlobalService(typeof(DTE)) as DTE;
-            if (dte == null)
-                return projectItems;
-            Projects projects = dte.Solution.Projects;
 
-            ComboBoxItem itemEmpty = new ComboBoxItem { Content = string.Empty, Tag = string.Empty };
-            projectItems.Add(itemEmpty);
-
-            foreach (Project project in projects)
+            try
             {
-                //Don't add existing unit test projects to the list of projects to unit test against
-                bool isUnitTestProject = false;
+                var dte = Package.GetGlobalService(typeof(DTE)) as DTE;
+                if (dte == null)
+                    return projectItems;
+                Projects projects = dte.Solution.Projects;
 
-                if (string.IsNullOrEmpty(project.FullName)) continue;
+                ComboBoxItem itemEmpty = new ComboBoxItem { Content = string.Empty, Tag = string.Empty };
+                projectItems.Add(itemEmpty);
 
-                var settingsPath = Path.GetDirectoryName(project.FullName);
-                if (File.Exists(settingsPath + "\\Properties\\settings.settings"))
+                foreach (Project project in projects)
                 {
-                    XmlDocument settingsDoc = new XmlDocument();
-                    settingsDoc.Load(settingsPath + "\\Properties\\settings.settings");
+                    //Don't add existing unit test projects to the list of projects to unit test against
+                    bool isUnitTestProject = false;
 
-                    XmlNodeList settings = settingsDoc.GetElementsByTagName("Settings");
-                    if (settings.Count > 0)
+                    if (string.IsNullOrEmpty(project.FullName)) continue;
+
+                    var settingsPath = Path.GetDirectoryName(project.FullName);
+                    if (File.Exists(settingsPath + "\\Properties\\settings.settings"))
                     {
-                        XmlNodeList appSettings = settings[0].ChildNodes;
-                        foreach (XmlNode node in appSettings)
+                        XmlDocument settingsDoc = new XmlDocument();
+                        settingsDoc.Load(settingsPath + "\\Properties\\settings.settings");
+
+                        XmlNodeList settings = settingsDoc.GetElementsByTagName("Settings");
+                        if (settings.Count > 0)
                         {
-                            if (node.Attributes == null || node.Attributes["Name"] == null) continue;
-                            if (node.Attributes["Name"].Value != "CRMTestType") continue;
-
-                            XmlNode value = node.FirstChild;
-                            if (string.IsNullOrEmpty(value.InnerText)) continue;
-
-                            isUnitTestProject = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (isUnitTestProject) continue;
-
-                /*Examine the NuGet packages.config file to determine the CRM SDK version of the target project
-                Looking at the assembly version doesn't work the underlying assembly version doesn't always change
-                if no updates were done between versions. Example Microsoft.CrmSdk.Extensions assembly versions did not
-                change between 7.0.x and 7.1.x*/
-                string sdkVersion = String.Empty;
-                var packagePath = Path.GetDirectoryName(project.FullName);
-                if (File.Exists(packagePath + "\\packages.config"))
-                {
-                    XmlDocument packageDoc = new XmlDocument();
-                    packageDoc.Load(packagePath + "\\packages.config");
-
-                    XmlNodeList packages = packageDoc.GetElementsByTagName("packages");
-                    if (packages.Count > 0)
-                    {
-                        XmlNodeList packageDetails = packages[0].ChildNodes;
-                        foreach (XmlNode package in packageDetails)
-                        {
-                            if (package.Attributes == null || package.Attributes["id"] == null) continue;
-                            if (package.Attributes["id"].Value != "Microsoft.CrmSdk.CoreAssemblies") continue;
-                            if (package.Attributes["version"] == null) continue;
-
-                            switch (package.Attributes["version"].Value)
+                            XmlNodeList appSettings = settings[0].ChildNodes;
+                            foreach (XmlNode node in appSettings)
                             {
-                                case "5.0.18":
-                                    sdkVersion = "CRM 2011 (5.0.X)";
-                                    break;
-                                case "6.0.4":
-                                    sdkVersion = "CRM 2013 (6.0.X)";
-                                    break;
-                                case "6.1.1":
-                                    sdkVersion = "CRM 2013 SP1 (6.1.X)";
-                                    break;
-                                case "7.0.0.1":
-                                    sdkVersion = "CRM 2015 (7.0.X)";
-                                    break;
-                                case "7.1.0":
-                                    sdkVersion = "CRM 2015 (7.1.X)";
-                                    break;
+                                if (node.Attributes == null || node.Attributes["Name"] == null) continue;
+                                if (node.Attributes["Name"].Value != "CRMTestType") continue;
+
+                                XmlNode value = node.FirstChild;
+                                if (string.IsNullOrEmpty(value.InnerText)) continue;
+
+                                isUnitTestProject = true;
+                                break;
                             }
                         }
                     }
-                }
 
-                ComboBoxItem item = new ComboBoxItem { Content = project.Name, Tag = sdkVersion };
-                projectItems.Add(item);
+                    if (isUnitTestProject) continue;
+
+                    /*Examine the NuGet packages.config file to determine the CRM SDK version of the target project
+                Looking at the assembly version doesn't work the underlying assembly version doesn't always change
+                if no updates were done between versions. Example Microsoft.CrmSdk.Extensions assembly versions did not
+                change between 7.0.x and 7.1.x*/
+                    string sdkVersion = String.Empty;
+                    var packagePath = Path.GetDirectoryName(project.FullName);
+                    if (File.Exists(packagePath + "\\packages.config"))
+                    {
+                        XmlDocument packageDoc = new XmlDocument();
+                        packageDoc.Load(packagePath + "\\packages.config");
+
+                        XmlNodeList packages = packageDoc.GetElementsByTagName("packages");
+                        if (packages.Count > 0)
+                        {
+                            XmlNodeList packageDetails = packages[0].ChildNodes;
+                            foreach (XmlNode package in packageDetails)
+                            {
+                                if (package.Attributes == null || package.Attributes["id"] == null) continue;
+                                if (package.Attributes["id"].Value != "Microsoft.CrmSdk.CoreAssemblies") continue;
+                                if (package.Attributes["version"] == null) continue;
+
+                                switch (package.Attributes["version"].Value)
+                                {
+                                    case "5.0.18":
+                                        sdkVersion = "CRM 2011 (5.0.X)";
+                                        break;
+                                    case "6.0.4":
+                                        sdkVersion = "CRM 2013 (6.0.X)";
+                                        break;
+                                    case "6.1.1":
+                                        sdkVersion = "CRM 2013 SP1 (6.1.X)";
+                                        break;
+                                    case "7.0.0.1":
+                                        sdkVersion = "CRM 2015 (7.0.X)";
+                                        break;
+                                    case "7.1.0":
+                                        sdkVersion = "CRM 2015 (7.1.X)";
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    ComboBoxItem item = new ComboBoxItem { Content = project.Name, Tag = sdkVersion };
+                    projectItems.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Processing Template: Error Reading Projects: " + ex.Message);
             }
 
             return projectItems;
@@ -490,7 +536,7 @@ namespace TemplateWizards
         /// <param name="project">The target project.</param>
         private static void ExcludeSdkBinFolder(Project project)
         {
-            for (int i = 1; i < project.ProjectItems.Count; i++)
+            for (int i = 1; i <= project.ProjectItems.Count; i++)
             {
                 string itemType = project.ProjectItems.Item(i).Kind;
                 if (itemType.ToUpper() == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //GUID_ItemType_PhysicalFolder
@@ -507,7 +553,7 @@ namespace TemplateWizards
         /// <param name="project">The target project.</param>
         private static void ExcludePerformaceFolder(Project project)
         {
-            for (int i = 1; i < project.ProjectItems.Count; i++)
+            for (int i = 1; i <= project.ProjectItems.Count; i++)
             {
                 string itemType = project.ProjectItems.Item(i).Kind;
                 if (itemType.ToUpper() == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //GUID_ItemType_PhysicalFolder

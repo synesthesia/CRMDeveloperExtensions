@@ -13,6 +13,8 @@ namespace UserOptions
 
         internal OptionPageCustom DefaultCrmSdkVersion;
         internal OptionPageCustom DefaultProjectKeyFileName;
+        internal OptionPageCustom AllowPublishManagedWebResources;
+        internal OptionPageCustom UseDefaultWebBrowser;
 
         public void Initialize()
         {
@@ -20,6 +22,8 @@ namespace UserOptions
                                                   ? DefaultCrmSdkVersion.DefaultCrmSdkVersion
                                                   : "CRM 2015 (7.1.X)");
             DefaultKeyFileName.Text = DefaultProjectKeyFileName.DefaultProjectKeyFileName;
+            AllowPublishManaged.Checked = AllowPublishManagedWebResources.AllowPublishManagedWebResources;
+            DefaultWebBrowser.Checked = UseDefaultWebBrowser.UseDefaultWebBrowser;
         }
 
         private void DefaultSdkVersion_SelectedIndexChanged(object sender, EventArgs e)
@@ -62,6 +66,16 @@ namespace UserOptions
             MessageBox.Show("Illegal file name");
             DefaultProjectKeyFileName.DefaultProjectKeyFileName = "MyKey";
             DefaultKeyFileName.Text = "MyKey";
+        }
+
+        private void AllowPublishManaged_CheckedChanged(object sender, EventArgs e)
+        {
+            AllowPublishManagedWebResources.AllowPublishManagedWebResources = AllowPublishManaged.Checked;
+        }
+
+        private void DefaultWebBrowser_CheckedChanged(object sender, EventArgs e)
+        {
+            UseDefaultWebBrowser.UseDefaultWebBrowser = DefaultWebBrowser.Checked;
         }
     }
 }

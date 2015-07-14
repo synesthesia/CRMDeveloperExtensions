@@ -1,12 +1,12 @@
 ﻿// PkgCmdID.cs
 // MUST match PkgCmdID.h
-using System;
 
 namespace WebResourceDeployer
 {
-    static class PkgCmdIDList
+    static class PkgCmdIdList
     {
-        public const uint cmdidWebResourceDeployerCommand =        0x100;
-        public const uint cmdidWebResourceDeployerWindow =    0x101;
+        public const uint CmdidWebResourceDeployerPublish = 0x100;
+        public const uint CmdidWebResourceDeployerWindow = 0x101;
+        public const uint CmdidWebResourceEditorPublish = 0x0100;
     };
 }

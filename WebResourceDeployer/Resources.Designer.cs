@@ -70,7 +70,7 @@ namespace WebResourceDeployer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to WebResourceDeployerWindow.
+        ///   Looks up a localized string similar to CRM Developer Extensions - Web Resource Deployer.
         /// </summary>
         internal static string ToolWindowTitle {
             get {

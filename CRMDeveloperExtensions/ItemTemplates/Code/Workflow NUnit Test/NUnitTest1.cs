@@ -87,7 +87,7 @@ namespace $rootnamespace$
         private static IDictionary<string, object> InvokeWorkflow(string name, ref Entity target, Dictionary<string, object> inputs, 
             Func<Mock<IOrganizationService>, Mock<IOrganizationService>> configuredServiceMock)
         {
-            var testClass = Activator.CreateInstance(Type.GetType(name)) as CodeActivity;;
+            var testClass = Activator.CreateInstance(Type.GetType(name)) as CodeActivity;
 
             var serviceMock = new Mock<IOrganizationService>();
             var factoryMock = new Mock<IOrganizationServiceFactory>();

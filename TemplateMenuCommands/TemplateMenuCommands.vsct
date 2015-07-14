@@ -20,9 +20,6 @@
   <!--This header contains the command ids for the menus provided by the shell. -->
   <Extern href="vsshlids.h"/>
 
-
-
-
   <!--The Commands section is where we the commands, menus and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
   <Commands package="guidMenuCommandsPkg">
@@ -44,8 +41,6 @@
       <Group guid="guidMenuCommandsCmdSet" id="CrmMenuGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CSCD_PROJECT_ADD"/>
       </Group>
-
-
 
     </Groups>
 
@@ -106,22 +101,17 @@
 
   </Commands>
 
-
-
   <Symbols>
     <!-- This is the package guid. -->
     <GuidSymbol name="guidMenuCommandsPkg" value="{50e56921-f7aa-47bb-9a25-4b7a8cc2600f}" />
 
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidMenuCommandsCmdSet" value="{393da428-4dec-489d-9bc7-586dd3deae24}">
-
       <IDSymbol name="CrmMenuGroup" value="0x1020" />
       <IDSymbol name="cmdidAddItem1" value="0x0100" />
       <IDSymbol name="cmdidAddItem2" value="0x0105" />
       <IDSymbol name="cmdidAddItem3" value="0x0110" />
     </GuidSymbol>
-
-
 
     <GuidSymbol name="guidImages" value="{1cb77147-7544-418e-884d-62f2bee1ef6a}" >
       <IDSymbol name="bmpPic1" value="1" />
