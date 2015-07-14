@@ -38,6 +38,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.DefaultWebBrowser = new System.Windows.Forms.CheckBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.EnableSdkSearch = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // DefaultSdkVersion
@@ -144,10 +146,35 @@
             this.DefaultWebBrowser.UseVisualStyleBackColor = true;
             this.DefaultWebBrowser.CheckedChanged += new System.EventHandler(this.DefaultWebBrowser_CheckedChanged);
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(17, 203);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(85, 13);
+            this.label7.TabIndex = 11;
+            this.label7.Text = "External Content";
+            // 
+            // EnableSdkSearch
+            // 
+            this.EnableSdkSearch.AutoSize = true;
+            this.EnableSdkSearch.Checked = true;
+            this.EnableSdkSearch.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.EnableSdkSearch.Location = new System.Drawing.Point(17, 223);
+            this.EnableSdkSearch.Name = "EnableSdkSearch";
+            this.EnableSdkSearch.Size = new System.Drawing.Size(148, 17);
+            this.EnableSdkSearch.TabIndex = 12;
+            this.EnableSdkSearch.Text = "Enable CRM SDK Search";
+            this.EnableSdkSearch.UseVisualStyleBackColor = true;
+            this.EnableSdkSearch.CheckedChanged += new System.EventHandler(this.EnableSdkSearch_CheckedChanged);
+            // 
             // OptionsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.EnableSdkSearch);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.DefaultWebBrowser);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -177,5 +204,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox DefaultWebBrowser;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.CheckBox EnableSdkSearch;
     }
 }

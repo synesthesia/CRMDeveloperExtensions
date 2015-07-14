@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="guidSdkSearchPkg">
+
+    <Groups>
+
+      <Group guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+      </Group>
+
+    </Groups>
+
+    <Buttons>
+
+      <Button guid="guidSdkSearchCmdSet" id="cmdidCrmSdkSearch" priority="0x0100" type="Button">
+        <Parent guid="guidSdkSearchCmdSet" id="SearchGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>TextChanges</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>CRM SDK Search</ButtonText>
+        </Strings>
+      </Button>
+
+    </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="guidImages" href="Resources\sw-file-icon_16.png" />
+    </Bitmaps>
+
+  </Commands>
+
+  <CommandPlacements>
+
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_BASIC" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_HTML" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_SCRIPT" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASPX" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASPX_CODE" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASAX_CODE" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASPX_CODE_VB" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASAX_CODE_VB" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASMX_CODE" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSdkSearchCmdSet" id="SearchGroup" priority="0xFFFE">
+      <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASMX_CODE_VB" />
+    </CommandPlacement>
+
+  </CommandPlacements>
+
+  <Symbols>
+    <GuidSymbol name="guidSdkSearchPkg" value="{2eadb1a7-6db7-4a47-944c-531ff71355f2}" />
+
+    <GuidSymbol name="guidSdkSearchCmdSet" value="{9784dfde-31b1-4060-9e35-e4df98ff8361}">
+      <IDSymbol name="SearchGroup" value="0x1020" />
+      <IDSymbol name="cmdidCrmSdkSearch" value="0x0100" />
+    </GuidSymbol>
+
+    <GuidSymbol name="HtmlEditorWindows" value="{d7e8c5e1-bdb8-11d0-9c88-0000f8040a53}">
+      <IDSymbol name="IDMX_HTM_SOURCE_BASIC" value="0x32" />
+      <IDSymbol name="IDMX_HTM_SOURCE_HTML" value="0x0033" />
+      <IDSymbol name="IDMX_HTM_SOURCE_SCRIPT" value="0x34" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASPX" value="0x35" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASAX" value="0x3B" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASPX_CODE" value="0x36" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASAX_CODE" value="0x3C" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASPX_CODE_VB" value="0x37" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASAX_CODE_VB" value="0x3D" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASMX_CODE" value="0x38" />
+      <IDSymbol name="IDMX_HTM_SOURCE_ASMX_CODE_VB" value="0x39" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidImages" value="{aa0359e2-3851-459e-8a54-312d859c2da9}" >
+      <IDSymbol name="bmpPic1" value="1" />
+    </GuidSymbol>
+  </Symbols>
+
+</CommandTable>

@@ -15,6 +15,7 @@ namespace UserOptions
         internal OptionPageCustom DefaultProjectKeyFileName;
         internal OptionPageCustom AllowPublishManagedWebResources;
         internal OptionPageCustom UseDefaultWebBrowser;
+        internal OptionPageCustom EnableCrmSdkSearch;
 
         public void Initialize()
         {
@@ -24,6 +25,7 @@ namespace UserOptions
             DefaultKeyFileName.Text = DefaultProjectKeyFileName.DefaultProjectKeyFileName;
             AllowPublishManaged.Checked = AllowPublishManagedWebResources.AllowPublishManagedWebResources;
             DefaultWebBrowser.Checked = UseDefaultWebBrowser.UseDefaultWebBrowser;
+            EnableSdkSearch.Checked = EnableCrmSdkSearch.EnableCrmSdkSearch;
         }
 
         private void DefaultSdkVersion_SelectedIndexChanged(object sender, EventArgs e)
@@ -76,6 +78,11 @@ namespace UserOptions
         private void DefaultWebBrowser_CheckedChanged(object sender, EventArgs e)
         {
             UseDefaultWebBrowser.UseDefaultWebBrowser = DefaultWebBrowser.Checked;
+        }
+
+        private void EnableSdkSearch_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableCrmSdkSearch.EnableCrmSdkSearch = EnableSdkSearch.Checked;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace UserOptions
     {
         private string _defaultCrmSdkVersion = "CRM 2015 (7.1.X)";
         private string _defaultProjectKeyFileName = "MyKey";
+        private bool _enableCrmSdkSearch = true;
 
         public string DefaultCrmSdkVersion
         {
@@ -36,6 +37,12 @@ namespace UserOptions
         {
             get { return _defaultProjectKeyFileName; }
             set { _defaultProjectKeyFileName = value; }
+        }
+
+        public bool EnableCrmSdkSearch
+        {
+            get { return _enableCrmSdkSearch; }
+            set { _enableCrmSdkSearch = value; }
         }
 
         public bool AllowPublishManagedWebResources { get; set; }
@@ -52,7 +59,8 @@ namespace UserOptions
                     DefaultCrmSdkVersion = this,
                     DefaultProjectKeyFileName = this,
                     AllowPublishManagedWebResources = this,
-                    UseDefaultWebBrowser = this
+                    UseDefaultWebBrowser = this,
+                    EnableCrmSdkSearch = this
                 };
                 page.Initialize();
                 return page;
