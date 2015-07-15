@@ -262,7 +262,6 @@
     <Resource Include="Resources\diff-16.png" />
     <Resource Include="Resources\download-16.png" />
     <Resource Include="Resources\open-16.png" />
-    <Resource Include="Resources\clear-24.png" />
     <Resource Include="Resources\info-24.png" />
     <Content Include="Resources\Package.ico" />
   </ItemGroup>

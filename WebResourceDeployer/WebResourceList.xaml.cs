@@ -23,6 +23,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Xml;
 using WebResourceDeployer.Models;
 using Window = EnvDTE.Window;
@@ -226,10 +227,14 @@ namespace WebResourceDeployer
                     if (!string.IsNullOrEmpty(webResourceItem.BoundFile))
                     {
                         var boundFile = webResourceItem.BoundFile;
+                        bool publish = webResourceItem.Publish;
                         webResourceItem.ProjectFiles.Clear();
                         webResourceItem.ProjectFiles = GetProjectFiles(projectItem.ContainingProject.Name);
                         webResourceItem.BoundFile = boundFile;
+                        webResourceItem.Publish = publish;
                     }
+
+                    SetPublishAll();
 
                     foreach (ComboBoxItem comboBoxItem in webResourceItem.ProjectFiles.ToList())
                     {
@@ -293,8 +298,10 @@ namespace WebResourceDeployer
                 foreach (WebResourceItem webResourceItem in webResources)
                 {
                     string boundFile = webResourceItem.BoundFile;
+                    bool publish = webResourceItem.Publish;
                     webResourceItem.ProjectFiles = GetProjectFiles(projectItem.ContainingProject.Name);
                     webResourceItem.BoundFile = boundFile;
+                    webResourceItem.Publish = publish;                  
                 }
 
                 //Item was moved inside the project
@@ -393,7 +400,6 @@ namespace WebResourceDeployer
                     Connections.IsEnabled = false;
                     AddConnection.IsEnabled = false;
                     Publish.IsEnabled = false;
-                    ClearPublish.IsEnabled = false;
                     AddWebResource.IsEnabled = false;
                 }
             }
@@ -445,7 +451,6 @@ namespace WebResourceDeployer
             Projects.IsEnabled = false;
             AddConnection.IsEnabled = false;
             Publish.IsEnabled = false;
-            ClearPublish.IsEnabled = false;
             AddWebResource.IsEnabled = false;
         }
 
@@ -1006,7 +1011,39 @@ namespace WebResourceDeployer
                 if (webResources == null) return;
 
                 Publish.IsEnabled = webResources.Count(w => w.Publish) > 0;
-                ClearPublish.IsEnabled = webResources.Count(w => w.Publish) > 0;
+
+                SetPublishAll();
+            }
+        }
+
+        private void SetPublishAll()
+        {
+            List<WebResourceItem> webResources = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
+            if (webResources == null) return;
+
+            //Set Publish All
+            CheckBox publishAll = FindVisualChildren<CheckBox>(WebResourceGrid).FirstOrDefault(t => t.Name == "PublishSelectAll");
+            if (publishAll == null) return;
+
+            publishAll.IsChecked = webResources.Count(w => w.Publish) == webResources.Count(w => w.AllowPublish);
+        }
+
+        public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) yield break;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                if (child != null && child is T)
+                {
+                    yield return (T)child;
+                }
+
+                foreach (T childOfChild in FindVisualChildren<T>(child))
+                {
+                    yield return childOfChild;
+                }
             }
         }
 
@@ -1046,11 +1083,13 @@ namespace WebResourceDeployer
                             //Delete
                             var parentNode = node.ParentNode;
                             if (parentNode != null)
+                            {
                                 parentNode.RemoveChild(node);
 
-                            item.Publish = false;
-                            item.AllowPublish = false;
-                            item.AllowDiff = false;
+                                item.Publish = false;
+                                item.AllowPublish = false;
+                                item.AllowDiff = false;
+                            }
                         }
                         else
                         {
@@ -1191,7 +1230,15 @@ namespace WebResourceDeployer
                     List<WebResourceItem> items = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
                     WebResourceItem item = items.FirstOrDefault(w => w.WebResourceId == webResourceId);
                     if (item != null)
+                    {
                         item.BoundFile = boundName;
+
+                        CheckBox publishAll = FindVisualChildren<CheckBox>(WebResourceGrid).FirstOrDefault(t => t.Name == "PublishSelectAll");
+                        if (publishAll == null) return;
+
+                        if (publishAll.IsChecked == true)
+                            item.Publish = true;
+                    }
                 }
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
@@ -1426,7 +1473,6 @@ namespace WebResourceDeployer
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
-            ClearPublish.IsEnabled = false;
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
         }
@@ -1485,7 +1531,6 @@ namespace WebResourceDeployer
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
-            ClearPublish.IsEnabled = false;
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
 
@@ -1595,7 +1640,6 @@ namespace WebResourceDeployer
                 WebResourceType.IsEnabled = false;
                 ShowManaged.IsEnabled = false;
                 Publish.IsEnabled = false;
-                ClearPublish.IsEnabled = false;
                 AddWebResource.IsEnabled = false;
                 WebResourceGrid.IsEnabled = false;
 
@@ -1604,15 +1648,6 @@ namespace WebResourceDeployer
             catch (Exception ex)
             {
                 _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-            }
-        }
-
-        private void ClearPublish_Click(object sender, RoutedEventArgs e)
-        {
-            List<WebResourceItem> items = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
-            foreach (WebResourceItem webResourceItem in items)
-            {
-                webResourceItem.Publish = false;
             }
         }
 
@@ -1801,6 +1836,27 @@ namespace WebResourceDeployer
         {
             Info info = new Info();
             info.Show();
+        }
+
+        private void UpdateAllPublishChecks(bool publish)
+        {
+            List<WebResourceItem> webResources = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
+            foreach (WebResourceItem webResourceItem in webResources)
+            {
+                if (webResourceItem.AllowPublish)
+                    webResourceItem.Publish = publish;
+            }
+        }
+
+        private void PublishSelectAll_OnClick(object sender, RoutedEventArgs e)
+        {
+            CheckBox publishAll = (CheckBox)sender;
+            bool? isChecked = publishAll.IsChecked;
+
+            if (isChecked != null && isChecked.Value)
+                UpdateAllPublishChecks(true);
+            else
+                UpdateAllPublishChecks(false);
         }
     }
 }
