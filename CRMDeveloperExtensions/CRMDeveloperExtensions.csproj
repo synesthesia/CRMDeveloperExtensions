@@ -306,6 +306,10 @@
     <Content Include="ItemTemplates\Code\Workflow NUnit Test\icon.png" />
     <Content Include="ItemTemplates\Web\HTML Web\Definitions\CSharp.vstemplate" />
     <Content Include="ItemTemplates\Web\JavaScript Web\Definitions\CSharp.vstemplate" />
+    <Content Include="preview.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="snippets.pkgdef">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

@@ -7,6 +7,7 @@
     <MoreInfo>https://github.com/jlattimer/CRMDeveloperExtensions</MoreInfo>
     <License>License.txt</License>
     <Icon>sw-file-icon.png</Icon>
+    <PreviewImage>preview.png</PreviewImage>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[11.0,]" />
