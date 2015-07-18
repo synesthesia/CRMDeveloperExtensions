@@ -30,7 +30,6 @@ namespace WebResourceDeployer
     public sealed class WebResourceDeployerPackage : Package
     {
         private DTE _dte;
-        private string _projectType;
         private Logger _logger;
 
         protected override void Initialize()
@@ -50,7 +49,6 @@ namespace WebResourceDeployer
                 // Create the command for the tool window
                 CommandID windowCommandId = new CommandID(GuidList.GuidWebResourceDeployerCmdSet, (int)PkgCmdIdList.CmdidWebResourceDeployerWindow);
                 OleMenuCommand windowItem = new OleMenuCommand(ShowToolWindow, windowCommandId);
-                windowItem.BeforeQueryStatus += WindowItem_BeforeQueryStatus;
                 mcs.AddCommand(windowItem);
 
                 // Create the command for the menu item.
@@ -80,18 +78,6 @@ namespace WebResourceDeployer
             ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
 
-        private void WindowItem_BeforeQueryStatus(object sender, EventArgs eventArgs)
-        {
-            OleMenuCommand menuCommand = sender as OleMenuCommand;
-            if (menuCommand == null) return;
-
-            //Determine if the option to open the Web Resource Deployer should be shown
-            if (string.IsNullOrEmpty(_projectType))
-                GetCrmProject();
-
-            menuCommand.Visible = _projectType == "WEBRESOURCE";
-        }
-
         private void PublishItem_BeforeQueryStatus(object sender, EventArgs eventArgs)
         {
             OleMenuCommand menuCommand = sender as OleMenuCommand;
@@ -111,12 +97,6 @@ namespace WebResourceDeployer
                 menuCommand.Visible = false;
                 return;
             }
-
-            if (string.IsNullOrEmpty(_projectType))
-                GetCrmProject();
-
-            menuCommand.Visible = _projectType == "WEBRESOURCE";
-            if (menuCommand.Visible == false) return;
 
             if (_dte.SelectedItems.Count != 1)
             {
@@ -386,51 +366,6 @@ namespace WebResourceDeployer
             {
                 _logger.WriteToOutputWindow("Error Getting Mapping: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
                 return Guid.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Reads the CRM project settings.
-        /// </summary>
-        private void GetCrmProject()
-        {
-            try
-            {
-                _projectType = null;
-
-                Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
-                if (activeSolutionProjects == null || activeSolutionProjects.Length <= 0) return;
-
-                var project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
-                var path = Path.GetDirectoryName(project.FullName);
-                if (!File.Exists(path + "\\Properties\\settings.settings"))
-                {
-                    _logger.WriteToOutputWindow("Error Determining CRM Project Type: Missing /Properties/Settings.settings", Logger.MessageType.Error);
-                    return;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\Properties\\settings.settings");
-
-                XmlNodeList settings = doc.GetElementsByTagName("Settings");
-                if (settings.Count == 0) return;
-
-                XmlNodeList appSettings = settings[0].ChildNodes;
-                foreach (XmlNode node in appSettings)
-                {
-                    if (node.Attributes != null && node.Attributes["Name"] != null)
-                    {
-                        if (node.Attributes["Name"].Value == "CRMProjectType")
-                        {
-                            XmlNode value = node.FirstChild;
-                            _projectType = value.InnerText;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Determining CRM Project Type: " + ex.Message, Logger.MessageType.Error);
             }
         }
 

@@ -50,6 +50,7 @@ namespace WebResourceDeployer
         private CrmConn _selectedConn;
         private Project _selectedProject;
         private bool _projectEventsRegistered;
+        private bool _projectAdded;
         private readonly Logger _logger;
 
         readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO" };
@@ -301,7 +302,7 @@ namespace WebResourceDeployer
                     bool publish = webResourceItem.Publish;
                     webResourceItem.ProjectFiles = GetProjectFiles(projectItem.ContainingProject.Name);
                     webResourceItem.BoundFile = boundFile;
-                    webResourceItem.Publish = publish;                  
+                    webResourceItem.Publish = publish;
                 }
 
                 //Item was moved inside the project
@@ -544,7 +545,7 @@ namespace WebResourceDeployer
                 version.InnerText = versionNum;
                 connection.AppendChild(version);
                 XmlElement selected = doc.CreateElement("Selected");
-                selected.InnerText = "false";
+                selected.InnerText = "True";
                 connection.AppendChild(selected);
                 connections[0].AppendChild(connection);
 
@@ -657,7 +658,8 @@ namespace WebResourceDeployer
                 var folders = GetFolders(projectItems.Item(i), String.Empty);
                 foreach (string folder in folders)
                 {
-                    if (folder.ToUpper() == "/PROPERTIES") continue; //Don't add the project properties folder
+                    if (folder.ToUpper() == "/PROPERTIES") continue; //Don't add the project Properties folder
+                    if (folder.ToUpper().StartsWith("/MY PROJECT")) continue; //Don't add the VB project My Project folders
                     projectFolders.Add(folder);
                 }
             }
@@ -1133,6 +1135,8 @@ namespace WebResourceDeployer
 
                     doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
 
+                    _projectAdded = true;
+
                     item.AllowPublish = true;
                     int[] noDiff = { 5, 6, 7, 8, 10 };
                     if (!noDiff.Contains(item.Type))
@@ -1459,7 +1463,10 @@ namespace WebResourceDeployer
                 Delete.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
                 ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
 
-                UpdateSelectedConnection(false);
+                if (_projectAdded)
+                    _projectAdded = false;
+                else
+                    UpdateSelectedConnection(false);
             }
             else
             {
