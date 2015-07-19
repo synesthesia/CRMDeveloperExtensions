@@ -36,6 +36,7 @@
         <Icon guid="guidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <ButtonText>Publish To CRM</ButtonText>
         </Strings>
@@ -46,6 +47,7 @@
         <Icon guid="guidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <ButtonText>Publish To CRM</ButtonText>
         </Strings>
