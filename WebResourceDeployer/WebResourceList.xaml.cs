@@ -801,7 +801,7 @@ namespace WebResourceDeployer
                     Name = entity.GetAttributeValue<string>("name"),
                     IsManaged = entity.GetAttributeValue<bool>("ismanaged"),
                     AllowPublish = false,
-                    AllowDiff = false,
+                    AllowCompare = false,
                     TypeName = GetWebResourceTypeNameByNumber(entity.GetAttributeValue<OptionSetValue>("webresourcetype").Value.ToString()),
                     Type = entity.GetAttributeValue<OptionSetValue>("webresourcetype").Value,
                     ProjectFiles = GetProjectFiles(projectName),
@@ -949,7 +949,7 @@ namespace WebResourceDeployer
                         {
                             wrItem.BoundFile = filePartialPath.InnerText;
                             wrItem.AllowPublish = allowPublish || !wrItem.IsManaged;
-                            wrItem.AllowDiff = SetAllowDiff(wrItem.Type);
+                            wrItem.AllowCompare = SetAllowCompare(wrItem.Type);
                         }
                     }
                 }
@@ -990,10 +990,10 @@ namespace WebResourceDeployer
             return wrItems;
         }
 
-        private bool SetAllowDiff(int type)
+        private bool SetAllowCompare(int type)
         {
-            int[] noDiff = { 5, 6, 7, 8, 10 };
-            if (!noDiff.Contains(type))
+            int[] noCompare = { 5, 6, 7, 8, 10 };
+            if (!noCompare.Contains(type))
                 return true;
 
             return false;
@@ -1090,7 +1090,7 @@ namespace WebResourceDeployer
 
                                 item.Publish = false;
                                 item.AllowPublish = false;
-                                item.AllowDiff = false;
+                                item.AllowCompare = false;
                             }
                         }
                         else
@@ -1100,9 +1100,9 @@ namespace WebResourceDeployer
                             if (path != null)
                             {
                                 path.InnerText = item.BoundFile;
-                                int[] noDiff = { 5, 6, 7, 8, 10 };
-                                if (!noDiff.Contains(item.Type))
-                                    item.AllowDiff = true;
+                                int[] noCompare = { 5, 6, 7, 8, 10 };
+                                if (!noCompare.Contains(item.Type))
+                                    item.AllowCompare = true;
                             }
                         }
 
@@ -1138,9 +1138,9 @@ namespace WebResourceDeployer
                     _projectAdded = true;
 
                     item.AllowPublish = true;
-                    int[] noDiff = { 5, 6, 7, 8, 10 };
-                    if (!noDiff.Contains(item.Type))
-                        item.AllowDiff = true;
+                    int[] noCompare = { 5, 6, 7, 8, 10 };
+                    if (!noCompare.Contains(item.Type))
+                        item.AllowCompare = true;
                 }
             }
             catch (Exception ex)
@@ -1277,7 +1277,7 @@ namespace WebResourceDeployer
 
             if (dirtyItems.Count > 0)
             {
-                MessageBoxResult result = MessageBox.Show("Save items and publish?", "Unsaved Items",
+                MessageBoxResult result = MessageBox.Show("Save item(s) and publish?", "Unsaved Item(s)",
                             MessageBoxButton.YesNo);
 
                 if (result != MessageBoxResult.Yes) return;
@@ -1735,7 +1735,7 @@ namespace WebResourceDeployer
             ItemCount.Text = cv.Count + " Items";
         }
 
-        private void DiffWebResource_OnClick(object sender, RoutedEventArgs e)
+        private void CompareWebResource_OnClick(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1751,7 +1751,7 @@ namespace WebResourceDeployer
                     Entity webResource = orgService.Retrieve("webresource", webResourceId,
                         new ColumnSet("content", "name"));
 
-                    _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Diff", Logger.MessageType.Info);
+                    _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Compare", Logger.MessageType.Info);
 
                     var tempFolder = Path.GetTempPath();
                     string fileName = Path.GetFileName(webResource.GetAttributeValue<string>("name"));
@@ -1784,11 +1784,11 @@ namespace WebResourceDeployer
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
-                _logger.WriteToOutputWindow("Error Performing Diff Operation: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow("Error Performing Compare Operation: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
             }
             catch (Exception ex)
             {
-                _logger.WriteToOutputWindow("Error Performing Diff Operation: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow("Error Performing Compare Operation: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
             }
         }
 
@@ -1813,7 +1813,7 @@ namespace WebResourceDeployer
                 Name = newWebResource.NewName,
                 IsManaged = false,
                 AllowPublish = true,
-                AllowDiff = SetAllowDiff(newWebResource.NewType),
+                AllowCompare = SetAllowCompare(newWebResource.NewType),
                 TypeName = GetWebResourceTypeNameByNumber(newWebResource.NewType.ToString()),
                 Type = newWebResource.NewType,
                 ProjectFiles = GetProjectFiles(_selectedProject.Name),

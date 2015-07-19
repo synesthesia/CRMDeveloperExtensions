@@ -133,9 +133,9 @@
                     <DataGridTemplateColumn CanUserSort="False" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button x:Name="DiffWebResource" Click="DiffWebResource_OnClick" CommandParameter="{Binding WebResourceId}" 
-                                        IsEnabled="{Binding AllowDiff, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="White" BorderThickness="0">
-                                    <Image Source="Resources/diff-16.png" Width="16" Height="16" ToolTip="Diff with CRM"></Image>
+                                <Button x:Name="CompareWebResource" Click="CompareWebResource_OnClick" CommandParameter="{Binding WebResourceId}" 
+                                        IsEnabled="{Binding AllowCompare, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="White" BorderThickness="0">
+                                    <Image Source="Resources/compare-16.png" Width="16" Height="16" ToolTip="Compare With CRM"></Image>
                                 </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

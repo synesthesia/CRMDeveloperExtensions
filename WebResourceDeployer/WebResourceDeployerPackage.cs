@@ -127,7 +127,7 @@ namespace WebResourceDeployer
 
             if (projectItem.IsDirty)
             {
-                MessageBoxResult result = MessageBox.Show("Save items and publish?", "Unsaved Items",
+                MessageBoxResult result = MessageBox.Show("Save item and publish?", "Unsaved Item",
                     MessageBoxButton.YesNo);
 
                 if (result != MessageBoxResult.Yes) return;

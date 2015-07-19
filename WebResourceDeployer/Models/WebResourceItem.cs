@@ -49,15 +49,15 @@ namespace WebResourceDeployer.Models
                 OnPropertyChanged();
             }
         }
-        private bool _allowDiff;
-        public bool AllowDiff
+        private bool _allowCompare;
+        public bool AllowCompare
         {
-            get { return _allowDiff; }
+            get { return _allowCompare; }
             set
             {
-                if (_allowDiff == value) return;
+                if (_allowCompare == value) return;
 
-                _allowDiff = value;
+                _allowCompare = value;
                 OnPropertyChanged();
             }
         }

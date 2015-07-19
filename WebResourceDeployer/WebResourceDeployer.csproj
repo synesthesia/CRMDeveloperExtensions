@@ -259,7 +259,7 @@
     <Resource Include="Resources\sw-file-icon_16.png" />
     <Resource Include="Resources\connected-24.png" />
     <Resource Include="Resources\minus-24.png" />
-    <Resource Include="Resources\diff-16.png" />
+    <Resource Include="Resources\compare-16.png" />
     <Resource Include="Resources\download-16.png" />
     <Resource Include="Resources\open-16.png" />
     <Resource Include="Resources\info-24.png" />
