@@ -55,12 +55,14 @@ namespace WebResourceDeployer
                 CommandID publishCommandId = new CommandID(GuidList.GuidItemMenuCommandsCmdSet, (int)PkgCmdIdList.CmdidWebResourceDeployerPublish);
                 OleMenuCommand publishMenuItem = new OleMenuCommand(PublishItemCallback, publishCommandId);
                 publishMenuItem.BeforeQueryStatus += PublishItem_BeforeQueryStatus;
+                publishMenuItem.Visible = false;
                 mcs.AddCommand(publishMenuItem);
 
                 // Create the command for the editor menu item.
                 CommandID editorPublishCommandId = new CommandID(GuidList.GuidEditorCommandsCmdSet, (int)PkgCmdIdList.CmdidWebResourceEditorPublish);
                 OleMenuCommand editorPublishMenuItem = new OleMenuCommand(PublishItemCallback, editorPublishCommandId);
                 editorPublishMenuItem.BeforeQueryStatus += PublishItem_BeforeQueryStatus;
+                editorPublishMenuItem.Visible = false;
                 mcs.AddCommand(editorPublishMenuItem);
             }
         }

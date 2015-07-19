@@ -37,16 +37,19 @@ namespace TemplateMenuCommands
                 CommandID pluginMenuCommandId1 = new CommandID(GuidList.GuidMenuCommandsCmdSet, (int)PkgCmdIDList.CmdidAddItem1);
                 OleMenuCommand pluginMenuItem1 = new OleMenuCommand(MenuItem1Callback, pluginMenuCommandId1);
                 pluginMenuItem1.BeforeQueryStatus += menuItem1_BeforeQueryStatus;
+                pluginMenuItem1.Visible = false;
                 mcs.AddCommand(pluginMenuItem1);
 
                 CommandID pluginMenuCommandId2 = new CommandID(GuidList.GuidMenuCommandsCmdSet, (int)PkgCmdIDList.CmdidAddItem2);
                 OleMenuCommand pluginMenuItem2 = new OleMenuCommand(MenuItem2Callback, pluginMenuCommandId2);
                 pluginMenuItem2.BeforeQueryStatus += menuItem2_BeforeQueryStatus;
+                pluginMenuItem2.Visible = false;
                 mcs.AddCommand(pluginMenuItem2);
 
                 CommandID pluginMenuCommandId3 = new CommandID(GuidList.GuidMenuCommandsCmdSet, (int)PkgCmdIDList.CmdidAddItem3);
                 OleMenuCommand pluginMenuItem3 = new OleMenuCommand(MenuItem3Callback, pluginMenuCommandId3);
                 pluginMenuItem3.BeforeQueryStatus += menuItem3_BeforeQueryStatus;
+                pluginMenuItem3.Visible = false;
                 mcs.AddCommand(pluginMenuItem3);
             }
         }
@@ -57,8 +60,7 @@ namespace TemplateMenuCommands
             if (menuCommand == null) return;
 
             //Determine if the Project -> Add Item should be displayed and with what text
-            if (string.IsNullOrEmpty(_projectType))
-                GetCrmProject();
+            GetCrmProject();
 
             if (_projectType == "PLUGIN" || _projectType == "WORKFLOW")
                 menuCommand.Visible = true;
@@ -105,8 +107,7 @@ namespace TemplateMenuCommands
             if (menuCommand == null) return;
 
             //Determine if the Project -> Add Item should be displayed and with what text
-            if (string.IsNullOrEmpty(_projectType))
-                GetCrmProject();
+            GetCrmProject();
 
             menuCommand.Visible = _projectType == "WEBRESOURCE";
         }

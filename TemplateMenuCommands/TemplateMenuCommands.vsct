@@ -61,7 +61,6 @@
         <Icon guid="guidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <ButtonText>New...</ButtonText>
         </Strings>
@@ -72,7 +71,6 @@
         <Icon guid="guidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <ButtonText>CRM HTML Web Resource...</ButtonText>
         </Strings>
@@ -83,7 +81,6 @@
         <Icon guid="guidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <ButtonText>CRM JavaScript (Module) Web Resource...</ButtonText>
         </Strings>
