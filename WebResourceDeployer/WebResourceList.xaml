@@ -22,8 +22,10 @@
                 </TextBlock>
             </Expander.Header>
             <StackPanel>
-                <ComboBox x:Name="Projects" HorizontalAlignment="Left" Margin="5,10,0,0" VerticalAlignment="Top" Width="170" SelectionChanged="Projects_SelectionChanged"></ComboBox>
-                <ComboBox x:Name="Connections" DisplayMemberPath="Name" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" Width="170" 
+                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="170" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Project</Label>
+                <ComboBox x:Name="Projects" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="170" SelectionChanged="Projects_SelectionChanged"></ComboBox>
+                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="170" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">CRM Organization</Label>
+                <ComboBox x:Name="Connections" DisplayMemberPath="Name" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="170" 
                           SelectionChanged="Connections_SelectionChanged"/>
                 <StackPanel Orientation="Horizontal">
                     <Button x:Name="AddConnection" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" Click="AddConnection_Click" Background="White">
@@ -64,7 +66,7 @@
                 <CheckBox x:Name="ShowManaged" Content="Show Managed" Margin="5,5,0,0" VerticalAlignment="Top" Checked="ShowManaged_Checked" Unchecked="ShowManaged_Checked" 
                           IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
                 <Button x:Name="Publish" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Publish_Click" IsEnabled="False" Background="White">
-                    <Image Source="Resources/publish-24.png" Width="24" Height="24" ToolTip="Publish"></Image>
+                    <Image Source="Resources/publish-24.png" Width="24" Height="24" ToolTip="Publish To CRM"></Image>
                 </Button>
                 <Button x:Name="AddWebResource" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="AddWebResource_Click" IsEnabled="False" Background="White">
                     <Image Source="Resources/plus-24.png" Width="24" Height="24" ToolTip="New Web Resource From File"></Image>
@@ -77,17 +79,16 @@
                       Background="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowBackgroundKey}}" HeadersVisibility="Column">
                 <DataGrid.Columns>
                     <DataGridTextColumn Visibility="Collapsed" Binding="{Binding WebResourceId}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Type" Binding="{Binding TypeName}" IsReadOnly="True"></DataGridTextColumn>
-                    <DataGridTemplateColumn Header="Publish" x:Name="PublishColumn" CanUserSort="False">
+                    <DataGridTextColumn Header="Type" Binding="{Binding TypeName}" IsReadOnly="True" CanUserResize="False"></DataGridTextColumn>
+                    <DataGridTemplateColumn Header="Publish" x:Name="PublishColumn" CanUserSort="False" CanUserResize="False">
                         <DataGridTemplateColumn.HeaderTemplate>
                             <DataTemplate>
-                                <!--<CheckBox x:Name="PublishSelectAll" Checked="PublishSelectAll_OnChecked" Unchecked="PublishSelectAll_OnUnchecked"  IsThreeState="True"></CheckBox>-->
-                                <CheckBox x:Name="PublishSelectAll" Click="PublishSelectAll_OnClick"  IsThreeState="True"></CheckBox>
+                                <CheckBox x:Name="PublishSelectAll" Click="PublishSelectAll_OnClick" IsThreeState="True" ToolTip="Publish - Select/Unselect All"></CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.HeaderTemplate>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox IsChecked="{Binding Publish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                <CheckBox IsChecked="{Binding Publish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Publish"
                                           IsEnabled="{Binding AllowPublish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"></CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -107,7 +108,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn CanUserSort="False">
+                    <DataGridTemplateColumn CanUserSort="False" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button x:Name="GetWebResource" Click="GetWebResource_OnClick" CommandParameter="{Binding WebResourceId}" 
@@ -120,7 +121,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn CanUserSort="False">
+                    <DataGridTemplateColumn CanUserSort="False" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button x:Name="OpenWebResource" Click="OpenWebResource_OnClick" CommandParameter="{Binding WebResourceId}" Background="White" BorderThickness="0">
@@ -129,7 +130,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn CanUserSort="False">
+                    <DataGridTemplateColumn CanUserSort="False" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button x:Name="DiffWebResource" Click="DiffWebResource_OnClick" CommandParameter="{Binding WebResourceId}" 
