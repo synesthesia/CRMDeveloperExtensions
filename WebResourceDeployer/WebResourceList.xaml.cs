@@ -50,7 +50,7 @@ namespace WebResourceDeployer
         private CrmConn _selectedConn;
         private Project _selectedProject;
         private bool _projectEventsRegistered;
-        private bool _projectAdded;
+        private bool _connectionAdded;
         private readonly Logger _logger;
 
         readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO" };
@@ -548,6 +548,8 @@ namespace WebResourceDeployer
                 selected.InnerText = "True";
                 connection.AppendChild(selected);
                 connections[0].AppendChild(connection);
+
+                _connectionAdded = true;
 
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
                 return true;
@@ -1135,8 +1137,6 @@ namespace WebResourceDeployer
 
                     doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
 
-                    _projectAdded = true;
-
                     item.AllowPublish = true;
                     int[] noCompare = { 5, 6, 7, 8, 10 };
                     if (!noCompare.Contains(item.Type))
@@ -1463,8 +1463,8 @@ namespace WebResourceDeployer
                 Delete.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
                 ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
 
-                if (_projectAdded)
-                    _projectAdded = false;
+                if (_connectionAdded)
+                    _connectionAdded = false;
                 else
                     UpdateSelectedConnection(false);
             }
