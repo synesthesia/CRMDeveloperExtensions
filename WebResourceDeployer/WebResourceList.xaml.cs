@@ -466,6 +466,8 @@ namespace WebResourceDeployer
             if (!configExists)
                 CreateConfigFile(_selectedProject);
 
+            Expander.IsExpanded = false;
+
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
             if (!change) return;
 
@@ -1563,6 +1565,8 @@ namespace WebResourceDeployer
             var configExists = ConfigFileExists(_selectedProject);
             if (!configExists)
                 CreateConfigFile(_selectedProject);
+
+            Expander.IsExpanded = false;
 
             AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, false);
 
