@@ -118,7 +118,7 @@ namespace WebResourceDeployer
             menuCommand.Visible = webResourceId != Guid.Empty;
         }
 
-        private async void PublishItemCallback(object sender, EventArgs e)
+        private void PublishItemCallback(object sender, EventArgs e)
         {
             if (_dte.SelectedItems.Count != 1) return;
 
@@ -146,9 +146,9 @@ namespace WebResourceDeployer
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(selectedConnection.Version);
             if (version.Major == 5 && version.Revision < 3200)
-                await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(connection, projectItem, webResourceId));
+                UpdateAndPublishSingle(connection, projectItem, webResourceId);
             else
-                await System.Threading.Tasks.Task.Run(() => UpdateAndPublishMultiple(connection, projectItem, webResourceId));
+                UpdateAndPublishMultiple(connection, projectItem, webResourceId);
         }
 
         private void UpdateAndPublishMultiple(CrmConnection connection, ProjectItem projectItem, Guid webResourceId)
@@ -186,6 +186,8 @@ namespace WebResourceDeployer
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
                     _dte.StatusBar.Text = "Updating & publishing web resource...";
+                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+
                     ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)orgService.Execute(emRequest);
 
                     bool wasError = false;
@@ -215,6 +217,7 @@ namespace WebResourceDeployer
             }
 
             _dte.StatusBar.Clear();
+            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
         }
 
         private void UpdateAndPublishSingle(CrmConnection connection, ProjectItem projectItem, Guid webResourceId)
@@ -222,7 +225,7 @@ namespace WebResourceDeployer
             try
             {
                 _dte.StatusBar.Text = "Updating & publishing web resource...";
-                _dte.StatusBar.Highlight(true);
+                _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
@@ -254,7 +257,8 @@ namespace WebResourceDeployer
                 _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource To CRM: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
             }
 
-            _dte.StatusBar.Text = "Published";
+            _dte.StatusBar.Clear();
+            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
         }
 
         private CrmConn GetSelectedConnection(ProjectItem projectItem)

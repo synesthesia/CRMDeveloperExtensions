@@ -782,6 +782,7 @@ namespace WebResourceDeployer
             CrmConnection connection = CrmConnection.Parse(connString);
 
             _dte.StatusBar.Text = "Connecting to CRM and getting web resources...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
@@ -826,6 +827,7 @@ namespace WebResourceDeployer
             AddWebResource.IsEnabled = true;
 
             _dte.StatusBar.Clear();
+            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
         }
 
@@ -1188,6 +1190,7 @@ namespace WebResourceDeployer
         private void DownloadWebResource(Guid webResourceId, string folder, string connString, string projectName)
         {
             _dte.StatusBar.Text = "Downloading file...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
 
             try
             {
@@ -1258,6 +1261,7 @@ namespace WebResourceDeployer
             }
 
             _dte.StatusBar.Clear();
+            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
         }
 
         private void Publish_Click(object sender, RoutedEventArgs e)
@@ -1368,6 +1372,8 @@ namespace WebResourceDeployer
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
                     _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
+                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+
                     ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)orgService.Execute(emRequest);
 
                     foreach (var responseItem in emResponse.Responses)
@@ -1389,6 +1395,8 @@ namespace WebResourceDeployer
 
                 _logger.WriteToOutputWindow("Updated And Published Web Resource(s)", Logger.MessageType.Info);
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+
                 return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
@@ -1409,6 +1417,7 @@ namespace WebResourceDeployer
         {
             //CRM 2011 < UR12
             _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
             try
             {
@@ -1441,17 +1450,21 @@ namespace WebResourceDeployer
                 }
 
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+
                 return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
                 return false;
             }
             catch (Exception ex)
             {
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
                 return false;
             }
@@ -1751,6 +1764,9 @@ namespace WebResourceDeployer
                 CrmConnection connection = CrmConnection.Parse(connString);
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
+                    _dte.StatusBar.Text = "Downloading file for compare...";
+                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
+
                     //Get the file from CRM and save in temp files
                     Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
                     Entity webResource = orgService.Retrieve("webresource", webResourceId,
@@ -1795,6 +1811,9 @@ namespace WebResourceDeployer
             {
                 _logger.WriteToOutputWindow("Error Performing Compare Operation: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
             }
+
+            _dte.StatusBar.Clear();
+            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
         }
 
         private void WebResourceGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
