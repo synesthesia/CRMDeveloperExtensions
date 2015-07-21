@@ -782,6 +782,7 @@ namespace WebResourceDeployer
             CrmConnection connection = CrmConnection.Parse(connString);
 
             _dte.StatusBar.Text = "Connecting to CRM and getting web resources...";
+            LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
             EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveWebResourcesFromCrm(connection));
