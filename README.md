@@ -35,9 +35,9 @@ Item Templates
 * JavaScript (Module) Web Resource   
 * HTML Web Resource     
 
-You can take a look at how the templates will be implemented here:
+Here is an example of using the templates to create a plug-in project with unit tests:
 
-https://www.youtube.com/watch?t=47&v=NV9T_0F6HM0
+[![Templates](http://img.youtube.com/vi/LdMhyF5x5jA/0.jpg)](https://youtu.be/LdMhyF5x5jA)
 
 Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki) for additional documentation on using the templates.
 
