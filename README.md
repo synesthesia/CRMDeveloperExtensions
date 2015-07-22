@@ -26,7 +26,7 @@ Right click and select the CRM Web Resource Deployer option to get started
 * Compare local version of mapped files with the CRM copy
 * Add new web resources to CRM from a project file
 
-[![Web Resource Deployer](http://img.youtube.com/vi/fkQdFKh6VF8/0.jpg)](https://youtu.be/fkQdFKh6VF8)
+Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Web-Resource-Deployer) for additional documentation on using the Web Resource Deployer.
 
 **CRM SDK Search**
 
@@ -65,9 +65,6 @@ Item Templates
 * JavaScript (Module) Web Resource   
 * HTML Web Resource     
 
-Here is an example of using the templates to create a plug-in project with unit tests:
-
-[![Templates](http://img.youtube.com/vi/LdMhyF5x5jA/0.jpg)](https://youtu.be/LdMhyF5x5jA)
 
 Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki) for additional documentation on using the templates.
 
