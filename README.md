@@ -67,7 +67,6 @@ Item Templates
 * JavaScript (Module) Web Resource   
 * HTML Web Resource     
 
-
 Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki) for additional documentation on using the templates.
 
 **Code Snippets**
