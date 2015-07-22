@@ -26,11 +26,13 @@ Right click and select the CRM Web Resource Deployer option to get started
 * Compare local version of mapped files with the CRM copy
 * Add new web resources to CRM from a project file
 
-Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Web-Resource-Deployer) for additional documentation on using the Web Resource Deployer.
+Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Web-Resource-Deployer) for additional documentation.
 
 **CRM SDK Search**
 
 Select a block of text, right click and select CRM SDK to search MSDN filtering to Dynamics CRM content. 
+
+Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/CRM-SDK-Search) for additional documentation.
 
 **New User Options**
 
