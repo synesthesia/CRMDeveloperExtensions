@@ -1212,7 +1212,10 @@ namespace WebResourceDeployer
                     //Add missing extension
                     if (string.IsNullOrEmpty(Path.GetExtension(path)))
                     {
-                        string ext = GetWebResourceTypeNameByNumber(webResource.GetAttributeValue<OptionSetValue>("webresourcetype").Value.ToString()).ToLower();
+                        string ext =
+                            GetWebResourceTypeNameByNumber(
+                                webResource.GetAttributeValue<OptionSetValue>("webresourcetype").Value.ToString())
+                                .ToLower();
                         path += "." + ext;
                     }
 
@@ -1243,7 +1246,9 @@ namespace WebResourceDeployer
                     {
                         item.BoundFile = boundName;
 
-                        CheckBox publishAll = FindVisualChildren<CheckBox>(WebResourceGrid).FirstOrDefault(t => t.Name == "PublishSelectAll");
+                        CheckBox publishAll =
+                            FindVisualChildren<CheckBox>(WebResourceGrid)
+                                .FirstOrDefault(t => t.Name == "PublishSelectAll");
                         if (publishAll == null) return;
 
                         if (publishAll.IsChecked == true)
@@ -1253,15 +1258,21 @@ namespace WebResourceDeployer
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
-                _logger.WriteToOutputWindow("Error Downloading Web Resource From CRM: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow(
+                    "Error Downloading Web Resource From CRM: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace,
+                    Logger.MessageType.Error);
             }
             catch (Exception ex)
             {
-                _logger.WriteToOutputWindow("Error Downloading Web Resource From CRM: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow(
+                    "Error Downloading Web Resource From CRM: " + ex.Message + Environment.NewLine + ex.StackTrace,
+                    Logger.MessageType.Error);
             }
-
-            _dte.StatusBar.Clear();
-            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
+            finally
+            {
+                _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
+            }
         }
 
         private void Publish_Click(object sender, RoutedEventArgs e)
@@ -1380,38 +1391,41 @@ namespace WebResourceDeployer
                     {
                         if (responseItem.Fault == null) continue;
 
-                        _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + responseItem.Fault.Message +
+                        _logger.WriteToOutputWindow(
+                            "Error Updating And Publishing Web Resource(s) To CRM: " + responseItem.Fault.Message +
                             Environment.NewLine + responseItem.Fault.TraceText, Logger.MessageType.Error);
                         wasError = true;
                     }
 
                     if (wasError)
                     {
-                        MessageBox.Show("Error Updating And Publishing Web Resource(s) To CRM. See the Output Window for additional details.");
+                        MessageBox.Show(
+                            "Error Updating And Publishing Web Resource(s) To CRM. See the Output Window for additional details.");
                         _dte.StatusBar.Clear();
                         return false;
                     }
                 }
 
                 _logger.WriteToOutputWindow("Updated And Published Web Resource(s)", Logger.MessageType.Info);
-                _dte.StatusBar.Clear();
-                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
 
                 return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
-                _dte.StatusBar.Clear();
-                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
-                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " +
+                    crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                _dte.StatusBar.Clear();
-                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " +
+                    ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
                 return false;
+            }
+            finally
+            {
+                _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
             }
         }
 
@@ -1451,24 +1465,24 @@ namespace WebResourceDeployer
                     _logger.WriteToOutputWindow("Published Web Resource(s)", Logger.MessageType.Info);
                 }
 
-                _dte.StatusBar.Clear();
-                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
-
                 return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
-                _dte.StatusBar.Clear();
-                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
-                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + crmEx.Message + Environment.NewLine +
+                    crmEx.StackTrace, Logger.MessageType.Error);
                 return false;
             }
             catch (Exception ex)
             {
+                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + ex.Message + Environment.NewLine +
+                    ex.StackTrace, Logger.MessageType.Error);
+                return false;
+            }
+            finally
+            {
                 _dte.StatusBar.Clear();
                 _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
-                _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-                return false;
             }
         }
 
@@ -1774,7 +1788,8 @@ namespace WebResourceDeployer
                     Entity webResource = orgService.Retrieve("webresource", webResourceId,
                         new ColumnSet("content", "name"));
 
-                    _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Compare", Logger.MessageType.Info);
+                    _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Compare",
+                        Logger.MessageType.Info);
 
                     var tempFolder = Path.GetTempPath();
                     string fileName = Path.GetFileName(webResource.GetAttributeValue<string>("name"));
@@ -1807,15 +1822,21 @@ namespace WebResourceDeployer
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
-                _logger.WriteToOutputWindow("Error Performing Compare Operation: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow(
+                    "Error Performing Compare Operation: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace,
+                    Logger.MessageType.Error);
             }
             catch (Exception ex)
             {
-                _logger.WriteToOutputWindow("Error Performing Compare Operation: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
+                _logger.WriteToOutputWindow(
+                    "Error Performing Compare Operation: " + ex.Message + Environment.NewLine + ex.StackTrace,
+                    Logger.MessageType.Error);
             }
-
-            _dte.StatusBar.Clear();
-            _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
+            finally
+            {
+                _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
+            }
         }
 
         private void WebResourceGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
