@@ -19,7 +19,7 @@ Install in Visual Studio under Tools -> Extensions and Updates -> Search Online 
 Right click and select the CRM Web Resource Deployer option to get started
 
 * Manage mappings between multiple CRM organizations and Visual Studio projects
-* Publish multiple items simultaneously from the interface or invidually by right clicking on the editor window or project item (must be mapped first)
+* Publish multiple items simultaneously from the interface or individually by right clicking on the editor window or project item (must be mapped first)
 * Filter by web resource type & managed/unmanaged
 * Download web resources from CRM to your project
 * Open CRM to view web resources
