@@ -1334,7 +1334,6 @@ namespace WebResourceDeployer
 
             if (success) return;
 
-            LockOverlay.Visibility = Visibility.Hidden;
             MessageBox.Show("Error Updating And Publishing Web Resources. See the Output Window for additional details.");
             _dte.StatusBar.Clear();
         }
