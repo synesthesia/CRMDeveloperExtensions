@@ -1403,12 +1403,14 @@ namespace WebResourceDeployer
             {
                 _dte.StatusBar.Clear();
                 _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace, Logger.MessageType.Error);
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 return false;
             }
             catch (Exception ex)
             {
                 _dte.StatusBar.Clear();
                 _logger.WriteToOutputWindow("Error Updating And Publishing Web Resource(s) To CRM: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 return false;
             }
         }
