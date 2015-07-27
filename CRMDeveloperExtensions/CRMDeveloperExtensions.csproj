@@ -346,6 +346,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PluginDeployer\PluginDeployer.csproj">
+      <Project>{910BCD37-04C5-480F-8A22-D7518C42C3BE}</Project>
+      <Name>PluginDeployer</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\SdkSearch\SdkSearch.csproj">
       <Project>{07E1512C-D9A4-4E2D-8054-5A27FC9C1103}</Project>
       <Name>SdkSearch</Name>

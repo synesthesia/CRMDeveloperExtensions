@@ -25,5 +25,6 @@
     <Asset Type="Microsoft.VisualStudio.ToolboxControl" d:Source="Project" d:ProjectName="WebResourceDeployer" Path="|WebResourceDeployer;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="TemplateMenuCommands" Path="|TemplateMenuCommands;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="SdkSearch" Path="|SdkSearch;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="PluginDeployer" Path="|PluginDeployer;PkgdefProjectOutputGroup|" />
   </Assets>
 </PackageManifest>

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMDeveloperExtensions", "CRMDeveloperExtensions\CRMDeveloperExtensions.csproj", "{A4FDB41F-E97D-42FC-BF45-E762A4F87F7A}"
 EndProject
@@ -33,6 +33,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfoWindow", "InfoWindow\InfoWindow.csproj", "{AEF6906B-3A68-4614-8790-0D6099B91462}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdkSearch", "SdkSearch\SdkSearch.csproj", "{07E1512C-D9A4-4E2D-8054-5A27FC9C1103}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginDeployer", "PluginDeployer\PluginDeployer.csproj", "{910BCD37-04C5-480F-8A22-D7518C42C3BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +90,10 @@ Global
 		{07E1512C-D9A4-4E2D-8054-5A27FC9C1103}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07E1512C-D9A4-4E2D-8054-5A27FC9C1103}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07E1512C-D9A4-4E2D-8054-5A27FC9C1103}.Release|Any CPU.Build.0 = Release|Any CPU
+		{910BCD37-04C5-480F-8A22-D7518C42C3BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{910BCD37-04C5-480F-8A22-D7518C42C3BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{910BCD37-04C5-480F-8A22-D7518C42C3BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{910BCD37-04C5-480F-8A22-D7518C42C3BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

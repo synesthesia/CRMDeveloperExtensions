@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="guidPluginDeployerPkg">
+    <Groups>
+
+      <Group guid="guidPluginDeployerCmdSet" id="ProjectMenuGroup" priority="0xFFFE">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+      </Group>
+
+    </Groups>
+
+    <Buttons>
+
+      <Button guid="guidPluginDeployerCmdSet" id="cmdidPluginDeployerWindow" priority="0xFFFE" type="Button">
+        <Parent guid="guidPluginDeployerCmdSet" id="ProjectMenuGroup"/>
+        <Icon guid="guidImages" id="bmpPic1" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>TextChanges</CommandFlag>
+        <Strings>
+          <ButtonText>CRM Plug-in Deployer</ButtonText>
+        </Strings>
+      </Button>
+
+    </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="guidImages" href="Resources\sw-file-icon_16.png" />
+    </Bitmaps>
+
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="guidPluginDeployerPkg" value="{684c769a-9dbe-4784-9386-8f4b169df3ff}" />
+
+    <GuidSymbol name="guidPluginDeployerCmdSet" value="{cf3c6db1-0999-42bf-be3a-b9f4e6542f1e}">
+      <IDSymbol name="ProjectMenuGroup" value="0x1020" />
+      <IDSymbol name="cmdidPluginDeployerWindow" value="0x0101" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidImages" value="{16cf6c36-3f91-4d14-80b9-a40ad61c9be7}" >
+      <IDSymbol name="bmpPic1" value="1" />
+    </GuidSymbol>
+  </Symbols>
+
+</CommandTable>

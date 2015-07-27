@@ -432,7 +432,6 @@ namespace WebResourceDeployer
             if (Projects.SelectedIndex == -1)
                 Projects.SelectedIndex = 0;
 
-
             _projects = _dte.Solution.Projects;
         }
 
