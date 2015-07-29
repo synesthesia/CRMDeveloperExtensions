@@ -2,19 +2,19 @@
 <TemplateReport>
   <ItemTemplates>
     <ItemTemplate Path="ItemTemplates\Code\Plugin Class\Definitions\CSharp.vstemplate" Name="CRM Plug-in Class" Description="Dynamics CRM Plug-in Class" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Code\Plugin Integration Test\Definitions\CSharp.vstemplate" Name="CRM Plug-in Integration Test" Description="Dynamics CRM Plug-in Integration Test" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Code\Plugin NUnit Integration Test\Definitions\CSharp.vstemplate" Name="CRM Plug-in NUnit Integration Test" Description="Dynamics CRM Plug-in NUnit Integration Test" ProjectType="CSharp" ProjectSubType="" />
+    <ItemTemplate Path="ItemTemplates\Code\Plugin Int Test\Definitions\CSharp.vstemplate" Name="CRM Plug-in Integration Test" Description="Dynamics CRM Plug-in Integration Test" ProjectType="CSharp" ProjectSubType="" />
+    <ItemTemplate Path="ItemTemplates\Code\Plugin NUnit Int Test\Definitions\CSharp.vstemplate" Name="CRM Plug-in NUnit Integration Test" Description="Dynamics CRM Plug-in NUnit Integration Test" ProjectType="CSharp" ProjectSubType="" />
     <ItemTemplate Path="ItemTemplates\Code\Plugin NUnit Test\Definitions\CSharp.vstemplate" Name="CRM Plug-in NUnit Test" Description="Dynamics CRM Plug-in NUnit Test" ProjectType="CSharp" ProjectSubType="" />
     <ItemTemplate Path="ItemTemplates\Code\Plugin Unit Test\Definitions\CSharp.vstemplate" Name="CRM Plug-in Unit Test" Description="Dynamics CRM Plug-in Unit Test" ProjectType="CSharp" ProjectSubType="" />
     <ItemTemplate Path="ItemTemplates\Code\Workflow Class\Definitions\CSharp.vstemplate" Name="CRM Workflow Class" Description="Dynamics CRM Workflow Class" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Code\Workflow Integration Test\Definitions\CSharp.vstemplate" Name="CRM Workflow Integration Test" Description="Dynamics CRM Workflow Integration Test" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Code\Workflow NUnit Integration Test\Definitions\CSharp.vstemplate" Name="CRM Workflow NUnit Integration Test" Description="Dynamics CRM Workflow NUnit Integration Test" ProjectType="CSharp" ProjectSubType="" />
+    <ItemTemplate Path="ItemTemplates\Code\Workflow Int Test\Definitions\CSharp.vstemplate" Name="CRM Workflow Integration Test" Description="Dynamics CRM Workflow Integration Test" ProjectType="CSharp" ProjectSubType="" />
+    <ItemTemplate Path="ItemTemplates\Code\Workflow NUnit Int Test\Definitions\CSharp.vstemplate" Name="CRM Workflow NUnit Integration Test" Description="Dynamics CRM Workflow NUnit Integration Test" ProjectType="CSharp" ProjectSubType="" />
     <ItemTemplate Path="ItemTemplates\Code\Workflow NUnit Test\Definitions\CSharp.vstemplate" Name="CRM Workflow NUnit Test" Description="Dynamics CRM Workflow NUnit Test" ProjectType="CSharp" ProjectSubType="" />
     <ItemTemplate Path="ItemTemplates\Code\Workflow Unit Test\Definitions\CSharp.vstemplate" Name="CRM Workflow Unit Test" Description="Dynamics CRM Workflow Unit Test" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Web\HTML Web Resource\Definitions\CSharp.vstemplate" Name="HTML Web Resource" Description="Dynamics CRM HTML Web Resource" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Web\JavaScript (Module) Web Resource\Definitions\CSharp.vstemplate" Name="JavaScript (Module) Web Resource" Description="Dynamics CRM JavaScript (Module) Web Resource" ProjectType="CSharp" ProjectSubType="" />
-    <ItemTemplate Path="ItemTemplates\Web\HTML Web Resource\Definitions\Web.csharp.vstemplate" Name="HTML Web Resource" Description="Dynamics CRM HTML Web Resource" ProjectType="Web" ProjectSubType="CSharp" />
-    <ItemTemplate Path="ItemTemplates\Web\JavaScript (Module) Web Resource\Definitions\Web.csharp.vstemplate" Name="JavaScript (Module) Web Resource" Description="Dynamics CRM JavaScript (Module) Web Resource" ProjectType="Web" ProjectSubType="CSharp" />
+    <ItemTemplate Path="ItemTemplates\Web\HTML Web\Definitions\CSharp.vstemplate" Name="HTML Web Resource" Description="Dynamics CRM HTML Web Resource" ProjectType="CSharp" ProjectSubType="" />
+    <ItemTemplate Path="ItemTemplates\Web\JavaScript Web\Definitions\CSharp.vstemplate" Name="JavaScript (Module) Web Resource" Description="Dynamics CRM JavaScript (Module) Web Resource" ProjectType="CSharp" ProjectSubType="" />
+    <ItemTemplate Path="ItemTemplates\Web\HTML Web\Definitions\Web.csharp.vstemplate" Name="HTML Web Resource" Description="Dynamics CRM HTML Web Resource" ProjectType="Web" ProjectSubType="CSharp" />
+    <ItemTemplate Path="ItemTemplates\Web\JavaScript Web\Definitions\Web.csharp.vstemplate" Name="JavaScript (Module) Web Resource" Description="Dynamics CRM JavaScript (Module) Web Resource" ProjectType="Web" ProjectSubType="CSharp" />
   </ItemTemplates>
   <ProjectTemplates>
     <ProjectTemplate Path="..\Project Templates\CRMSimpleConsole\_Definitions\_project.vstemplate.xml" Name="CRM Console Application" Description="Dynamics CRM Console Application" ProjectType="CSharp" ProjectSubType="" />
@@ -23,6 +23,7 @@
     <ProjectTemplate Path="..\Project Templates\CRMWebResourceProject\_Definitions\_project.vstemplate.xml" Name="CRM Web Resource Project" Description="Dynamics CRM Web Resource Project" ProjectType="CSharp" ProjectSubType="" />
     <ProjectTemplate Path="..\Project Templates\CRMWorkflowProject\_Definitions\_project.vstemplate.xml" Name="CRM Workflow Project" Description="Dynamics CRM Workflow Project" ProjectType="CSharp" ProjectSubType="" />
     <ProjectTemplate Path="..\Project Templates\CRMWorkflowUnitTestProject\_Definitions\_project.vstemplate.xml" Name="CRM Workflow Unit Test Project" Description="Dynamics CRM Workflow Unit Test Project" ProjectType="CSharp" ProjectSubType="" />
+    <ProjectTemplate Path="..\Project Templates\CRMTypeScriptProject\_Definitions\_project.vstemplate.xml" Name="CRM TypeScript Project" Description="Dynamics CRM TypeScript Project" ProjectType="TypeScript" ProjectSubType="" />
   </ProjectTemplates>
   <Snippets>
     <Snippet Title="Plug-in NUnit Integration Test" Description="Creates a Dynamics CRM plug-in NUnit integration test." Shortcut="CRMPluginNUT" Path="Snippets\CSharp\Dynamics CRM\CRMPluginNUnitIntegrationTest.snippet" />

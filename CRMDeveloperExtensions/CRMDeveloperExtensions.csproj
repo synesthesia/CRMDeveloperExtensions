@@ -289,6 +289,9 @@
     <TemplateReference Include="CRMSimpleConsole.csproj">
       <PathToProject>../Project%20Templates/CRMSimpleConsole/CRMSimpleConsole.csproj</PathToProject>
     </TemplateReference>
+    <TemplateReference Include="CRMTypeScriptProject.csproj">
+      <PathToProject>../Project%20Templates/CRMTypeScriptProject/CRMTypeScriptProject.csproj</PathToProject>
+    </TemplateReference>
     <TemplateReference Include="CRMWebResourceProject.csproj">
       <PathToProject>../Project%20Templates/CRMWebResourceProject/CRMWebResourceProject.csproj</PathToProject>
     </TemplateReference>

@@ -1,0 +1,21 @@
+﻿<Window x:Class="TemplateWizards.TypeScriptPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d"  Height="222" Width="300" d:DesignWidth="300" Background="White" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Title="CRM Developer Extensions">
+    <Grid Width="300">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="222"/>
+        </Grid.RowDefinitions>
+        <ComboBox Grid.Row="0" x:Name="SdkVersion" HorizontalAlignment="Left" Margin="50,52,0,0" VerticalAlignment="Top" Width="200" SelectedIndex="3" SelectedValuePath="Content">
+            <ComboBoxItem Content="CRM 2013 (6.X.X)"/>
+            <ComboBoxItem Content="CRM 2015 (7.0.X)"/>
+            <ComboBoxItem Content="CRM 2015 (7.1.X)" IsSelected="True"/>
+        </ComboBox>
+        <Label Grid.Row="0" Content="Choose The Target SDK Version" HorizontalAlignment="Left" Margin="50,17,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="200"/>
+        <Button x:Name="CreateTemplate" Content="Create Project" HorizontalAlignment="Left" Margin="50,150,0,0" VerticalAlignment="Top" Width="200" Click="CreateTemplate_Click"
+                Grid.Row="0" Height="22" />
+        <Image Grid.Row="0" HorizontalAlignment="Left" Height="32" Margin="10,10,0,0" VerticalAlignment="Top" Width="32" Source="Images/sw-file-icon.png"/>
+    </Grid>
+</Window>

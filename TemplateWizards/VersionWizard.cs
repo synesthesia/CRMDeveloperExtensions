@@ -50,6 +50,25 @@ namespace TemplateWizards
                     ReadWizardData(wizardData);
                 }
 
+                //Find default SDK version
+                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value;
+
+                //TypeScript projects
+                if (_crmProjectType == "TypeScript")
+                {
+                    Version version = Version.Parse(_dte.Version);
+                    if (version.Major < 12)
+                        throw new WizardBackoutException("TypeScript projects require Visual Studio 2013 or later");
+
+                    TypeScriptPicker tsPicker = new TypeScriptPicker(defaultSdkVersion);
+                    tsPicker.ShowDialog();
+
+                    _sdkVersion = tsPicker.Version;
+
+                    return;
+                }
+
                 //If UnitTest Item - load the assembly & class names from the referenced project into the picker
                 if (_isUnitTestItem == "True")
                 {
@@ -78,16 +97,16 @@ namespace TemplateWizards
                 if (_isUnitTest == "True")
                     projectItems = GetSourceProjects();
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
-                string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value;
-
                 //Display the form prompting for the SDK version and/or project to unit test against
-                var form = new SdkProjectPicker((_isUnitTest == "True"), projectItems, defaultSdkVersion);
-                form.ShowDialog();
+                if (_crmProjectType == "Plug-in" || _crmProjectType == "Workflow")
+                {
+                    var form = new SdkProjectPicker((_isUnitTest == "True"), projectItems, defaultSdkVersion);
+                    form.ShowDialog();
 
-                _sdkVersion = form.Version;
-                _project = form.Project;
-                _isNunit = form.Nunit;
+                    _sdkVersion = form.Version;
+                    _project = form.Project;
+                    _isNunit = form.Nunit;
+                }
 
                 //If UnitTest Project - set the reference to the project being tested
                 if (_isUnitTest == "True")
@@ -137,13 +156,89 @@ namespace TemplateWizards
 
         public void ProjectFinishedGenerating(Project project)
         {
+            var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
+            if (componentModel == null) return;
+
+            var installer = componentModel.GetService<IVsPackageInstaller>();
+
+            switch (_crmProjectType)
+            {
+                case "Plug-in":
+                case "Workflow":
+                    HandleCrmAssemblyProjects(project, installer);
+                    break;
+                case "TypeScript":
+                    HandleTypeScriptProject(project, installer);
+                    break;
+            }
+        }
+
+        private void HandleTypeScriptProject(Project project, IVsPackageInstaller installer)
+        {
             try
             {
-                var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
-                if (componentModel == null) return;
+                InstallPackage(installer, project, "xrm.TypeScript.DefinitelyTyped", null);
 
-                var installer = componentModel.GetService<IVsPackageInstaller>();
+                //Remove the files that don't match the selected version
+                ProjectItem scripts = project.ProjectItems.Item("Scripts");
+                ProjectItem typings = scripts.ProjectItems.Item("typings");
+                ProjectItem xrm = typings.ProjectItems.Item("xrm");
 
+                ProjectItem xrm6 = xrm.ProjectItems.Item("xrm-6.d.ts");
+                ProjectItem xrm70 = xrm.ProjectItems.Item("xrm-7.0.d.ts");
+                ProjectItem xrm71 = xrm.ProjectItems.Item("xrm.d.ts");
+                ProjectItem para = xrm.ProjectItems.Item("parature.d.ts");
+                string filename;
+
+                switch (_sdkVersion)
+                {
+                    case "CRM 2013 (6.0.X)":
+                        filename = xrm70.FileNames[0];
+                        xrm70.Remove();
+                        File.Delete(filename);
+
+                        filename = xrm71.FileNames[0];
+                        xrm71.Remove();
+                        File.Delete(filename);
+
+                        filename = para.FileNames[0];
+                        para.Remove();
+                        File.Delete(filename);
+                        break;
+                    case "CRM 2015 (7.0.X)":
+                        filename = xrm6.FileNames[0];
+                        xrm6.Remove();
+                        File.Delete(filename);
+
+                        filename = xrm71.FileNames[0];
+                        xrm71.Remove();
+                        File.Delete(filename);
+
+                        filename = para.FileNames[0];
+                        para.Remove();
+                        File.Delete(filename);
+                        break;
+                    case "CRM 2015 (7.1.X)":
+                        filename = xrm6.FileNames[0];
+                        xrm6.Remove();
+                        File.Delete(filename);
+
+                        filename = xrm70.FileNames[0];
+                        xrm70.Remove();
+                        File.Delete(filename);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Processing Template: " + ex.Message);
+            }
+        }
+
+        private void HandleCrmAssemblyProjects(Project project, IVsPackageInstaller installer)
+        {
+            try
+            {
                 //Install the proper NuGet packages based on the CRM SDK version and project types
                 switch (_sdkVersion)
                 {
