@@ -172,6 +172,7 @@ namespace CrmConnectionWindow
             switch (item.Content.ToString())
             {
                 case "Online using Office 365":
+                    Url.Text = "https://orgname.crm.dynamics.com";
                     UsernameLabel.Foreground = Brushes.Red;
                     PasswordLabel.Foreground = Brushes.Red;
                     Domain.IsEnabled = false;
@@ -180,6 +181,7 @@ namespace CrmConnectionWindow
                     Password.IsEnabled = true;
                     break;
                 case "On-premises with provided user credentials":
+                    Url.Text = "http://servername/orgname";
                     DomainLabel.Foreground = Brushes.Black;
                     UsernameLabel.Foreground = Brushes.Red;
                     PasswordLabel.Foreground = Brushes.Red;
@@ -188,6 +190,7 @@ namespace CrmConnectionWindow
                     Password.IsEnabled = true;
                     break;
                 case "On-premises using Windows integrated security":
+                    Url.Text = "http://servername/orgname";
                     DomainLabel.Foreground = Brushes.Black;
                     UsernameLabel.Foreground = Brushes.Black;
                     PasswordLabel.Foreground = Brushes.Black;
@@ -199,6 +202,7 @@ namespace CrmConnectionWindow
                     Password.Password = null;
                     break;
                 case "On-premises (IFD) with claims":
+                    Url.Text = "https://orgname.domain.com";
                     DomainLabel.Foreground = Brushes.Black;
                     UsernameLabel.Foreground = Brushes.Red;
                     PasswordLabel.Foreground = Brushes.Red;
