@@ -269,6 +269,8 @@ namespace WebResourceDeployer
             if (projectPath == null) return selectedConnection;
 
             var path = Path.GetDirectoryName(project.FullName);
+            if (!ConfigFileExists(project)) return null;
+
             XmlDocument doc = new XmlDocument();
             doc.Load(path + "\\CRMDeveloperExtensions.config");
 
