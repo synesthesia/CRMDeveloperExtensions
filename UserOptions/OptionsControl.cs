@@ -14,6 +14,7 @@ namespace UserOptions
         internal OptionPageCustom DefaultCrmSdkVersion;
         internal OptionPageCustom DefaultProjectKeyFileName;
         internal OptionPageCustom AllowPublishManagedWebResources;
+        internal OptionPageCustom AllowPublishManagedReports;
         internal OptionPageCustom UseDefaultWebBrowser;
         internal OptionPageCustom EnableCrmSdkSearch;
 
@@ -24,6 +25,7 @@ namespace UserOptions
                                                   : "CRM 2015 (7.1.X)");
             DefaultKeyFileName.Text = DefaultProjectKeyFileName.DefaultProjectKeyFileName;
             AllowPublishManaged.Checked = AllowPublishManagedWebResources.AllowPublishManagedWebResources;
+            AllowPublishManagedRpts.Checked = AllowPublishManagedReports.AllowPublishManagedReports;
             DefaultWebBrowser.Checked = UseDefaultWebBrowser.UseDefaultWebBrowser;
             EnableSdkSearch.Checked = EnableCrmSdkSearch.EnableCrmSdkSearch;
         }
@@ -83,6 +85,11 @@ namespace UserOptions
         private void EnableSdkSearch_CheckedChanged(object sender, EventArgs e)
         {
             EnableCrmSdkSearch.EnableCrmSdkSearch = EnableSdkSearch.Checked;
+        }
+
+        private void AllowPublishManagedRpts_CheckedChanged(object sender, EventArgs e)
+        {
+            AllowPublishManagedReports.AllowPublishManagedReports = AllowPublishManagedRpts.Checked;
         }
     }
 }

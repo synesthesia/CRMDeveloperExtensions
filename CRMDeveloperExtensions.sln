@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginDeployer", "PluginDep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMTypeScriptProject", "Project Templates\CRMTypeScriptProject\CRMTypeScriptProject.csproj", "{EBC4B023-F605-41F0-AA56-7844BCA0B3CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportDeployer", "ReportDeployer\ReportDeployer.csproj", "{484F86E5-C669-4ADF-8883-A2C46DFA727B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +100,10 @@ Global
 		{910BCD37-04C5-480F-8A22-D7518C42C3BE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EBC4B023-F605-41F0-AA56-7844BCA0B3CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EBC4B023-F605-41F0-AA56-7844BCA0B3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

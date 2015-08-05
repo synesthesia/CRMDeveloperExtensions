@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.Shell;
-using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -46,6 +45,7 @@ namespace UserOptions
         }
 
         public bool AllowPublishManagedWebResources { get; set; }
+        public bool AllowPublishManagedReports { get; set; }
         public bool UseDefaultWebBrowser { get; set; }
 
         [Browsable(false)]
@@ -59,6 +59,7 @@ namespace UserOptions
                     DefaultCrmSdkVersion = this,
                     DefaultProjectKeyFileName = this,
                     AllowPublishManagedWebResources = this,
+                    AllowPublishManagedReports = this,
                     UseDefaultWebBrowser = this,
                     EnableCrmSdkSearch = this
                 };
