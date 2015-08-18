@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMDeveloperExtensions", "C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateWizards", "TemplateWizards\TemplateWizards.csproj", "{4F1D342A-3F47-485C-888F-B85E54A8662B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateMenuCommands", "TemplateMenuCommands\TemplateMenuCommands.csproj", "{3BBF0AA0-B8E1-489D-B155-DA570E1B8433}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserOptions", "UserOptions\UserOptions.csproj", "{75D1747A-598A-48F9-927C-381BEDC355E6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Templates", "Project Templates", "{03259B5D-4711-48F0-A39F-1F8B28418D0A}"
@@ -54,10 +52,6 @@ Global
 		{4F1D342A-3F47-485C-888F-B85E54A8662B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F1D342A-3F47-485C-888F-B85E54A8662B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F1D342A-3F47-485C-888F-B85E54A8662B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3BBF0AA0-B8E1-489D-B155-DA570E1B8433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BBF0AA0-B8E1-489D-B155-DA570E1B8433}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3BBF0AA0-B8E1-489D-B155-DA570E1B8433}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BBF0AA0-B8E1-489D-B155-DA570E1B8433}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75D1747A-598A-48F9-927C-381BEDC355E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75D1747A-598A-48F9-927C-381BEDC355E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75D1747A-598A-48F9-927C-381BEDC355E6}.Release|Any CPU.ActiveCfg = Release|Any CPU

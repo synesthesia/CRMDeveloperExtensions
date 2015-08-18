@@ -5,10 +5,6 @@
   <Commands package="guidWebResourceDeployerPkg">
     <Groups>
 
-      <Group guid="guidWebResourceDeployerCmdSet" id="ProjectMenuGroup" priority="0xFFFF">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
-      </Group>
-
       <Group guid="guidItemMenuCommandsCmdSet" id="ItemMenuGroup" priority="0xFFFF">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
       </Group>
@@ -20,16 +16,6 @@
     </Groups>
 
     <Buttons>
-
-      <Button guid="guidWebResourceDeployerCmdSet" id="cmdidWebResourceDeployerWindow" priority="0xFFFF" type="Button">
-        <Parent guid="guidWebResourceDeployerCmdSet" id="ProjectMenuGroup"/>
-        <Icon guid="guidImages" id="bmpPic1" />
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <CommandFlag>TextChanges</CommandFlag>
-        <Strings>
-          <ButtonText>CRM Web Resource Deployer</ButtonText>
-        </Strings>
-      </Button>
 
       <Button guid="guidItemMenuCommandsCmdSet" id="cmdidWebResourceDeployerPublish" priority="0xFFFF" type="Button">
         <Parent guid="guidItemMenuCommandsCmdSet" id="ItemMenuGroup" />
@@ -77,14 +63,9 @@
 
   <Symbols>
 
-    <GuidSymbol name="guidWebResourceDeployerPkg" value="{e42f2686-2a9b-40c1-8d13-9ab90d3b951d}" />
+    <GuidSymbol name="guidWebResourceDeployerPkg" value="{E42F2686-2A9B-40C1-8D13-9AB90D3B951D}" />
     <GuidSymbol name="guidMenuCommandsPkg" value="{67F5E05C-872F-4637-A050-F0C66252CEC2}" />
     <GuidSymbol name="GuidEditorCommandsPkgString" value="{2723E9D7-8962-4F84-AA37-8AE4EC58F04E}" />
-
-    <GuidSymbol name="guidWebResourceDeployerCmdSet" value="{86128e89-8a56-4a17-9029-a75379a89b9f}">
-      <IDSymbol name="ProjectMenuGroup" value="0x1020" />
-      <IDSymbol name="cmdidWebResourceDeployerWindow" value="0x0101" />
-    </GuidSymbol>
 
     <GuidSymbol name ="guidItemMenuCommandsCmdSet" value="{44EC1EE2-36CB-4D17-B951-896254C73D35}">
       <IDSymbol name="ItemMenuGroup" value="0x1020" />

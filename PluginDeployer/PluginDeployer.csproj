@@ -28,6 +28,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DeployExtension>False</DeployExtension>
+    <CreateVsixContainer>False</CreateVsixContainer>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -185,22 +187,22 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Guids.cs" />
     <Compile Include="Models\AssemblyItem.cs" />
     <Compile Include="Models\CrmConn.cs" />
+    <Compile Include="PkgCmdID.cs" />
+    <Compile Include="PluginDeployerPackage.cs" />
     <Compile Include="PluginList.xaml.cs">
       <DependentUpon>PluginList.xaml</DependentUpon>
     </Compile>
     <Compile Include="PluginWindow.cs" />
-    <Compile Include="Guids.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="PluginDeployerPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PkgCmdID.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -223,11 +225,6 @@
     <None Include="Key.snk" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="PluginDeployer.vsct">
-      <ResourceName>Menus.ctmenu</ResourceName>
-    </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +235,7 @@
     <Resource Include="Resources\info-24.png" />
     <Resource Include="Resources\minus-24.png" />
     <Resource Include="Resources\connected-24.png" />
+    <Content Include="PluginDeployer.vsct" />
     <Content Include="Resources\Package.ico" />
   </ItemGroup>
   <ItemGroup>
