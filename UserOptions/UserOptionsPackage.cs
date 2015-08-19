@@ -46,6 +46,7 @@ namespace UserOptions
         public bool AllowPublishManagedWebResources { get; set; }
         public bool AllowPublishManagedReports { get; set; }
         public bool UseDefaultWebBrowser { get; set; }
+        public string RegistrationToolPath { get; set; }
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -60,7 +61,8 @@ namespace UserOptions
                     AllowPublishManagedWebResources = this,
                     AllowPublishManagedReports = this,
                     UseDefaultWebBrowser = this,
-                    EnableCrmSdkSearch = this
+                    EnableCrmSdkSearch = this,
+                    RegistraionToolPath = this
                 };
                 page.Initialize();
                 return page;

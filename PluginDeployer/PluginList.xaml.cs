@@ -1055,5 +1055,29 @@ namespace PluginDeployer
                     _dte.ItemOperations.Navigate(baseUrl + url);
             }
         }
+
+        private void RegistrationTool_OnClick(object sender, RoutedEventArgs e)
+        {
+            var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+            string prtPath = (string)props.Item("RegistrationToolPath").Value;
+
+            if (string.IsNullOrEmpty(prtPath))
+            {
+                MessageBox.Show("Set Plug-in Registraion Tool path under Tools -> Options -> CRM Developer Extensions");
+                return;
+            }
+
+            if (!prtPath.EndsWith("\\"))
+                prtPath += "\\";
+
+            try
+            {
+                System.Diagnostics.Process.Start(prtPath + "PluginRegistration.exe");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error launching Plug-in Registration Tool: " + Environment.NewLine + Environment.NewLine + ex.Message);
+            }
+        }
     }
 }

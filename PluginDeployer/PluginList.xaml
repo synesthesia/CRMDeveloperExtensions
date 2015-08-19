@@ -58,6 +58,11 @@
                     <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
                         <Image Source="Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
                     </Button>
+                    <Button x:Name="RegistrationTool" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="RegistrationTool_OnClick" Background="White">
+                        <Image Source="Resources/registrationtool_24.jpg" Width="24" Height="24" ToolTip="Launch Plug-in Registrion Tool"></Image>
+                    </Button>
+                    <TextBlock Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" 
+                               Text="Use SDK Plug-in Registration Tool for initial deployment and step/image management" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Assembly</Label>

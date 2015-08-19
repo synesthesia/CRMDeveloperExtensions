@@ -17,6 +17,7 @@ namespace UserOptions
         internal OptionPageCustom AllowPublishManagedReports;
         internal OptionPageCustom UseDefaultWebBrowser;
         internal OptionPageCustom EnableCrmSdkSearch;
+        internal OptionPageCustom RegistraionToolPath;
 
         public void Initialize()
         {
@@ -28,6 +29,7 @@ namespace UserOptions
             AllowPublishManagedRpts.Checked = AllowPublishManagedReports.AllowPublishManagedReports;
             DefaultWebBrowser.Checked = UseDefaultWebBrowser.UseDefaultWebBrowser;
             EnableSdkSearch.Checked = EnableCrmSdkSearch.EnableCrmSdkSearch;
+            PrtName.Text = RegistraionToolPath.RegistrationToolPath;
         }
 
         private void DefaultSdkVersion_SelectedIndexChanged(object sender, EventArgs e)
@@ -90,6 +92,25 @@ namespace UserOptions
         private void AllowPublishManagedRpts_CheckedChanged(object sender, EventArgs e)
         {
             AllowPublishManagedReports.AllowPublishManagedReports = AllowPublishManagedRpts.Checked;
+        }
+
+        private void PrtName_TextChanged(object sender, EventArgs e)
+        {
+            string path = PrtName.Text.Trim();
+
+            if (string.IsNullOrEmpty(path))
+            {
+                RegistraionToolPath.RegistrationToolPath = null;
+                return;
+            }
+
+            if (path.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase))
+                path = Path.GetDirectoryName(path);
+
+            if (path != null && !path.EndsWith("\\"))
+                path += "\\";
+
+            RegistraionToolPath.RegistrationToolPath = path;
         }
     }
 }

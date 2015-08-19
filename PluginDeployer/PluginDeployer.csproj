@@ -228,6 +228,7 @@
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\registrationtool_24.jpg" />
     <Resource Include="Resources\solutions_24.png" />
     <Resource Include="Resources\customizations_24.png" />
     <Resource Include="Resources\settings-24.png" />
