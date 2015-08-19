@@ -769,8 +769,18 @@ namespace PluginDeployer
                     AssemblyId = entity.Id,
                     Name = entity.GetAttributeValue<string>("name"),
                     Version = Version.Parse(entity.GetAttributeValue<string>("version")),
-                    DisplayName = entity.GetAttributeValue<string>("name") + " (" + entity.GetAttributeValue<string>("version") + ")"
+                    DisplayName = entity.GetAttributeValue<string>("name") + " (" + entity.GetAttributeValue<string>("version") + ")",
+                    IsWorkflowActivity = false
                 };
+
+                //Only need to process the 1st assembly/type combination returned 
+                if (assemblies.Count(a => a.AssemblyId == aItem.AssemblyId) > 0)
+                    continue;
+
+                if (entity.Contains("plugintype.isworkflowactivity"))
+                    aItem.IsWorkflowActivity = (bool)entity.GetAttributeValue<AliasedValue>("plugintype.isworkflowactivity").Value;
+
+                aItem.DisplayName += (aItem.IsWorkflowActivity) ? " [Workflow]" : " [Plug-in]";
 
                 assemblies.Add(aItem);
             }
@@ -792,6 +802,31 @@ namespace PluginDeployer
             {
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
+                    //QueryExpression query = new QueryExpression
+                    //{
+                    //    EntityName = "pluginassembly",
+                    //    ColumnSet = new ColumnSet("name", "version"),
+                    //    Criteria = new FilterExpression
+                    //    {
+                    //        Conditions =
+                    //    {
+                    //        new ConditionExpression
+                    //        {
+                    //            AttributeName = "ismanaged",
+                    //            Operator = ConditionOperator.Equal,
+                    //            Values = { false }
+                    //        }
+                    //    }
+                    //    },
+                    //    Orders =
+                    //    {
+                    //        new OrderExpression
+                    //        {
+                    //            AttributeName = "name",
+                    //            OrderType = OrderType.Ascending
+                    //        }
+                    //    }
+                    //};
                     QueryExpression query = new QueryExpression
                     {
                         EntityName = "pluginassembly",
@@ -808,6 +843,19 @@ namespace PluginDeployer
 							}
 						}
                         },
+                        LinkEntities =
+					{
+						new LinkEntity
+						{
+							Columns = new ColumnSet("isworkflowactivity"),
+							LinkFromEntityName = "pluginassembly",
+							LinkFromAttributeName = "pluginassemblyid",
+							LinkToEntityName = "plugintype",
+							LinkToAttributeName = "pluginassemblyid",
+							EntityAlias = "plugintype",
+							JoinOperator = JoinOperator.LeftOuter
+						}
+					},
                         Orders =
 					{
 						new OrderExpression

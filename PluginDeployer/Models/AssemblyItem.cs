@@ -22,6 +22,7 @@ namespace PluginDeployer.Models
         public Guid AssemblyId { get; set; }
         public string BoundProject { get; set; }
         public Version Version { get; set; }
+        public bool IsWorkflowActivity { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
