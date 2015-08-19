@@ -58,6 +58,8 @@ namespace TemplateWizards
 
                 if (SdkVersion.SelectedItem == null)
                     SdkVersion.SelectedIndex = SdkVersion.Items.Count - 1;
+
+                CreateTemplate.Focus();
             }
             else
             {
@@ -73,6 +75,7 @@ namespace TemplateWizards
 
                     SdkVersion.SelectedItem = item;
                     SdkVersion.IsEnabled = false;
+                    CreateTemplate.Focus();
                     break;
                 }
             }
