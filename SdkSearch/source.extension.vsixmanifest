@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="2eadb1a7-6db7-4a47-944c-531ff71355f2" Version="1.0" Language="en-US" Publisher="CRM Developer Extensions" />
+    <Identity Id="2eadb1a7-6db7-4a47-944c-531ff71355f2" Version="1.0.0.0" Language="en-US" Publisher="CRM Developer Extensions" />
     <DisplayName>SdkSearch</DisplayName>
-    <Description>Searches the Dynamics CRM SDK</Description>
+    <Description xml:space="preserve">Searches the Dynamics CRM SDK</Description>
   </Metadata>
   <Installation InstalledByMsi="false">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[12.0]" />

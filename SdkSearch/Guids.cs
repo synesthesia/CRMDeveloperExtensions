@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CRMDeveloperExtensions.SdkSearch
+namespace SdkSearch
 {
     static class GuidList
     {

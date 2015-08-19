@@ -89,11 +89,6 @@
     <Compile Include="ItemTemplates\Code\Workflow Unit Test\UnitTest1.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VSPackage.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VSPackage.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -394,6 +389,7 @@
     </Content>
     <Resource Include="Resources\menu.png" />
     <Resource Include="Resources\sw-file-icon.png" />
+    <Content Include="Resources\icon.ico" />
     <Content Include="Resources\Plugin_16.png" />
     <Content Include="Resources\Report_16.png" />
     <Content Include="Resources\WebResource_16.png" />
@@ -473,9 +469,7 @@
   <ItemGroup>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
-      <Generator>ResXFileCodeGenerator</Generator>
       <ManifestResourceName>VSPackage</ManifestResourceName>
-      <LastGenOutput>VSPackage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

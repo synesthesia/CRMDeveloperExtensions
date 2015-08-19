@@ -236,7 +236,6 @@
     <Resource Include="Resources\minus-24.png" />
     <Resource Include="Resources\connected-24.png" />
     <Content Include="PluginDeployer.vsct" />
-    <Content Include="Resources\Package.ico" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="PluginList.xaml">

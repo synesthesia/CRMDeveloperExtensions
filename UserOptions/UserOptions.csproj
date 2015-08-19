@@ -163,10 +163,12 @@
     <None Include="Key.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Package.ico" />
     <Content Include="snippets.pkgdef">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>

@@ -5,9 +5,8 @@ using System.Windows.Forms;
 
 namespace UserOptions
 {
-
-    [PackageRegistration(UseManagedResourcesOnly = true), InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400),
-        ProvideMenuResource("Menus.ctmenu", 1), Guid(GuidList.GuidUserOptionsPkgString)]
+    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [ProvideMenuResource("Menus.ctmenu", 1), Guid(GuidList.GuidUserOptionsPkgString)]
     [ProvideOptionPage(typeof(OptionPageCustom), "CRM Developer Extensions", "Settings", 0, 0, true)]
     public sealed class UserOptionsPackage : Package
     {

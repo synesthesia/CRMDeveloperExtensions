@@ -1,6 +1,6 @@
-﻿namespace CRMDeveloperExtensions.SdkSearch
+﻿namespace SdkSearch
 {
-    static class PkgCmdIDList
+    static class PkgCmdIdList
     {
         public const uint CmdidCrmSdkSearch = 0x100;
     };

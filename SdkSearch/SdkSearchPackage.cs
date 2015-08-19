@@ -5,10 +5,9 @@ using System.ComponentModel.Design;
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace CRMDeveloperExtensions.SdkSearch
+namespace SdkSearch
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(GuidList.GuidSdkSearchPkgString)]
     [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
@@ -29,7 +28,7 @@ namespace CRMDeveloperExtensions.SdkSearch
             if (mcs != null)
             {
                 // Create the command for the menu item.
-                CommandID sdkSearchCommandId = new CommandID(GuidList.GuidSdkSearchCmdSet, (int)PkgCmdIDList.CmdidCrmSdkSearch);
+                CommandID sdkSearchCommandId = new CommandID(GuidList.GuidSdkSearchCmdSet, (int)PkgCmdIdList.CmdidCrmSdkSearch);
                 OleMenuCommand sdkSearchMenuItem = new OleMenuCommand(SearchMenuItemCallback, sdkSearchCommandId);
                 sdkSearchMenuItem.BeforeQueryStatus += SdkSearch_BeforeQueryStatus;
                 sdkSearchMenuItem.Visible = false;
