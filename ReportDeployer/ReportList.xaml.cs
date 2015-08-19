@@ -36,17 +36,12 @@ namespace ReportDeployer
         private readonly DTE _dte;
         private readonly Solution _solution;
         private readonly Events _events;
-        //private readonly Events2 _events2;
         private readonly SolutionEvents _solutionEvents;
-        //private readonly ProjectItemsEvents _projectItemsEvents;
         private Projects _projects;
         private VsSolutionEvents _vsSolutionEvents;
         private readonly IVsSolution _vsSolution;
         private uint _solutionEventsCookie;
 
-        //private List<ReportItem> _movedReportItems;
-        //private List<string> _movedBoundFiles;
-        //private uint _movedItemid;
         private CrmConn _selectedConn;
         private Project _selectedProject;
         private bool _projectEventsRegistered;
@@ -77,10 +72,6 @@ namespace ReportDeployer
             _solutionEvents.ProjectAdded += SolutionProjectAdded;
             _solutionEvents.ProjectRemoved += SolutionProjectRemoved;
             _solutionEvents.ProjectRenamed += SolutionProjectRenamed;
-
-            //_events2 = (Events2)_dte.Events;
-            //_projectItemsEvents = _events2.ProjectItemsEvents;
-            //_projectItemsEvents.ItemRenamed += ProjectItemRenamed;
 
             _vsSolutionEvents = new VsSolutionEvents(this);
             _vsSolution = (IVsSolution)ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution));
@@ -218,8 +209,6 @@ namespace ReportDeployer
                 {
                     if (!string.IsNullOrEmpty(reportItem.BoundFile) && reportItem.BoundFile == name)
                     {
-                        //_movedReportItems = new List<ReportItem> { reportItem };
-                        //_movedItemid = itemid;
                         reportItem.BoundFile = null;
                         reportItem.Publish = false;
                     }
@@ -274,17 +263,6 @@ namespace ReportDeployer
                     reportItem.BoundFile = boundFile;
                     reportItem.Publish = publish;
                 }
-
-                ////Item was moved inside the project
-                //if (itemid == _movedItemid)
-                //{
-                //    foreach (ReportItem reportItem in _movedReportItems)
-                //    {
-                //        var boundName = fullname.Replace(projectPath, String.Empty).Replace("\\", "/");
-                //        reportItem.BoundFile = boundName;
-                //    }
-                //    _movedItemid = 0;
-                //}
             }
         }
 
@@ -1049,14 +1027,8 @@ namespace ReportDeployer
                     {
                         uint itemId;
                         if (projectHierarchy.ParseCanonicalName(path, out itemId) == VSConstants.S_OK)
-                        {
-                            //MessageBox.Show("File: " + fileFullName + "\r\n" + "Item Id: 0x" + itemId.ToString("X"));
                             ProjectItemAdded(projectItem, itemId);
-
-                        }
                     }
-
-                    //ProjectItemAdded(projectItem, uint.MaxValue);
 
                     var fullname = projectItem.FileNames[1];
                     var projectPath = Path.GetDirectoryName(projectItem.ContainingProject.FullName);
@@ -1103,8 +1075,6 @@ namespace ReportDeployer
         {
             List<ReportItem> items = (List<ReportItem>)ReportGrid.ItemsSource;
             List<ReportItem> selectedItems = items.Where(w => w.Publish).ToList();
-
-            //projectItem.IsDirty throws a not implemented exception for a .rdl file
 
             UpdateReports(selectedItems);
         }
@@ -1481,26 +1451,9 @@ namespace ReportDeployer
             if (button.Name == "RunReport")
                 page = "viewer/viewer.aspx";
 
-            if (_selectedConn == null) return;
-            string connString = _selectedConn.ConnectionString;
-            if (string.IsNullOrEmpty(connString)) return;
+            Guid reportId = new Guid(((Button)sender).CommandParameter.ToString());
 
-            string[] connParts = connString.Split(';');
-            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
-            if (!string.IsNullOrEmpty(urlPart))
-            {
-                string[] urlParts = urlPart.Split('=');
-                Guid reportId = new Guid(((Button)sender).CommandParameter.ToString());
-                string url = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
-
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
-                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
-
-                if (useDefaultWebBrowser) //User's default browser
-                    System.Diagnostics.Process.Start(url + "crmreports/" + page + "?id=%7b" + reportId + "%7d");
-                else //Internal VS browser
-                    _dte.ItemOperations.Navigate(url + "crmreports/" + page + "?id=%7b" + reportId + "%7d");
-            }
+            OpenCrmPage("crmreports/" + page + "?id=%7b" + reportId + "%7d");
         }
 
         private void ShowManaged_Checked(object sender, RoutedEventArgs e)
