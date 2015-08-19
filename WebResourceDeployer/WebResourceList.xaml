@@ -71,6 +71,12 @@
                 <Button x:Name="AddWebResource" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="AddWebResource_Click" IsEnabled="False" Background="White">
                     <Image Source="Resources/plus-24.png" Width="24" Height="24" ToolTip="New Web Resource From File"></Image>
                 </Button>
+                <Button x:Name="Customizations" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Customizations_OnClick" IsEnabled="False" Background="White">
+                    <Image Source="Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
+                </Button>
+                <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
+                    <Image Source="Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
+                </Button>
                 <TextBlock x:Name="ItemCount" Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
             </StackPanel>
             <DataGrid x:Name="WebResourceGrid" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" Margin="5,37,0,0" VerticalContentAlignment="Stretch" 

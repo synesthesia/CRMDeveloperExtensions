@@ -288,7 +288,12 @@
       <Name>OutputLogger</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\customizations_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\solutions_24.png" />
+  </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>

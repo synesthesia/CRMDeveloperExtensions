@@ -334,6 +334,9 @@ namespace ReportDeployer
                     Connections.IsEnabled = false;
                     AddConnection.IsEnabled = false;
                     Publish.IsEnabled = false;
+                    Customizations.IsEnabled = false;
+                    Reports.IsEnabled = false;
+                    Solutions.IsEnabled = false;
                     AddReport.IsEnabled = false;
                 }
             }
@@ -384,6 +387,9 @@ namespace ReportDeployer
             Projects.IsEnabled = false;
             AddConnection.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Reports.IsEnabled = false;
+            Solutions.IsEnabled = false;
             AddReport.IsEnabled = false;
         }
 
@@ -399,6 +405,9 @@ namespace ReportDeployer
                 CreateConfigFile(_selectedProject);
 
             Expander.IsExpanded = false;
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            Reports.IsEnabled = true;
 
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
             if (!change) return;
@@ -646,6 +655,9 @@ namespace ReportDeployer
             GetReports(connString);
 
             Expander.IsExpanded = false;
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            Reports.IsEnabled = true;
         }
 
         private async void GetReports(string connString)
@@ -1280,6 +1292,9 @@ namespace ReportDeployer
             ReportGrid.ItemsSource = null;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
+            Reports.IsEnabled = false;
             AddReport.IsEnabled = false;
             ReportGrid.IsEnabled = false;
         }
@@ -1332,6 +1347,9 @@ namespace ReportDeployer
             ReportGrid.ItemsSource = null;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
+            Reports.IsEnabled = false;
             AddReport.IsEnabled = false;
             ReportGrid.IsEnabled = false;
 
@@ -1442,6 +1460,9 @@ namespace ReportDeployer
                 ReportGrid.ItemsSource = null;
                 ShowManaged.IsEnabled = false;
                 Publish.IsEnabled = false;
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                Reports.IsEnabled = false;
                 AddReport.IsEnabled = false;
                 ReportGrid.IsEnabled = false;
 
@@ -1624,6 +1645,44 @@ namespace ReportDeployer
                 items.AddRange(GetRdlFiles(pi.ProjectItems));
             }
             return items.ToArray();
+        }
+
+        private void Customizations_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d");
+        }
+
+        private void Solutions_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution");
+        }
+
+        private void Reports_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenCrmPage("main.aspx?area=nav_reports&etc=9100&page=CS&pageType=EntityList&web=false");
+        }
+
+        private void OpenCrmPage(string url)
+        {
+            if (_selectedConn == null) return;
+            string connString = _selectedConn.ConnectionString;
+            if (string.IsNullOrEmpty(connString)) return;
+
+            string[] connParts = connString.Split(';');
+            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
+            if (!string.IsNullOrEmpty(urlPart))
+            {
+                string[] urlParts = urlPart.Split('=');
+                string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
+
+                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
+
+                if (useDefaultWebBrowser) //User's default browser
+                    System.Diagnostics.Process.Start(baseUrl + url);
+                else //Internal VS browser
+                    _dte.ItemOperations.Navigate(baseUrl + url);
+            }
         }
     }
 }

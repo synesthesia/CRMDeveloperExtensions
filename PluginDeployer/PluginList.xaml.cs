@@ -66,6 +66,8 @@ namespace PluginDeployer
             if (_solution.Count == 0) return;
 
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
             Assemblies.IsEnabled = false;
             Assemblies.ItemsSource = null;
 
@@ -160,6 +162,8 @@ namespace PluginDeployer
             }
 
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
             Assemblies.IsEnabled = false;
         }
 
@@ -215,6 +219,8 @@ namespace PluginDeployer
                 CreateConfigFile(_selectedProject);
 
             Expander.IsExpanded = false;
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
 
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
             if (!change) return;
@@ -429,6 +435,8 @@ namespace PluginDeployer
                 }
 
                 Publish.IsEnabled = false;
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
                 Assemblies.IsEnabled = false;
 
                 GetConnections();
@@ -450,6 +458,8 @@ namespace PluginDeployer
             GetPlugins(connString);
 
             Expander.IsExpanded = false;
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
         }
 
         private void Info_OnClick(object sender, RoutedEventArgs e)
@@ -630,6 +640,8 @@ namespace PluginDeployer
             Projects.IsEnabled = false;
             AddConnection.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
         }
 
         private void SolutionProjectAdded(Project project)
@@ -680,6 +692,8 @@ namespace PluginDeployer
                     Connections.IsEnabled = false;
                     AddConnection.IsEnabled = false;
                     Publish.IsEnabled = false;
+                    Customizations.IsEnabled = false;
+                    Solutions.IsEnabled = false;
                 }
             }
 
@@ -1006,6 +1020,39 @@ namespace PluginDeployer
             catch (Exception ex)
             {
                 _logger.WriteToOutputWindow("Error Updating Mappings In Config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
+            }
+        }
+
+        private void Customizations_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d");
+        }
+
+        private void Solutions_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution");
+        }
+
+        private void OpenCrmPage(string url)
+        {
+            if (_selectedConn == null) return;
+            string connString = _selectedConn.ConnectionString;
+            if (string.IsNullOrEmpty(connString)) return;
+
+            string[] connParts = connString.Split(';');
+            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
+            if (!string.IsNullOrEmpty(urlPart))
+            {
+                string[] urlParts = urlPart.Split('=');
+                string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
+
+                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
+
+                if (useDefaultWebBrowser) //User's default browser
+                    System.Diagnostics.Process.Start(baseUrl + url);
+                else //Internal VS browser
+                    _dte.ItemOperations.Navigate(baseUrl + url);
             }
         }
     }

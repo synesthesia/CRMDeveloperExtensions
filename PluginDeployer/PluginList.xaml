@@ -52,6 +52,12 @@
                     <Button x:Name="Publish" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Publish_Click" IsEnabled="False" Background="White">
                         <Image Source="Resources/publish-24.png" Width="24" Height="24" ToolTip="Build And Deploy To CRM"></Image>
                     </Button>
+                    <Button x:Name="Customizations" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Customizations_OnClick" IsEnabled="False" Background="White">
+                        <Image Source="Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
+                    </Button>
+                    <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
+                        <Image Source="Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
+                    </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Assembly</Label>

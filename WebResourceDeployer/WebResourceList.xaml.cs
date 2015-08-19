@@ -401,6 +401,8 @@ namespace WebResourceDeployer
                     Connections.IsEnabled = false;
                     AddConnection.IsEnabled = false;
                     Publish.IsEnabled = false;
+                    Customizations.IsEnabled = false;
+                    Solutions.IsEnabled = false;
                     AddWebResource.IsEnabled = false;
                 }
             }
@@ -451,6 +453,8 @@ namespace WebResourceDeployer
             Projects.IsEnabled = false;
             AddConnection.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
             AddWebResource.IsEnabled = false;
         }
 
@@ -466,6 +470,8 @@ namespace WebResourceDeployer
                 CreateConfigFile(_selectedProject);
 
             Expander.IsExpanded = false;
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
 
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
             if (!change) return;
@@ -773,6 +779,8 @@ namespace WebResourceDeployer
             GetWebResources(connString);
 
             Expander.IsExpanded = false;
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
         }
 
         private async void GetWebResources(string connString)
@@ -1510,6 +1518,8 @@ namespace WebResourceDeployer
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
         }
@@ -1568,6 +1578,8 @@ namespace WebResourceDeployer
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
 
@@ -1679,6 +1691,8 @@ namespace WebResourceDeployer
                 WebResourceType.IsEnabled = false;
                 ShowManaged.IsEnabled = false;
                 Publish.IsEnabled = false;
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
                 AddWebResource.IsEnabled = false;
                 WebResourceGrid.IsEnabled = false;
 
@@ -1692,26 +1706,9 @@ namespace WebResourceDeployer
 
         private void OpenWebResource_OnClick(object sender, RoutedEventArgs e)
         {
-            if (_selectedConn == null) return;
-            string connString = _selectedConn.ConnectionString;
-            if (string.IsNullOrEmpty(connString)) return;
+            Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
 
-            string[] connParts = connString.Split(';');
-            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
-            if (!string.IsNullOrEmpty(urlPart))
-            {
-                string[] urlParts = urlPart.Split('=');
-                Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
-                string url = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
-
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
-                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
-
-                if (useDefaultWebBrowser) //User's default browser
-                    System.Diagnostics.Process.Start(url + "main.aspx?etc=9333&id=%7b" + webResourceId + "%7d&pagetype=webresourceedit");
-                else //Internal VS browser
-                    _dte.ItemOperations.Navigate(url + "main.aspx?etc=9333&id=%7b" + webResourceId + "%7d&pagetype=webresourceedit");
-            }
+            OpenCrmPage("main.aspx?etc=9333&id=%7b" + webResourceId + "%7d&pagetype=webresourceedit");
         }
 
         private void ShowManaged_Checked(object sender, RoutedEventArgs e)
@@ -1909,6 +1906,40 @@ namespace WebResourceDeployer
                 UpdateAllPublishChecks(true);
             else
                 UpdateAllPublishChecks(false);
+        }
+
+        private void Customizations_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d");
+        }
+
+        private void Solutions_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution");
+        }
+
+        private void OpenCrmPage(string url)
+        {
+            if (_selectedConn == null) return;
+            string connString = _selectedConn.ConnectionString;
+            if (string.IsNullOrEmpty(connString)) return;
+
+            string[] connParts = connString.Split(';');
+            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
+            if (!string.IsNullOrEmpty(urlPart))
+            {
+                string[] urlParts = urlPart.Split('=');
+                string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
+
+                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
+
+                if (useDefaultWebBrowser) //User's default browser
+                    System.Diagnostics.Process.Start(baseUrl + url);
+                else //Internal VS browser
+                    _dte.ItemOperations.Navigate(baseUrl + url);
+            }
         }
     }
 }

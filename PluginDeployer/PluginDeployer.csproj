@@ -228,6 +228,8 @@
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\solutions_24.png" />
+    <Resource Include="Resources\customizations_24.png" />
     <Resource Include="Resources\settings-24.png" />
     <Resource Include="Resources\plus-24.png" />
     <Resource Include="Resources\sw-file-icon_16.png" />

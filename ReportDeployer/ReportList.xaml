@@ -59,6 +59,15 @@
                 <Button x:Name="DeleteCache" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="DeleteCache_OnClick" Background="White">
                     <Image Source="Resources/deletecache-24.png" Width="24" Height="24" ToolTip="Delete Dataset Cache Files"></Image>
                 </Button>
+                <Button x:Name="Customizations" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Customizations_OnClick" IsEnabled="False" Background="White">
+                    <Image Source="Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
+                </Button>
+                <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
+                    <Image Source="Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
+                </Button>
+                <Button x:Name="Reports" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Reports_OnClick" IsEnabled="False" Background="White">
+                    <Image Source="Resources/reports_24.png" Width="24" Height="24" ToolTip="Open CRM Reports Page"></Image>
+                </Button>
                 <TextBlock x:Name="ItemCount" Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
             </StackPanel>
             <DataGrid x:Name="ReportGrid" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" Margin="5,37,0,0" VerticalContentAlignment="Stretch" 
