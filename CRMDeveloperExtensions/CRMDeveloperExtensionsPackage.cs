@@ -55,19 +55,16 @@ namespace CRMDeveloperExtensions
             mcs.AddCommand(pluginMenuItem3);
 
             //Web Resource Deployer
-            //CommandID wrdWindowCommandId = new CommandID(GuidList.GuidWebResourceDeployerCmdSet, (int)PkgCmdIdList.CmdidWebResourceDeployerWindow);
             CommandID wrdWindowCommandId = new CommandID(GuidList.GuidCrmDevExCmdSet, (int)PkgCmdIdList.CmdidWebResourceDeployerWindow);
             OleMenuCommand wrdWindowItem = new OleMenuCommand(ShowWrdToolWindow, wrdWindowCommandId);
             mcs.AddCommand(wrdWindowItem);
 
             //Report Deployer
-            //CommandID reportWindowCommandId = new CommandID(GuidList.GuidReportDeployerCmdSet, (int)PkgCmdIdList.CmdidReportDeployerWindow);
             CommandID reportWindowCommandId = new CommandID(GuidList.GuidCrmDevExCmdSet, (int)PkgCmdIdList.CmdidReportDeployerWindow);
             OleMenuCommand reportWindowItem = new OleMenuCommand(ShowReportToolWindow, reportWindowCommandId);
             mcs.AddCommand(reportWindowItem);
 
             //Plug-in Deployer
-            //CommandID pluginWindowCommandId = new CommandID(GuidList.GuidPluginDeployerCmdSet, (int)PkgCmdIdList.CmdidPluginDeployerWindow);
             CommandID pluginWindowCommandId = new CommandID(GuidList.GuidCrmDevExCmdSet, (int)PkgCmdIdList.CmdidPluginDeployerWindow);
             OleMenuCommand pluginWindowItem = new OleMenuCommand(ShowPluginToolWindow, pluginWindowCommandId);
             mcs.AddCommand(pluginWindowItem);
