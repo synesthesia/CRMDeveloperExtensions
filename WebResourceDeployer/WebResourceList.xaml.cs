@@ -1392,7 +1392,10 @@ namespace WebResourceDeployer
                                       webResourceItem.BoundFile.Replace("/", "\\");
                     if (!File.Exists(filePath)) continue;
 
-                    string content = File.ReadAllText(filePath);
+                    string extension = Path.GetExtension(filePath);
+                    string content = (extension.ToUpper() != ".TS")
+                        ? File.ReadAllText(filePath)
+                        : File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
                     webResource["content"] = EncodeString(content);
 
                     UpdateRequest request = new UpdateRequest { Target = webResource };
@@ -1475,7 +1478,10 @@ namespace WebResourceDeployer
                                           webResourceItem.BoundFile.Replace("/", "\\");
                         if (!File.Exists(filePath)) continue;
 
-                        string content = File.ReadAllText(filePath);
+                        string extension = Path.GetExtension(filePath);
+                        string content = (extension.ToUpper() != ".TS")
+                            ? File.ReadAllText(filePath)
+                            : File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
                         webResource["content"] = EncodeString(content);
 
                         UpdateRequest request = new UpdateRequest { Target = webResource };

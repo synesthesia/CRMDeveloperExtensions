@@ -154,7 +154,10 @@ namespace WebResourceDeployer
                 string publishXml = "<importexportxml><webresources>";
                 Entity webResource = new Entity("webresource") { Id = webResourceId };
 
-                string content = File.ReadAllText(projectItem.FileNames[1]);
+                string extension = Path.GetExtension(projectItem.FileNames[1]);
+                string content = extension != null && (extension.ToUpper() != ".TS")
+                    ? File.ReadAllText(projectItem.FileNames[1])
+                    : File.ReadAllText(Path.ChangeExtension(projectItem.FileNames[1], ".js"));
                 webResource["content"] = EncodeString(content);
 
                 UpdateRequest request = new UpdateRequest { Target = webResource };
@@ -216,7 +219,10 @@ namespace WebResourceDeployer
                     string publishXml = "<importexportxml><webresources>";
                     Entity webResource = new Entity("webresource") { Id = webResourceId };
 
-                    string content = File.ReadAllText(projectItem.FileNames[1]);
+                    string extension = Path.GetExtension(projectItem.FileNames[1]);
+                    string content = extension != null && (extension.ToUpper() != ".TS")
+                        ? File.ReadAllText(projectItem.FileNames[1])
+                        : File.ReadAllText(Path.ChangeExtension(projectItem.FileNames[1], ".js"));
                     webResource["content"] = EncodeString(content);
 
                     UpdateRequest request = new UpdateRequest { Target = webResource };
