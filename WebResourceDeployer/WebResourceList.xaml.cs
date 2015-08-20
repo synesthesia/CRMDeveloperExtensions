@@ -53,7 +53,7 @@ namespace WebResourceDeployer
         private bool _connectionAdded;
         private readonly Logger _logger;
 
-        readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO" };
+        readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO", "TS" };
 
         public WebResourceList()
         {
@@ -637,12 +637,28 @@ namespace WebResourceDeployer
             {
                 string ex = Path.GetExtension(projectItem.Name);
                 if (ex != null && (_extensions.Contains(ex.Replace(".", String.Empty).ToUpper()) || string.IsNullOrEmpty(ex)))
+                {
                     projectFiles.Add(new ComboBoxItem() { Content = path + "/" + projectItem.Name, Tag = projectItem });
+
+                    //Handle minified files that appear under other files in the project
+                    if (projectItem.ProjectItems.Count == 1)
+                    {
+                        ProjectItem subProjectItem = projectItem.ProjectItems.Item(1);
+
+                        string subEx = Path.GetExtension(subProjectItem.Name);
+
+                        if (subEx != null && (_extensions.Contains(subEx.Replace(".", String.Empty).ToUpper()) || string.IsNullOrEmpty(subEx)))
+                            projectFiles.Add(new ComboBoxItem() { Content = path + "/" + subProjectItem.Name, Tag = subProjectItem });
+                    }
+                }
             }
             else
             {
                 for (int i = 1; i <= projectItem.ProjectItems.Count; i++)
                 {
+                    //Ignore TypeScript typings folders
+                    if (projectItem.Name.ToUpper() == "TYPINGS") continue;
+
                     var files = GetFiles(projectItem.ProjectItems.Item(i), path + "/" + projectItem.Name);
                     foreach (var comboBoxItem in files)
                     {
@@ -1302,15 +1318,20 @@ namespace WebResourceDeployer
 
             if (dirtyItems.Count > 0)
             {
-                MessageBoxResult result = MessageBox.Show("Save item(s) and publish?", "Unsaved Item(s)",
-                            MessageBoxButton.YesNo);
-
+                var result = MessageBox.Show("Save item(s) and publish?", "Unsaved Item(s)", MessageBoxButton.YesNo);
                 if (result != MessageBoxResult.Yes) return;
 
                 foreach (var projectItem in dirtyItems)
                 {
                     projectItem.Save();
                 }
+            }
+
+            //Build TypeScript project
+            if (selectedItems.Any(p => p.BoundFile.ToUpper().EndsWith("TS")))
+            {
+                SolutionBuild solutionBuild = _dte.Solution.SolutionBuild;
+                solutionBuild.BuildProject(_dte.Solution.SolutionBuild.ActiveConfiguration.Name, _selectedProject.UniqueName, true);
             }
 
             UpdateWebResources(selectedItems);

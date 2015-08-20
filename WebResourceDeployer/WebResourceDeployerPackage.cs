@@ -112,6 +112,13 @@ namespace WebResourceDeployer
                 projectItem.Save();
             }
 
+            //Build TypeScript project
+            if (projectItem.Name.ToUpper().EndsWith("TS"))
+            {
+                SolutionBuild solutionBuild = _dte.Solution.SolutionBuild;
+                solutionBuild.BuildProject(_dte.Solution.SolutionBuild.ActiveConfiguration.Name, projectItem.ContainingProject.UniqueName, true);
+            }
+
             CrmConn selectedConnection = GetSelectedConnection(projectItem);
             if (selectedConnection == null) return;
 
