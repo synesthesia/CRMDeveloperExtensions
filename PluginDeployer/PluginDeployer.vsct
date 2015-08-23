@@ -1,49 +1,47 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-
   <Extern href="stdidcmd.h"/>
   <Extern href="vsshlids.h"/>
-
-  <Commands package="guidPluginDeployerPkg">
+  <Commands package="GuidPluginDeployerPkg">
     <Groups>
 
-      <!--<Group guid="guidPluginDeployerCmdSet" id="ProjectMenuGroup" priority="0xFFFE">
+      <Group guid="GuidProjectMenuCommandsCmdSet" id="ProjectMenuGroup" priority="0xFFFF">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
-      </Group>-->
+      </Group>
 
     </Groups>
 
     <Buttons>
 
-      <!--<Button guid="guidPluginDeployerCmdSet" id="cmdidPluginDeployerWindow" priority="0xFFFE" type="Button">
-        <Parent guid="guidPluginDeployerCmdSet" id="ProjectMenuGroup"/>
-        <Icon guid="guidImages" id="bmpPic1" />
+      <Button guid="GuidProjectMenuCommandsCmdSet" id="CmdidPluginDeployerPublish" priority="0xFFFF" type="Button">
+        <Parent guid="GuidProjectMenuCommandsCmdSet" id="ProjectMenuGroup"/>
+        <Icon guid="GuidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
-          <ButtonText>CRM Plug-in Deployer</ButtonText>
+          <ButtonText>Deploy To CRM</ButtonText>
         </Strings>
-      </Button>-->
+      </Button>
 
     </Buttons>
 
     <Bitmaps>
-      <!--<Bitmap guid="guidImages" href="Resources\sw-file-icon_16.png" />-->
+      <Bitmap guid="GuidImages" href="Resources\sw-file-icon_16.png" />
     </Bitmaps>
 
   </Commands>
 
   <Symbols>
-    <!--<GuidSymbol name="guidPluginDeployerPkg" value="{684c769a-9dbe-4784-9386-8f4b169df3ff}" />
+    <GuidSymbol name="GuidPluginDeployerPkg" value="{684C769A-9DBE-4784-9386-8F4B169DF3FF}" />
 
-    <GuidSymbol name="guidPluginDeployerCmdSet" value="{cf3c6db1-0999-42bf-be3a-b9f4e6542f1e}">
+    <GuidSymbol name="GuidProjectMenuCommandsCmdSet" value="{F4C786FD-06CB-458E-94E1-D5D55B9FA9D7}">
       <IDSymbol name="ProjectMenuGroup" value="0x1020" />
-      <IDSymbol name="cmdidPluginDeployerWindow" value="0x0101" />
+      <IDSymbol name="CmdidPluginDeployerPublish" value="0x0100" />
     </GuidSymbol>
 
-    <GuidSymbol name="guidImages" value="{16cf6c36-3f91-4d14-80b9-a40ad61c9be7}" >
+    <GuidSymbol name="GuidImages" value="{16CF6C36-3F91-4D14-80B9-A40AD61C9BE7}" >
       <IDSymbol name="bmpPic1" value="1" />
-    </GuidSymbol>-->
+    </GuidSymbol>
   </Symbols>
 
 </CommandTable>

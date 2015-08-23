@@ -67,7 +67,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Assembly</Label>
                     <ComboBox x:Name="Assemblies" Margin="5,5,0,0" DisplayMemberPath="DisplayName" SelectedValuePath="BoundProject" IsEnabled="False" SelectionChanged="Assemblies_SelectionChanged"
-                              ToolTip="{Binding Path=BoundProject}" Width="260">
+                              ToolTip="{Binding Path=BoundProject}" Width="350">
                     </ComboBox>
                 </StackPanel>
             </StackPanel>

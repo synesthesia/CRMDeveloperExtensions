@@ -4,18 +4,18 @@
   <Extern href="vsshlids.h"/>
   <Commands package="GuidReportDeployerPkg">
     <Groups>
-                  
-      <Group guid="GuidItemMenuCommandsCmdSet" id="ItemMenuGroup" priority="0xFFFD">
+
+      <Group guid="GuidItemMenuCommandsCmdSet" id="ItemMenuGroup" priority="0xFFFF">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
       </Group>
-      
+
     </Groups>
-    
+
     <Buttons>
-                                                 
-      <Button guid="GuidItemMenuCommandsCmdSet" id="CmdidReportDeployerPublish" priority="0xFFFD" type="Button">
+
+      <Button guid="GuidItemMenuCommandsCmdSet" id="CmdidReportDeployerPublish" priority="0xFFFF" type="Button">
         <Parent guid="GuidItemMenuCommandsCmdSet" id="ItemMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
+        <Icon guid="GuidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
@@ -26,23 +26,21 @@
     </Buttons>
 
     <Bitmaps>
-      <Bitmap guid="guidImages" href="Resources\sw-file-icon_16.png" />
+      <Bitmap guid="GuidImages" href="Resources\sw-file-icon_16.png" />
     </Bitmaps>
- 
+
   </Commands>
 
   <Symbols>
-    <GuidSymbol name="GuidReportDeployerPkg" value="{078a8cfc-ba76-4bf3-9600-36d1b36cba2e}" />
+    <GuidSymbol name="GuidReportDeployerPkg" value="{078A8CFC-BA76-4BF3-9600-36D1B36CBA2E}" />
     <GuidSymbol name="GuidMenuCommandsPkg" value="{15213CBD-E72C-452F-8CD9-42D61665C4DC}" />
-    <GuidSymbol name="GuidEditorCommandsPkgString" value="{9E31A33D-2D5A-4FCA-868F-1C293708CA51}" />
 
     <GuidSymbol name ="GuidItemMenuCommandsCmdSet" value="{ADBAE3F9-2CD2-4EB8-ABF3-07A6C84D24DA}">
       <IDSymbol name="ItemMenuGroup" value="0x1020" />
-      <IDSymbol name="guidPublishButtonCmdSet" value="0x1010" />
       <IDSymbol name="CmdidReportDeployerPublish" value="0x0100" />
     </GuidSymbol>
 
-    <GuidSymbol name="guidImages" value="{c1a678e9-7f46-41d2-8bd8-b7b128eae5db}" >
+    <GuidSymbol name="GuidImages" value="{C1A678E9-7F46-41D2-8BD8-B7B128EAE5DB}" >
       <IDSymbol name="bmpPic1" value="1" />
     </GuidSymbol>
   </Symbols>

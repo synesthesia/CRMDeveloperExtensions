@@ -274,7 +274,7 @@
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="ReportDeployer.vsct">
-      <SubType>Designer</SubType>
+	  <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>

@@ -2,10 +2,10 @@
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <Extern href="stdidcmd.h"/>
   <Extern href="vsshlids.h"/>
-  <Commands package="guidWebResourceDeployerPkg">
+  <Commands package="GuidWebResourceDeployerPkg">
     <Groups>
 
-      <Group guid="guidItemMenuCommandsCmdSet" id="ItemMenuGroup" priority="0xFFFF">
+      <Group guid="GuidItemMenuCommandsCmdSet" id="ItemMenuGroup" priority="0xFFFF">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
       </Group>
 
@@ -17,9 +17,9 @@
 
     <Buttons>
 
-      <Button guid="guidItemMenuCommandsCmdSet" id="cmdidWebResourceDeployerPublish" priority="0xFFFF" type="Button">
-        <Parent guid="guidItemMenuCommandsCmdSet" id="ItemMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
+      <Button guid="GuidItemMenuCommandsCmdSet" id="CmdidWebResourceDeployerPublish" priority="0xFFFF" type="Button">
+        <Parent guid="GuidItemMenuCommandsCmdSet" id="ItemMenuGroup" />
+        <Icon guid="GuidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
@@ -29,7 +29,7 @@
 
       <Button guid="GuidEditorCommandsCmdSet" id="CmdidWebResourceEditorPublish" priority="0xFFFF" type="Button">
         <Parent guid="GuidEditorCommandsCmdSet" id="EditorGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
+        <Icon guid="GuidImages" id="bmpPic1" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
@@ -40,7 +40,7 @@
     </Buttons>
 
     <Bitmaps>
-      <Bitmap guid="guidImages" href="Resources\sw-file-icon_16.png" />
+      <Bitmap guid="GuidImages" href="Resources\sw-file-icon_16.png" />
     </Bitmaps>
   </Commands>
 
@@ -63,23 +63,21 @@
 
   <Symbols>
 
-    <GuidSymbol name="guidWebResourceDeployerPkg" value="{E42F2686-2A9B-40C1-8D13-9AB90D3B951D}" />
-    <GuidSymbol name="guidMenuCommandsPkg" value="{67F5E05C-872F-4637-A050-F0C66252CEC2}" />
+    <GuidSymbol name="GuidWebResourceDeployerPkg" value="{E42F2686-2A9B-40C1-8D13-9AB90D3B951D}" />
+    <GuidSymbol name="GuidMenuCommandsPkg" value="{67F5E05C-872F-4637-A050-F0C66252CEC2}" />
     <GuidSymbol name="GuidEditorCommandsPkgString" value="{2723E9D7-8962-4F84-AA37-8AE4EC58F04E}" />
 
-    <GuidSymbol name ="guidItemMenuCommandsCmdSet" value="{44EC1EE2-36CB-4D17-B951-896254C73D35}">
+    <GuidSymbol name ="GuidItemMenuCommandsCmdSet" value="{44EC1EE2-36CB-4D17-B951-896254C73D35}">
       <IDSymbol name="ItemMenuGroup" value="0x1020" />
-      <IDSymbol name="guidPublishButtonCmdSet" value="0x1010" />
-      <IDSymbol name="cmdidWebResourceDeployerPublish" value="0x0100" />
+=      <IDSymbol name="CmdidWebResourceDeployerPublish" value="0x0100" />
     </GuidSymbol>
 
     <GuidSymbol name ="GuidEditorCommandsCmdSet" value="{D3593638-DF55-428F-9570-4FAA63E7CB3A}">
       <IDSymbol name="EditorGroup" value="0x1020" />
-      <IDSymbol name="guidEditorPublishButtonCmdSet" value="0x1000" />
-      <IDSymbol name="CmdidWebResourceEditorPublish" value="0x0100" />
+=      <IDSymbol name="CmdidWebResourceEditorPublish" value="0x0100" />
     </GuidSymbol>
 
-    <GuidSymbol name="HtmlEditorWindows" value="{d7e8c5e1-bdb8-11d0-9c88-0000f8040a53}">
+    <GuidSymbol name="HtmlEditorWindows" value="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}">
       <IDSymbol name="IDMX_HTM_SOURCE_BASIC" value="0x32" />
       <IDSymbol name="IDMX_HTM_SOURCE_HTML" value="0x33" />
     </GuidSymbol>
@@ -92,7 +90,7 @@
       <IDSymbol name="IDMX_HTM_SOURCE_HTML" value="1"/>
     </GuidSymbol>
 
-    <GuidSymbol name="guidImages" value="{c1a678e9-7f46-41d2-8bd8-b7b128eae5db}" >
+    <GuidSymbol name="GuidImages" value="{C1A678E9-7F46-41D2-8BD8-B7B128EAE5DB}" >
       <IDSymbol name="bmpPic1" value="1" />
     </GuidSymbol>
 

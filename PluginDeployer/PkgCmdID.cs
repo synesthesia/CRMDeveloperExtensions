@@ -2,6 +2,6 @@
 {
     static class PkgCmdIdList
     {
-        //public const uint CmdidPluginDeployerWindow = 0x101;
+        public const uint CmdidPluginDeployerPublish = 0x100;
     };
 }

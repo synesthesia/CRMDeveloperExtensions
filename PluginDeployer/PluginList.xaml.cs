@@ -11,6 +11,7 @@ using PluginDeployer.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
@@ -58,6 +59,8 @@ namespace PluginDeployer
             _solutionEvents.ProjectAdded += SolutionProjectAdded;
             _solutionEvents.ProjectRemoved += SolutionProjectRemoved;
             _solutionEvents.ProjectRenamed += SolutionProjectRenamed;
+
+            SelectedAssemblyItem.PropertyChanged += SelectedAssemblyItem_PropertyChanged;
         }
 
         private void Projects_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -520,7 +523,7 @@ namespace PluginDeployer
                 if (assemblyItem.Version.Major != assemblyVersion.Major ||
                     assemblyItem.Version.Minor != assemblyVersion.Minor)
                 {
-                    _logger.WriteToOutputWindow("Error Updating Assembly In CRM: Changes To Major & Minor Versions Require Redeployment ", Logger.MessageType.Error);
+                    _logger.WriteToOutputWindow("Error Updating Assembly In CRM: Changes To Major & Minor Versions Require Redeployment", Logger.MessageType.Error);
                     return false;
                 }
 
@@ -528,7 +531,7 @@ namespace PluginDeployer
                 string assemblyName = _selectedProject.Properties.Item("AssemblyName").Value.ToString();
                 if (assemblyName.ToUpper() != assemblyItem.Name.ToUpper())
                 {
-                    _logger.WriteToOutputWindow("Error Updating Assembly In CRM: Changes To Assembly Name Require Redeployment ", Logger.MessageType.Error);
+                    _logger.WriteToOutputWindow("Error Updating Assembly In CRM: Changes To Assembly Name Require Redeployment", Logger.MessageType.Error);
                     return false;
                 }
 
@@ -545,6 +548,7 @@ namespace PluginDeployer
                 assemblyItem.Version = assemblyVersion;
                 assemblyItem.Name = _selectedProject.Properties.Item("AssemblyName").Value.ToString();
                 assemblyItem.DisplayName = assemblyItem.Name + " (" + assemblyVersion + ")";
+                assemblyItem.DisplayName += (assemblyItem.IsWorkflowActivity) ? " [Workflow]" : " [Plug-in]";
 
                 return true;
             }
@@ -802,31 +806,6 @@ namespace PluginDeployer
             {
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
-                    //QueryExpression query = new QueryExpression
-                    //{
-                    //    EntityName = "pluginassembly",
-                    //    ColumnSet = new ColumnSet("name", "version"),
-                    //    Criteria = new FilterExpression
-                    //    {
-                    //        Conditions =
-                    //    {
-                    //        new ConditionExpression
-                    //        {
-                    //            AttributeName = "ismanaged",
-                    //            Operator = ConditionOperator.Equal,
-                    //            Values = { false }
-                    //        }
-                    //    }
-                    //    },
-                    //    Orders =
-                    //    {
-                    //        new OrderExpression
-                    //        {
-                    //            AttributeName = "name",
-                    //            OrderType = OrderType.Ascending
-                    //        }
-                    //    }
-                    //};
                     QueryExpression query = new QueryExpression
                     {
                         EntityName = "pluginassembly",
@@ -857,13 +836,13 @@ namespace PluginDeployer
 						}
 					},
                         Orders =
-					{
-						new OrderExpression
-						{
-							AttributeName = "name",
-							OrderType = OrderType.Ascending
-						}
-					}
+					    {
+						    new OrderExpression
+						    {
+							    AttributeName = "name",
+							    OrderType = OrderType.Ascending
+						    }
+					    }
                     };
 
                     return orgService.RetrieveMultiple(query);
@@ -990,6 +969,7 @@ namespace PluginDeployer
             if (item == null)
             {
                 Publish.IsEnabled = false;
+                SelectedAssemblyItem.Item = null;
                 return;
             }
 
@@ -997,6 +977,13 @@ namespace PluginDeployer
             AddOrUpdateMapping(item);
 
             Publish.IsEnabled = item.AssemblyId != Guid.Empty;
+            SelectedAssemblyItem.Item = item;
+        }
+
+        private void SelectedAssemblyItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (SelectedAssemblyItem.Item.AssemblyId != Guid.Empty)
+                ((AssemblyItem)Assemblies.SelectedItem).DisplayName = SelectedAssemblyItem.Item.Name + " (" + SelectedAssemblyItem.Item.Version + ")";
         }
 
         private void AddOrUpdateMapping(AssemblyItem item)

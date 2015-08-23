@@ -19,7 +19,6 @@ namespace ReportDeployer
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(ReportWindow))]
     [Guid(GuidList.GuidReportDeployerPkgString)]
     [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
     public sealed class ReportDeployerPackage : Package
