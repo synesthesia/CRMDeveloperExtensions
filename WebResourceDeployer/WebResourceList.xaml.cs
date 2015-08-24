@@ -636,19 +636,23 @@ namespace WebResourceDeployer
             if (projectItem.Kind != "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") // VS Folder 
             {
                 string ex = Path.GetExtension(projectItem.Name);
-                if (ex != null && (_extensions.Contains(ex.Replace(".", String.Empty).ToUpper()) || string.IsNullOrEmpty(ex)))
-                {
+                if (ex == null || (!_extensions.Contains(ex.Replace(".", String.Empty).ToUpper()) && !string.IsNullOrEmpty(ex) && ex.ToUpper() != ".BUNDLE"))
+                    return projectFiles;
+
+                //Don't add .bundle files
+                if (ex.ToUpper() != ".BUNDLE")
                     projectFiles.Add(new ComboBoxItem() { Content = path + "/" + projectItem.Name, Tag = projectItem });
 
-                    //Handle minified files that appear under other files in the project
-                    if (projectItem.ProjectItems.Count == 1)
+                if (projectItem.ProjectItems.Count <= 0)
+                    return projectFiles;
+
+                //Handle minified/bundled files that appear under other files in the project
+                for (int i = 1; i <= projectItem.ProjectItems.Count; i++)
+                {
+                    ObservableCollection<ComboBoxItem> subFiles = GetFiles(projectItem.ProjectItems.Item(i), path);
+                    foreach (ComboBoxItem comboBoxItem in subFiles)
                     {
-                        ProjectItem subProjectItem = projectItem.ProjectItems.Item(1);
-
-                        string subEx = Path.GetExtension(subProjectItem.Name);
-
-                        if (subEx != null && (_extensions.Contains(subEx.Replace(".", String.Empty).ToUpper()) || string.IsNullOrEmpty(subEx)))
-                            projectFiles.Add(new ComboBoxItem() { Content = path + "/" + subProjectItem.Name, Tag = subProjectItem });
+                        projectFiles.Add(comboBoxItem);
                     }
                 }
             }
