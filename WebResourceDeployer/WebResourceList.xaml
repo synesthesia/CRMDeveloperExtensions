@@ -110,6 +110,13 @@
                             </Style>
                         </DataGridTextColumn.CellStyle>
                     </DataGridTextColumn>
+                    <DataGridTextColumn Header="Display Name" Binding="{Binding DisplayName}" IsReadOnly="True">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="ToolTip" Value="{Binding DisplayName}" />
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
                     <DataGridTemplateColumn Header="Mapped To" x:Name="FileListColumn" CanUserSort="True" SortMemberPath="BoundFile">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

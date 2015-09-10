@@ -857,6 +857,10 @@ namespace WebResourceDeployer
                     ProjectFolders = projectFolders,
                     SolutionId = entity.GetAttributeValue<EntityReference>("solutionid").Id
                 };
+                object displayName;
+                bool hasDisplayName = entity.Attributes.TryGetValue("webresource.displayname", out displayName);
+                if (hasDisplayName)
+                    wrItem.DisplayName = entity.GetAttributeValue<AliasedValue>("webresource.displayname").Value.ToString();
 
                 wrItem.PropertyChanged += WebResourceItem_PropertyChanged;
                 wrItems.Add(wrItem);
@@ -905,7 +909,7 @@ namespace WebResourceDeployer
                         {
                             new LinkEntity
                             {
-                                Columns = new ColumnSet("name", "webresourcetype", "ismanaged", "webresourceid"),
+                                Columns = new ColumnSet("name", "displayname", "webresourcetype", "ismanaged", "webresourceid"),
                                 EntityAlias = "webresource",
                                 LinkFromEntityName = "solutioncomponent",
                                 LinkFromAttributeName = "objectid",

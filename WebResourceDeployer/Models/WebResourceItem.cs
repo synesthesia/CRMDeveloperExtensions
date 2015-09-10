@@ -24,6 +24,7 @@ namespace WebResourceDeployer.Models
         public int Type { get; set; }
         public string TypeName { get; set; }
         public string Name { get; set; }
+        public string DisplayName { get; set; }
         public bool IsManaged { get; set; }
         private ObservableCollection<MenuItem> _projectFolders;
         public ObservableCollection<MenuItem> ProjectFolders
