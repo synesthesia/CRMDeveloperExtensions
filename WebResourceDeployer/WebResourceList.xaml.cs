@@ -2127,7 +2127,6 @@ namespace WebResourceDeployer
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
 
-
             return true;
         }
 
