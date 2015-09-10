@@ -12,7 +12,7 @@ namespace InfoWindow
 
         private void Donate_OnClick(object sender, RoutedEventArgs e)
         {
-            string url = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KGV72FKEY8TJL";
+            string url = "https://www.paypal.me/JLattimer";
 
             Process.Start(new ProcessStartInfo(url));
             e.Handled = true;
