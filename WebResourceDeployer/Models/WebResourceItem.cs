@@ -25,18 +25,6 @@ namespace WebResourceDeployer.Models
         public string TypeName { get; set; }
         public string Name { get; set; }
         public bool IsManaged { get; set; }
-        private ObservableCollection<ComboBoxItem> _projectFiles;
-        public ObservableCollection<ComboBoxItem> ProjectFiles
-        {
-            get { return _projectFiles; }
-            set
-            {
-                if (_projectFiles == value) return;
-
-                _projectFiles = value;
-                OnPropertyChanged();
-            }
-        }
         private ObservableCollection<MenuItem> _projectFolders;
         public ObservableCollection<MenuItem> ProjectFolders
         {
@@ -85,6 +73,7 @@ namespace WebResourceDeployer.Models
                 OnPropertyChanged();
             }
         }
+        public Guid SolutionId { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

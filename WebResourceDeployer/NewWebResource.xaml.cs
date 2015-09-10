@@ -29,7 +29,8 @@ namespace WebResourceDeployer
         public Guid NewId;
         public int NewType;
         public string NewName;
-        public string NewBoudndFile;
+        public string NewBoundFile;
+        public Guid NewSolutionId;
 
         public NewWebResource(CrmConn connection, Project project, ObservableCollection<ComboBoxItem> projectFiles)
         {
@@ -223,7 +224,8 @@ namespace WebResourceDeployer
                     NewId = id;
                     NewType = type;
                     NewName = prefix + name;
-                    NewBoudndFile = relativePath;
+                    NewBoundFile = relativePath;
+                    NewSolutionId = solutionId;
 
                     return true;
                 }
