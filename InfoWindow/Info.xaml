@@ -23,6 +23,9 @@
                 <Hyperlink NavigateUri="https://twitter.com/lucas_is" infoWindow:HyperlinkExtensions.IsExternal="true">Lucas Alexander</Hyperlink>
             </TextBlock>
             <TextBlock Margin="10,5,10,0">
+                <Hyperlink NavigateUri="https://twitter.com/crmentropy" infoWindow:HyperlinkExtensions.IsExternal="true">Dave Berry</Hyperlink>
+            </TextBlock>
+            <TextBlock Margin="10,5,10,0">
                 <Hyperlink NavigateUri=" https://icons8.com" infoWindow:HyperlinkExtensions.IsExternal="true">Icons8</Hyperlink>
             </TextBlock>
             <Label Margin="5,5,5,0">Donate with PayPal:</Label>
