@@ -2016,7 +2016,7 @@ namespace WebResourceDeployer
         private void Info_OnClick(object sender, RoutedEventArgs e)
         {
             Info info = new Info();
-            info.Show();
+            info.ShowDialog();
         }
 
         private void UpdateAllPublishChecks(bool publish)

@@ -383,9 +383,6 @@ namespace ReportDeployer
                 CreateConfigFile(_selectedProject);
 
             Expander.IsExpanded = false;
-            Customizations.IsEnabled = true;
-            Solutions.IsEnabled = true;
-            Reports.IsEnabled = true;
 
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
             if (!change) return;
@@ -1248,24 +1245,36 @@ namespace ReportDeployer
                 ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
 
                 if (_connectionAdded)
+                {
                     _connectionAdded = false;
+                    Customizations.IsEnabled = true;
+                    Solutions.IsEnabled = true;
+                    Reports.IsEnabled = true;
+                    AddReport.IsEnabled = true;
+                }
                 else
+                {
                     UpdateSelectedConnection(false);
+                    Customizations.IsEnabled = false;
+                    Solutions.IsEnabled = false;
+                    Reports.IsEnabled = false;
+                    AddReport.IsEnabled = false;
+                }
             }
             else
             {
                 Connect.IsEnabled = false;
                 Delete.IsEnabled = false;
                 ModifyConnection.IsEnabled = false;
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                Reports.IsEnabled = false;
+                AddReport.IsEnabled = false;
             }
 
             ReportGrid.ItemsSource = null;
             ShowManaged.IsEnabled = false;
             Publish.IsEnabled = false;
-            Customizations.IsEnabled = false;
-            Solutions.IsEnabled = false;
-            Reports.IsEnabled = false;
-            AddReport.IsEnabled = false;
             ReportGrid.IsEnabled = false;
         }
 
@@ -1539,7 +1548,7 @@ namespace ReportDeployer
         private void Info_OnClick(object sender, RoutedEventArgs e)
         {
             Info info = new Info();
-            info.Show();
+            info.ShowDialog();
         }
 
         private void UpdateAllPublishChecks(bool publish)

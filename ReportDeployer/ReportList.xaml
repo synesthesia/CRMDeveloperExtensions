@@ -51,7 +51,7 @@
                 <CheckBox x:Name="ShowManaged" Content="Show Managed" Margin="5,5,0,0" VerticalAlignment="Top" Checked="ShowManaged_Checked" Unchecked="ShowManaged_Checked" 
                           IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
                 <Button x:Name="Publish" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Publish_Click" IsEnabled="False" Background="White">
-                    <Image Source="Resources/publish-24.png" Width="24" Height="24" ToolTip="Deploy To CRM"></Image>
+                    <Image Source="Resources/publish-24.png" Width="24" Height="24" ToolTip="Deploy To CRM (Remember to Save First)"></Image>
                 </Button>
                 <Button x:Name="AddReport" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="AddReport_Click" IsEnabled="False" Background="White">
                     <Image Source="Resources/plus-24.png" Width="24" Height="24" ToolTip="New Report From File"></Image>

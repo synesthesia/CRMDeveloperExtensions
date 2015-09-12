@@ -153,20 +153,28 @@ namespace PluginDeployer
                 ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
 
                 if (_connectionAdded)
+                {
                     _connectionAdded = false;
+                    Customizations.IsEnabled = true;
+                    Solutions.IsEnabled = true;
+                }
                 else
+                {
                     UpdateSelectedConnection(false);
+                    Customizations.IsEnabled = false;
+                    Solutions.IsEnabled = false;
+                }
             }
             else
             {
                 Connect.IsEnabled = false;
                 Delete.IsEnabled = false;
                 ModifyConnection.IsEnabled = false;
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
             }
 
             Publish.IsEnabled = false;
-            Customizations.IsEnabled = false;
-            Solutions.IsEnabled = false;
             Assemblies.IsEnabled = false;
         }
 
@@ -222,8 +230,6 @@ namespace PluginDeployer
                 CreateConfigFile(_selectedProject);
 
             Expander.IsExpanded = false;
-            Customizations.IsEnabled = true;
-            Solutions.IsEnabled = true;
 
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
             if (!change) return;
@@ -441,6 +447,7 @@ namespace PluginDeployer
                 Customizations.IsEnabled = false;
                 Solutions.IsEnabled = false;
                 Assemblies.IsEnabled = false;
+                Assemblies.ItemsSource = null;
 
                 GetConnections();
             }
@@ -468,7 +475,7 @@ namespace PluginDeployer
         private void Info_OnClick(object sender, RoutedEventArgs e)
         {
             Info info = new Info();
-            info.Show();
+            info.ShowDialog();
         }
 
         private void Publish_Click(object sender, RoutedEventArgs e)
@@ -982,8 +989,13 @@ namespace PluginDeployer
 
         private void SelectedAssemblyItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (SelectedAssemblyItem.Item == null) return;
+
             if (SelectedAssemblyItem.Item.AssemblyId != Guid.Empty)
-                ((AssemblyItem)Assemblies.SelectedItem).DisplayName = SelectedAssemblyItem.Item.Name + " (" + SelectedAssemblyItem.Item.Version + ")";
+            {
+                ((AssemblyItem)Assemblies.SelectedItem).DisplayName = SelectedAssemblyItem.Item.Name + " (" + SelectedAssemblyItem.Item.Version + ")" +
+                    ((SelectedAssemblyItem.Item.IsWorkflowActivity) ? " [Workflow]" : " [Plug-in]");
+            }
         }
 
         private void AddOrUpdateMapping(AssemblyItem item)
