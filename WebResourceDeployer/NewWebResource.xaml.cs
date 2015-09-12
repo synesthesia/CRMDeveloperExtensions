@@ -29,6 +29,7 @@ namespace WebResourceDeployer
         public Guid NewId;
         public int NewType;
         public string NewName;
+        public string NewDisplayName;
         public string NewBoundFile;
         public Guid NewSolutionId;
 
@@ -199,7 +200,10 @@ namespace WebResourceDeployer
                     if (type == 8)
                         webResource["silverlightversion"] = "4.0";
 
-                    string content = File.ReadAllText(filePath);
+                    string extension = Path.GetExtension(filePath);
+                    string content = extension != null && (extension.ToUpper() != ".TS")
+                        ? File.ReadAllText(filePath)
+                        : File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
                     webResource["content"] = EncodeString(content);
 
                     Guid id = _orgService.Create(webResource);
@@ -224,6 +228,8 @@ namespace WebResourceDeployer
                     NewId = id;
                     NewType = type;
                     NewName = prefix + name;
+                    if (!string.IsNullOrEmpty(displayName))
+                        NewDisplayName = displayName;
                     NewBoundFile = relativePath;
                     NewSolutionId = solutionId;
 
@@ -289,9 +295,15 @@ namespace WebResourceDeployer
                 else
                     DisplayName.Text = fileName;
 
-                Name.Text = fileName;
-
                 string ex = Path.GetExtension(fileName);
+
+                if (ex.ToUpper() != ".TS")
+                    Name.Text = fileName;
+                else
+                {
+                    DisplayName.Text = DisplayName.Text.Substring(0, DisplayName.Text.Length - 3) + ".js";
+                    Name.Text = fileName.Substring(0, fileName.Length - 3) + ".js"; ;
+                }
 
                 if (string.IsNullOrEmpty(ex))
                 {
@@ -309,6 +321,7 @@ namespace WebResourceDeployer
                         Type.SelectedValue = "Style Sheet (CSS)";
                         break;
                     case ".JS":
+                    case ".TS":
                         Type.SelectedValue = "Script (JScript)";
                         break;
                     case ".XML":

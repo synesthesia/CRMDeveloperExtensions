@@ -479,9 +479,6 @@ namespace WebResourceDeployer
                 CreateConfigFile(_selectedProject);
 
             Expander.IsExpanded = false;
-            Customizations.IsEnabled = true;
-            Solutions.IsEnabled = true;
-            SolutionList.IsEnabled = true;
 
             bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
 
@@ -493,7 +490,8 @@ namespace WebResourceDeployer
                 if (conn.Name != connection.ConnectionName) continue;
 
                 Connections.SelectedItem = conn;
-                await GetWebResources(connection.ConnectionString);
+                await GetSolutions();
+                await GetWebResources(connection.ConnectionString);                
                 break;
             }
         }
@@ -1604,26 +1602,38 @@ namespace WebResourceDeployer
                 ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
 
                 if (_connectionAdded)
+                {
                     _connectionAdded = false;
+                    Customizations.IsEnabled = true;
+                    Solutions.IsEnabled = true;
+                    SolutionList.IsEnabled = true;
+                    AddWebResource.IsEnabled = true;
+                }
                 else
+                {
                     UpdateSelectedConnection(false);
+                    Customizations.IsEnabled = false;
+                    Solutions.IsEnabled = false;
+                    SolutionList.IsEnabled = false;
+                    AddWebResource.IsEnabled = false;
+                }
             }
             else
             {
                 Connect.IsEnabled = false;
                 Delete.IsEnabled = false;
                 ModifyConnection.IsEnabled = false;
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SolutionList.IsEnabled = false;
+                AddWebResource.IsEnabled = false;
             }
 
             WebResourceType.SelectedIndex = -1;
             WebResourceGrid.ItemsSource = null;
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
-            Publish.IsEnabled = false;
-            Customizations.IsEnabled = false;
-            Solutions.IsEnabled = false;
-            SolutionList.IsEnabled = false;
-            AddWebResource.IsEnabled = false;
+            Publish.IsEnabled = false;            
             WebResourceGrid.IsEnabled = false;
         }
 
@@ -1950,6 +1960,7 @@ namespace WebResourceDeployer
                 Publish = false,
                 WebResourceId = newWebResource.NewId,
                 Name = newWebResource.NewName,
+                DisplayName = newWebResource.NewDisplayName,
                 IsManaged = false,
                 AllowPublish = true,
                 AllowCompare = SetAllowCompare(newWebResource.NewType),
@@ -1979,6 +1990,7 @@ namespace WebResourceDeployer
                     Publish = false,
                     WebResourceId = newWebResource.NewId,
                     Name = newWebResource.NewName,
+                    DisplayName = newWebResource.NewDisplayName,
                     IsManaged = false,
                     AllowPublish = true,
                     AllowCompare = SetAllowCompare(newWebResource.NewType),
@@ -2278,7 +2290,7 @@ namespace WebResourceDeployer
                 }
             }
 
-            ProjectFileList.Width = WebResourceGrid.Columns[4].ActualWidth - 2;
+            ProjectFileList.Width = WebResourceGrid.Columns[5].ActualWidth - 2;
             FilePopup.PlacementTarget = textBlock;
             FilePopup.Placement = PlacementMode.Relative;
             FilePopup.IsOpen = true;
