@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,6 +57,8 @@ namespace WebResourceDeployer
         private bool _connectionAdded;
         private readonly Logger _logger;
 
+        private readonly FieldInfo _menuDropAlignmentField;
+
         readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO", "TS" };
 
         public WebResourceList()
@@ -90,6 +93,25 @@ namespace WebResourceDeployer
             _vsSolutionEvents = new VsSolutionEvents(this);
             _vsSolution = (IVsSolution)ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution));
             _vsSolution.AdviseSolutionEvents(_vsSolutionEvents, out _solutionEventsCookie);
+
+            //Fix for Tablet/Touchscreen left-right menu
+            _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
+            System.Diagnostics.Debug.Assert(_menuDropAlignmentField != null);
+            EnsureStandardPopupAlignment();
+            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
+        }
+
+        private void SystemParameters_StaticPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            EnsureStandardPopupAlignment();
+        }
+
+        private void EnsureStandardPopupAlignment()
+        {
+            if (SystemParameters.MenuDropAlignment && _menuDropAlignmentField != null)
+            {
+                _menuDropAlignmentField.SetValue(null, false);
+            }
         }
 
         private void WindowEventsOnWindowActivated(Window gotFocus, Window lostFocus)
@@ -491,7 +513,7 @@ namespace WebResourceDeployer
 
                 Connections.SelectedItem = conn;
                 await GetSolutions();
-                await GetWebResources(connection.ConnectionString);                
+                await GetWebResources(connection.ConnectionString);
                 break;
             }
         }
@@ -1633,7 +1655,7 @@ namespace WebResourceDeployer
             WebResourceGrid.ItemsSource = null;
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
-            Publish.IsEnabled = false;            
+            Publish.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
         }
 
