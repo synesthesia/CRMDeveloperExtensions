@@ -16,7 +16,7 @@ Install in Visual Studio under Tools -> Extensions and Updates -> Search Online 
 
 * 1 click deploy plug-ins and custom workflow assemblies from Visual Studio without having to click through the SDK plug-in registration tool
 
-Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Plug-in-Deployer) for additional documentation. 
+Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Plugin-Deployer) for additional documentation. 
 
 **Report Deployer**
 
