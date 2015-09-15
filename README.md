@@ -2,7 +2,7 @@
 
 **Goal**
 
-The goal of this project is to be a free alternative to the CRM Developer Toolkit that shipped with the Dynamics CRM 2011 & 2013 SDK. Currently it contains project and item templates to help jump start the development process, code snippets, a tool to search for CRM related MSDN content, and tooling to assist with managing and deploying web resources, plug-ins, and report. The plan is to continue to expand and include other tooling to help streamline Dynamics CRM development. 
+The goal of this project is to be a free alternative to the CRM Developer Toolkit that shipped with the Dynamics CRM 2011 & 2013 SDK. Currently it contains project and item templates to help jump start the development process, code snippets, a tool to search for CRM related MSDN content, and tooling to assist with managing and deploying web resources, plug-ins, and reports. The plan is to continue to expand and include other tooling to help streamline Dynamics CRM development. 
 
 Supported versions of Visual Studio include 2012, 2013, & 2015 and will be distributed via the Visual Studio Gallery.
 
