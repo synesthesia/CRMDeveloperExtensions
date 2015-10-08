@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -802,6 +803,52 @@ namespace WebResourceDeployer
                 Connections.SelectedIndex = 0;
         }
 
+        private static string EncodedImage(string filePath, string extension)
+        {
+            string encodedImage;
+
+            if (extension.ToUpper() == ".ICO")
+            {
+                System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(filePath);
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    if (icon != null) icon.Save(ms);
+                    byte[] imageBytes = ms.ToArray();
+                    encodedImage = Convert.ToBase64String(imageBytes);
+                }
+
+                return encodedImage;
+            }
+
+            System.Drawing.Image image = System.Drawing.Image.FromFile(filePath, true);
+
+            ImageFormat format = null;
+            switch (extension.ToUpper())
+            {
+                case ".GIF":
+                    format = ImageFormat.Gif;
+                    break;
+                case ".JPG":
+                    format = ImageFormat.Jpeg;
+                    break;
+                case ".PNG":
+                    format = ImageFormat.Png;
+                    break;
+            }
+
+            if (format == null)
+                return null;
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.Save(ms, format);
+                byte[] imageBytes = ms.ToArray();
+                encodedImage = Convert.ToBase64String(imageBytes);
+            }
+            return encodedImage;
+        }
+
         private string EncodeString(string value)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
@@ -1488,10 +1535,27 @@ namespace WebResourceDeployer
                     if (!File.Exists(filePath)) continue;
 
                     string extension = Path.GetExtension(filePath);
-                    string content = (extension.ToUpper() != ".TS")
-                        ? File.ReadAllText(filePath)
-                        : File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
-                    webResource["content"] = EncodeString(content);
+
+                    List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
+                    string content;
+                    //TypeScript
+                    if ((extension.ToUpper() == ".TS"))
+                    {
+                        content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
+                        webResource["content"] = EncodeString(content);
+                    }
+                    //Images
+                    else if (imageExs.Any(s => extension.ToUpper().EndsWith(s)))
+                    {
+                        content = EncodedImage(filePath, extension);
+                        webResource["content"] = content;
+                    }
+                    //Everything else
+                    else
+                    {
+                        content = File.ReadAllText(filePath);
+                        webResource["content"] = EncodeString(content);
+                    }
 
                     UpdateRequest request = new UpdateRequest { Target = webResource };
                     requests.Add(request);
@@ -1574,10 +1638,27 @@ namespace WebResourceDeployer
                         if (!File.Exists(filePath)) continue;
 
                         string extension = Path.GetExtension(filePath);
-                        string content = (extension.ToUpper() != ".TS")
-                            ? File.ReadAllText(filePath)
-                            : File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
-                        webResource["content"] = EncodeString(content);
+
+                        List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
+                        string content;
+                        //TypeScript
+                        if ((extension.ToUpper() == ".TS"))
+                        {
+                            content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
+                            webResource["content"] = EncodeString(content);
+                        }
+                        //Images
+                        else if (imageExs.Any(s => extension.ToUpper().EndsWith(s)))
+                        {
+                            content = EncodedImage(filePath, extension);
+                            webResource["content"] = content;
+                        }
+                        //Everything else
+                        else
+                        {
+                            content = File.ReadAllText(filePath);
+                            webResource["content"] = EncodeString(content);
+                        }
 
                         UpdateRequest request = new UpdateRequest { Target = webResource };
                         orgService.Execute(request);

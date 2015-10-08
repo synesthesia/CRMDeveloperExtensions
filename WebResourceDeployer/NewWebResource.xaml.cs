@@ -8,6 +8,7 @@ using OutputLogger;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
@@ -201,10 +202,27 @@ namespace WebResourceDeployer
                         webResource["silverlightversion"] = "4.0";
 
                     string extension = Path.GetExtension(filePath);
-                    string content = extension != null && (extension.ToUpper() != ".TS")
-                        ? File.ReadAllText(filePath)
-                        : File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
-                    webResource["content"] = EncodeString(content);
+
+                    List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
+                    string content;
+                    //TypeScript
+                    if (extension != null && (extension.ToUpper() == ".TS"))
+                    {
+                        content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
+                        webResource["content"] = EncodeString(content);
+                    }
+                    //Images
+                    else if (extension != null && imageExs.Any(s => extension.ToUpper().EndsWith(s)))
+                    {
+                        content = EncodedImage(filePath, extension);
+                        webResource["content"] = content;
+                    }
+                    //Everything else
+                    else
+                    {
+                        content = File.ReadAllText(filePath);
+                        webResource["content"] = EncodeString(content);
+                    }
 
                     Guid id = _orgService.Create(webResource);
 
@@ -246,6 +264,52 @@ namespace WebResourceDeployer
                 _logger.WriteToOutputWindow("Error Creating Web Resource: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
                 return false;
             }
+        }
+
+        private static string EncodedImage(string filePath, string extension)
+        {
+            string encodedImage;
+
+            if (extension.ToUpper() == ".ICO")
+            {
+                System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(filePath);
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    if (icon != null) icon.Save(ms);
+                    byte[] imageBytes = ms.ToArray();
+                    encodedImage = Convert.ToBase64String(imageBytes);
+                }
+
+                return encodedImage;
+            }
+
+            System.Drawing.Image image = System.Drawing.Image.FromFile(filePath, true);
+
+            ImageFormat format = null;
+            switch (extension.ToUpper())
+            {
+                case ".GIF":
+                    format = ImageFormat.Gif;
+                    break;
+                case ".JPG":
+                    format = ImageFormat.Jpeg;
+                    break;
+                case ".PNG":
+                    format = ImageFormat.Png;
+                    break;
+            }
+
+            if (format == null)
+                return null;
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.Save(ms, format);
+                byte[] imageBytes = ms.ToArray();
+                encodedImage = Convert.ToBase64String(imageBytes);
+            }
+            return encodedImage;
         }
 
         private void Solutions_SelectionChanged(object sender, SelectionChangedEventArgs e)
