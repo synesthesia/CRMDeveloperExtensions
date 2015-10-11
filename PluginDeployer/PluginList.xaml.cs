@@ -1,11 +1,13 @@
 ﻿using CrmConnectionWindow;
 using EnvDTE;
 using InfoWindow;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Xrm.Client;
 using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using NuGet.VisualStudio;
 using OutputLogger;
 using PluginDeployer.Models;
 using System;
@@ -19,6 +21,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
+using VSLangProj;
 using Path = System.IO.Path;
 using Window = EnvDTE.Window;
 
@@ -35,6 +38,7 @@ namespace PluginDeployer
         private readonly Logger _logger;
         private CrmConn _selectedConn;
         private bool _connectionAdded;
+        private bool _isIlMergeInstalled;
 
         public PluginList()
         {
@@ -80,6 +84,20 @@ namespace PluginDeployer
 
             _selectedProject = (Project)((ComboBoxItem)Projects.SelectedItem).Tag;
             GetConnections();
+
+            _isIlMergeInstalled = IsIlMergeInstalled();
+            SetIlMergeTooltip(_isIlMergeInstalled);
+
+            var vsproject = _selectedProject.Object as VSProject;
+            if (vsproject == null) return;
+
+            vsproject.Events.ReferencesEvents.ReferenceAdded += ReferencesEvents_ReferenceAdded;
+        }
+
+        private void ReferencesEvents_ReferenceAdded(Reference reference)
+        {
+            if (_isIlMergeInstalled)
+                SetReferenceCopyLocal(false);
         }
 
         private void GetConnections()
@@ -639,6 +657,9 @@ namespace PluginDeployer
             {
                 SolutionProjectAdded(project);
             }
+
+            _isIlMergeInstalled = IsIlMergeInstalled();
+            SetIlMergeTooltip(_isIlMergeInstalled);
         }
 
         private void ResetForm()
@@ -1125,6 +1146,118 @@ namespace PluginDeployer
             {
                 MessageBox.Show("Error launching Plug-in Registration Tool: " + Environment.NewLine + Environment.NewLine + ex.Message);
             }
+        }
+
+        private void IlMerge_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var vsproject = _selectedProject.Object as VSProject;
+                if (vsproject == null) return;
+
+                var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
+                if (componentModel == null) return;
+
+                if (!_isIlMergeInstalled)
+                {
+                    InstallIlMerge(componentModel);
+
+                    //CRM Assemblies shouldn't be copied local to prevent merging
+                    SetReferenceCopyLocal(false);
+                }
+                else
+                {
+                    UninstallIlMerge(componentModel);
+
+                    // Reset CRM Assemblies to copy local
+                    SetReferenceCopyLocal(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error installing : " + Environment.NewLine + Environment.NewLine + ex.Message);
+            }
+        }
+
+        private bool IsIlMergeInstalled()
+        {
+            var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
+            if (componentModel == null) return false;
+
+            var installerService = componentModel.GetService<IVsPackageInstallerServices>();
+            return installerService.IsPackageInstalled(_selectedProject, "MSBuild.ILMerge.Task");
+        }
+
+        private void SetReferenceCopyLocal(bool copyLocal)
+        {
+            List<string> excludedAssemblies = new List<string>()
+                    {
+                        "Microsoft.Xrm.Sdk",
+                        "Microsoft.Crm.Sdk.Proxy",
+                        "Microsoft.Xrm.Sdk.Deployment",
+                        "Microsoft.Xrm.Client",
+                        "Microsoft.Xrm.Portal",
+                        "Microsoft.Xrm.Sdk.Workflow"
+                    };
+
+            var vsproject = _selectedProject.Object as VSProject;
+            if (vsproject == null) return;
+
+            foreach (Reference reference in vsproject.References)
+            {
+                if (reference.SourceProject != null) continue;
+
+                if (excludedAssemblies.Contains(reference.Name))
+                    reference.CopyLocal = copyLocal;
+            }
+        }
+
+        private void InstallIlMerge(IComponentModel componentModel)
+        {
+            try
+            {
+                var installer = componentModel.GetService<IVsPackageInstaller>();
+
+                _dte.StatusBar.Text = @"Installing MSBuild.ILMerge.Task...";
+
+                installer.InstallPackage("http://packages.nuget.org", _selectedProject, "MSBuild.ILMerge.Task",
+                    (Version)null, false);
+
+                _dte.StatusBar.Clear();
+
+                SetIlMergeTooltip(true);
+                _isIlMergeInstalled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error installing MSBuild.ILMerge.Task" + Environment.NewLine + Environment.NewLine + ex.Message);
+            }
+        }
+
+        private void UninstallIlMerge(IComponentModel componentModel)
+        {
+            try
+            {
+                var uninstaller = componentModel.GetService<IVsPackageUninstaller>();
+
+                _dte.StatusBar.Text = @"Uninstalling MSBuild.ILMerge.Task...";
+
+                uninstaller.UninstallPackage(_selectedProject, "MSBuild.ILMerge.Task", true);
+
+                _dte.StatusBar.Clear();
+
+                SetIlMergeTooltip(false);
+                _isIlMergeInstalled = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error uninstalling MSBuild.ILMerge.Task" + Environment.NewLine + Environment.NewLine + ex.Message);
+            }
+        }
+
+        private void SetIlMergeTooltip(bool installed)
+        {
+            IlMerge.ToolTip = installed ? "Remove ILMerge" : "ILMerge Referenced Assemblies";
         }
     }
 }
