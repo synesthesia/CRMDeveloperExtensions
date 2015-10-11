@@ -12,7 +12,7 @@ using WebResourceDeployer;
 namespace CRMDeveloperExtensions
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.2.0.0", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "1.2.1.0", IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(WrdWindow))]
     [ProvideToolWindow(typeof(ReportWindow))]
