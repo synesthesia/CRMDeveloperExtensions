@@ -1,4 +1,4 @@
-﻿namespace PluginDeployer.Models
+﻿namespace CommonResources.Models
 {
     public class CrmConn
     {

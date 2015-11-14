@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMDeveloperExtensions", "CRMDeveloperExtensions\CRMDeveloperExtensions.csproj", "{A4FDB41F-E97D-42FC-BF45-E762A4F87F7A}"
 EndProject
@@ -37,6 +37,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMTypeScriptProject", "Project Templates\CRMTypeScriptProject\CRMTypeScriptProject.csproj", "{EBC4B023-F605-41F0-AA56-7844BCA0B3CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportDeployer", "ReportDeployer\ReportDeployer.csproj", "{484F86E5-C669-4ADF-8883-A2C46DFA727B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonResources", "CommonResources\CommonResources.csproj", "{4F82019C-685B-4349-ACE2-091AD63004B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,6 +100,10 @@ Global
 		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{484F86E5-C669-4ADF-8883-A2C46DFA727B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
