@@ -61,6 +61,7 @@ namespace WebResourceDeployer
         private readonly FieldInfo _menuDropAlignmentField;
 
         readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO", "TS" };
+        readonly string[] _folderExtensions = {"BUNDLE", "TT"};
 
         public WebResourceList()
         {
@@ -668,11 +669,11 @@ namespace WebResourceDeployer
             if (projectItem.Kind != "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") // VS Folder 
             {
                 string ex = Path.GetExtension(projectItem.Name);
-                if (ex == null || (!_extensions.Contains(ex.Replace(".", String.Empty).ToUpper()) && !string.IsNullOrEmpty(ex) && ex.ToUpper() != ".BUNDLE"))
+                if (ex == null || (!_extensions.Contains(ex.Replace(".", String.Empty).ToUpper()) && !string.IsNullOrEmpty(ex) && !_folderExtensions.Contains(ex.Replace(".", String.Empty).ToUpper())))
                     return projectFiles;
 
-                //Don't add .bundle files
-                if (ex.ToUpper() != ".BUNDLE")
+                //Don't add file extensions that act as folders
+                if (!_folderExtensions.Contains(ex.Replace(".", String.Empty).ToUpper()))
                     projectFiles.Add(new ComboBoxItem() { Content = path + "/" + projectItem.Name, Tag = projectItem });
 
                 if (projectItem.ProjectItems.Count <= 0)
