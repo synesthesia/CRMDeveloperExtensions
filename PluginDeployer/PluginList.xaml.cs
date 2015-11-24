@@ -851,18 +851,18 @@ namespace PluginDeployer
 						}
                         },
                         LinkEntities =
-					{
-						new LinkEntity
-						{
-							Columns = new ColumnSet("isworkflowactivity"),
-							LinkFromEntityName = "pluginassembly",
-							LinkFromAttributeName = "pluginassemblyid",
-							LinkToEntityName = "plugintype",
-							LinkToAttributeName = "pluginassemblyid",
-							EntityAlias = "plugintype",
-							JoinOperator = JoinOperator.LeftOuter
-						}
-					},
+					    {
+						    new LinkEntity
+						    {
+							    Columns = new ColumnSet("isworkflowactivity"),
+							    LinkFromEntityName = "pluginassembly",
+							    LinkFromAttributeName = "pluginassemblyid",
+							    LinkToEntityName = "plugintype",
+							    LinkToAttributeName = "pluginassemblyid",
+							    EntityAlias = "plugintype",
+							    JoinOperator = JoinOperator.LeftOuter
+						    }
+					    },
                         Orders =
 					    {
 						    new OrderExpression

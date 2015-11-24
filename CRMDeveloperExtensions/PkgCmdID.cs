@@ -15,5 +15,8 @@
 
         //Report Deployer
         public const uint CmdidReportDeployerWindow = 0x103;
+
+        //Solution Packager
+        public const uint CmdidSolutionPackagerWindow = 0x104;
     };
 }

@@ -10,12 +10,12 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{484F86E5-C669-4ADF-8883-A2C46DFA727B}</ProjectGuid>
+    <ProjectGuid>{DBDADFC0-2C7D-49CA-B538-5A71BA1BD871}</ProjectGuid>
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ReportDeployer</RootNamespace>
-    <AssemblyName>ReportDeployer</AssemblyName>
+    <RootNamespace>SolutionPackager</RootNamespace>
+    <AssemblyName>SolutionPackager</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -46,6 +46,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Crm.Sdk.Proxy, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.CrmSdk.CoreAssemblies.6.0.4\lib\net40\Microsoft.Crm.Sdk.Proxy.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -79,6 +80,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Xrm.Client, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.CrmSdk.Extensions.6.0.4.1\lib\net40\Microsoft.Xrm.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -94,11 +96,13 @@
       <HintPath>..\packages\Microsoft.CrmSdk.Extensions.6.0.4.1\lib\net40\Microsoft.Xrm.Portal.Files.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Xrm.Sdk">
+    <Reference Include="Microsoft.Xrm.Sdk, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.CrmSdk.CoreAssemblies.6.0.4\lib\net40\Microsoft.Xrm.Sdk.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Xrm.Sdk.Deployment, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.CrmSdk.Deployment.6.0.4\lib\net40\Microsoft.Xrm.Sdk.Deployment.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -188,28 +192,22 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Guids.cs" />
     <Compile Include="Models\CrmConn.cs" />
     <Compile Include="Models\CrmSolution.cs" />
-    <Compile Include="Models\ReportItem.cs" />
-    <Compile Include="NewReport.xaml.cs">
-      <DependentUpon>NewReport.xaml</DependentUpon>
+    <Compile Include="SolutionList.xaml.cs">
+      <DependentUpon>SolutionList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PkgCmdID.cs" />
-    <Compile Include="ReportList.xaml.cs">
-      <DependentUpon>ReportList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ReportWindow.cs" />
+    <Compile Include="SPWindow.cs" />
+    <Compile Include="Guids.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="ReportDeployerPackage.cs" />
+    <Compile Include="SolutionPackagerPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VsHierarchyEvents.cs" />
-    <Compile Include="VsSolutionEvents.cs" />
+    <Compile Include="PkgCmdID.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -232,58 +230,44 @@
     <None Include="Key.snk" />
   </ItemGroup>
   <ItemGroup>
+    <VSCTCompile Include="SolutionPackager.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+    </VSCTCompile>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\report-16.png" />
-    <Resource Include="Resources\sw-file-icon_16.png" />
-    <Resource Include="Resources\settings-24.png" />
-    <Resource Include="Resources\publish-24.png" />
-    <Resource Include="Resources\plus-24.png" />
+    <Resource Include="Resources\package_24.png" />
+    <Resource Include="Resources\unpackage_24.png" />
+    <Resource Include="Resources\solutions_24.png" />
+    <Resource Include="Resources\minus-24.png" />
     <Resource Include="Resources\connected-24.png" />
     <Resource Include="Resources\info-24.png" />
-    <Resource Include="Resources\minus-24.png" />
-    <Resource Include="Resources\download-16.png" />
-    <Resource Include="Resources\open-16.png" />
-    <Resource Include="Resources\deletecache-24.png" />
+    <Resource Include="Resources\customizations_24.png" />
+    <Content Include="Resources\Package.ico" />
+    <Resource Include="Resources\settings-24.png" />
+    <Resource Include="Resources\plus-24.png" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="NewReport.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="ReportList.xaml">
+    <Page Include="SolutionList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrmConnectionWindow\CrmConnectionWindow.csproj">
-      <Project>{ccbcccd5-4ade-4b52-b77b-6c453dc30e1d}</Project>
+      <Project>{CCBCCCD5-4ADE-4B52-B77B-6C453DC30E1D}</Project>
       <Name>CrmConnectionWindow</Name>
     </ProjectReference>
     <ProjectReference Include="..\InfoWindow\InfoWindow.csproj">
-      <Project>{aef6906b-3a68-4614-8790-0d6099b91462}</Project>
+      <Project>{AEF6906B-3A68-4614-8790-0D6099B91462}</Project>
       <Name>InfoWindow</Name>
     </ProjectReference>
     <ProjectReference Include="..\OutputLogger\OutputLogger.csproj">
-      <Project>{062e2258-9817-4834-a946-65cb2b57eab3}</Project>
+      <Project>{062E2258-9817-4834-A946-65CB2B57EAB3}</Project>
       <Name>OutputLogger</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <VSCTCompile Include="ReportDeployer.vsct">
-      <ResourceName>Menus.ctmenu</ResourceName>
-    </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\customizations_24.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\solutions_24.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\reports_24.png" />
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>

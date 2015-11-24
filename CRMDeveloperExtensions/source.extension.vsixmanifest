@@ -26,5 +26,6 @@
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="SdkSearch" Path="|SdkSearch;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ReportDeployer" Path="|ReportDeployer;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="PluginDeployer" Path="|PluginDeployer;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="SolutionPackager" Path="|SolutionPackager;PkgdefProjectOutputGroup|" />
   </Assets>
 </PackageManifest>

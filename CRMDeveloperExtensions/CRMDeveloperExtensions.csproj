@@ -387,6 +387,9 @@
     <TemplateReference Include="CRMSimpleConsole.csproj">
       <PathToProject>../Project%20Templates/CRMSimpleConsole/CRMSimpleConsole.csproj</PathToProject>
     </TemplateReference>
+    <TemplateReference Include="CRMSolutionPackage.csproj">
+      <PathToProject>../Project%20Templates/CRMSolutionPackage/CRMSolutionPackage.csproj</PathToProject>
+    </TemplateReference>
     <TemplateReference Include="CRMTypeScriptProject.csproj">
       <PathToProject>../Project%20Templates/CRMTypeScriptProject/CRMTypeScriptProject.csproj</PathToProject>
     </TemplateReference>
@@ -424,6 +427,7 @@
     <Content Include="Resources\icon.ico" />
     <Content Include="Resources\Plugin_16.png" />
     <Content Include="Resources\Report_16.png" />
+    <Content Include="Resources\Solution_16.png" />
     <Content Include="Resources\WebResource_16.png" />
     <Content Include="snippets.pkgdef">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -474,6 +478,12 @@
       <Name>SdkSearch</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup;BuiltProjectOutputGroupDependencies;GetCopyToOutputDirectoryItems;SatelliteDllsProjectOutputGroup;PkgdefProjectOutputGroup;</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup;</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\SolutionPackager\SolutionPackager.csproj">
+      <Project>{DBDADFC0-2C7D-49CA-B538-5A71BA1BD871}</Project>
+      <Name>SolutionPackager</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\TemplateWizards\TemplateWizards.csproj">
       <Project>{4f1d342a-3f47-485c-888f-b85e54a8662b}</Project>
