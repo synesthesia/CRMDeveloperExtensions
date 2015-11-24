@@ -1,0 +1,34 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
+  <TemplateData>
+    <Name>CRM TypeScript Project</Name>
+    <Description>Dynamics CRM TypeScript Project</Description>
+    <DefaultName>CRMTypeScript</DefaultName>
+    
+    <ProjectType>TypeScript</ProjectType>
+    <ProjectSubType></ProjectSubType>
+    <SortOrder>1000</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>    
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <Icon>sw-file-icon.png</Icon>
+    <TemplateID>fb43b042-7b99-4562-8ac1-5f4941646e46</TemplateID>
+    <!-- Indicates how many parent folders this item template should appear in -->
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+  </TemplateData>
+  <TemplateContent>
+    <Project TargetFileName="CRMTypeScriptProject.csproj" File="CRMTypeScriptProject.csproj" ReplaceParameters="true">      
+    </Project>
+  </TemplateContent>
+  <WizardExtension>
+    <Assembly>TemplateWizards, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</Assembly>
+    <FullClassName>TemplateWizards.VersionWizard</FullClassName>
+  </WizardExtension>
+  <WizardData>
+    <!--Valid values are Plug-in or Workflow or Item-->
+    <CRMProjectType>TypeScript</CRMProjectType>
+    <NeedsClient>False</NeedsClient>
+    <IsUnitTest>False</IsUnitTest>
+    <IsUnitTestItem>False</IsUnitTestItem>
+  </WizardData>
+</VSTemplate>
