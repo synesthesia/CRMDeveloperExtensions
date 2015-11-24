@@ -41,6 +41,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionPackager", "SolutionPackager\SolutionPackager.csproj", "{DBDADFC0-2C7D-49CA-B538-5A71BA1BD871}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMSolutionPackage", "Project Templates\CRMSolutionPackage\CRMSolutionPackage.csproj", "{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonResources", "CommonResources\CommonResources.csproj", "{4F82019C-685B-4349-ACE2-091AD63004B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -108,6 +109,10 @@ Global
 		{DBDADFC0-2C7D-49CA-B538-5A71BA1BD871}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F82019C-685B-4349-ACE2-091AD63004B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
