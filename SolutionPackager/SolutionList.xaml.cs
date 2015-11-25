@@ -1,5 +1,4 @@
-﻿using CrmConnectionWindow;
-using EnvDTE;
+﻿using EnvDTE;
 using EnvDTE80;
 using InfoWindow;
 using Microsoft.Crm.Sdk.Messages;
@@ -15,10 +14,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
+using CommonResources;
 using Window = EnvDTE.Window;
 
 namespace SolutionPackager
@@ -27,14 +26,7 @@ namespace SolutionPackager
     {
         private readonly DTE _dte;
         private readonly DTE2 _dte2;
-        private readonly Solution _solution;
-        private readonly Events _events;
-        private readonly SolutionEvents _solutionEvents;
-        private Projects _projects;
-        private Project _selectedProject;
         private readonly Logger _logger;
-        private CrmConn _selectedConn;
-        private bool _connectionAdded;
         private static OrganizationService _orgService;
 
         public SolutionList()
@@ -51,48 +43,34 @@ namespace SolutionPackager
             if (_dte2 == null)
                 return;
 
-            _solution = _dte.Solution;
-            if (_solution == null)
+            var solution = _dte.Solution;
+            if (solution == null)
                 return;
 
-            _events = _dte.Events;
-            var windowEvents = _events.WindowEvents;
-            windowEvents.WindowActivated += WindowEventsOnWindowActivated;
-            _solutionEvents = _events.SolutionEvents;
-            _solutionEvents.BeforeClosing += BeforeSolutionClosing;
-            _solutionEvents.BeforeClosing += SolutionBeforeClosing;
-            _solutionEvents.ProjectAdded += SolutionProjectAdded;
-            _solutionEvents.ProjectRemoved += SolutionProjectRemoved;
-            _solutionEvents.ProjectRenamed += SolutionProjectRenamed;
+            var events = _dte.Events;
+            var solutionEvents = events.SolutionEvents;
+            solutionEvents.BeforeClosing += BeforeSolutionClosing;
+            solutionEvents.BeforeClosing += SolutionBeforeClosing;
+            solutionEvents.ProjectRemoved += SolutionProjectRemoved;
         }
 
-        private void Connections_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ConnPane_OnConnectionChanged(object sender, ConnectionSelectedEventArgs e)
         {
-            _selectedConn = (CrmConn)Connections.SelectedItem;
-            if (_selectedConn != null)
+            if (e.SelectedConnection != null)
             {
-                Connect.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
-                Delete.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
-                ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
-
-                if (_connectionAdded)
+                if (e.ConnectionAdded)
                 {
-                    _connectionAdded = false;
                     Customizations.IsEnabled = true;
                     Solutions.IsEnabled = true;
                 }
                 else
                 {
-                    UpdateSelectedConnection(false);
                     Customizations.IsEnabled = false;
                     Solutions.IsEnabled = false;
                 }
             }
             else
             {
-                Connect.IsEnabled = false;
-                Delete.IsEnabled = false;
-                ModifyConnection.IsEnabled = false;
                 Customizations.IsEnabled = false;
                 Solutions.IsEnabled = false;
             }
@@ -107,396 +85,42 @@ namespace SolutionPackager
             return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
 
-        private void UpdateSelectedConnection(bool makeSelected)
+        private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
-            try
-            {
-                var path = Path.GetDirectoryName(_selectedProject.FullName);
-                if (!ConfigFileExists(_selectedProject))
-                {
-                    _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-                XmlNodeList connections = doc.GetElementsByTagName("Connection");
-                if (connections.Count > 0)
-                {
-                    foreach (XmlNode node in connections)
-                    {
-                        XmlNode name = node["Name"];
-                        if (name == null) continue;
-
-                        XmlNode selected = node["Selected"];
-                        if (selected == null) continue;
-
-                        if (makeSelected)
-                            selected.InnerText = name.InnerText != _selectedConn.Name ? "False" : "True";
-                        else
-                            selected.InnerText = "False";
-                    }
-
-                    doc.Save(path + "\\CRMDeveloperExtensions.config");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message, Logger.MessageType.Error);
-            }
+            GetSolutions(e.AddedConnection.ConnectionString);
         }
 
-        private void AddConnection_Click(object sender, RoutedEventArgs e)
+        private void ConnPane_OnConnectionDeleted(object sender, EventArgs e)
         {
-            Connection connection = new Connection(null, null);
-            bool? result = connection.ShowDialog();
-
-            if (!result.HasValue || !result.Value) return;
-
-            var configExists = ConfigFileExists(_selectedProject);
-            if (!configExists)
-                CreateConfigFile(_selectedProject);
-
-            Expander.IsExpanded = false;
-
-            bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
-            if (!change) return;
-
-            GetConnections();
-            foreach (CrmConn conn in Connections.Items)
-            {
-                if (conn.Name != connection.ConnectionName) continue;
-
-                Connections.SelectedItem = conn;
-                GetSolutions(conn.ConnectionString);
-                break;
-            }
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
+            Package.IsEnabled = false;
+            Unpackage.IsEnabled = false;
+            SolutionToPackage.ItemsSource = null;
         }
 
-        private void CreateConfigFile(Project vsProject)
+        private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                XmlElement pluginDeployer = doc.CreateElement("PluginDeployer");
-                XmlElement connections = doc.CreateElement("Connections");
-                XmlElement projects = doc.CreateElement("Solutions");
-                pluginDeployer.AppendChild(connections);
-                pluginDeployer.AppendChild(projects);
-                doc.AppendChild(pluginDeployer);
+            GetSolutions(e.ConnectionString);
 
-                var path = Path.GetDirectoryName(vsProject.FullName);
-                doc.Save(path + "/CRMDeveloperExtensions.config");
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Creating Config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-            }
-        }
-
-        private void GetConnections()
-        {
-            Connections.ItemsSource = null;
-
-            var path = Path.GetDirectoryName(_selectedProject.FullName);
-            XmlDocument doc = new XmlDocument();
-
-            if (!ConfigFileExists(_selectedProject))
-            {
-                _logger.WriteToOutputWindow("Error Retrieving Connections From Config File: Missing CRMDeveloperExtensions.config file", Logger.MessageType.Error);
-                return;
-            }
-
-            doc.Load(path + "\\CRMDeveloperExtensions.config");
-            XmlNodeList connections = doc.GetElementsByTagName("Connection");
-            if (connections.Count == 0) return;
-
-            List<CrmConn> crmConnections = new List<CrmConn>();
-
-            foreach (XmlNode node in connections)
-            {
-                CrmConn conn = new CrmConn();
-                XmlNode nameNode = node["Name"];
-                if (nameNode != null)
-                    conn.Name = nameNode.InnerText;
-                XmlNode connectionStringNode = node["ConnectionString"];
-                if (connectionStringNode != null)
-                    conn.ConnectionString = DecodeString(connectionStringNode.InnerText);
-                XmlNode orgIdNode = node["OrgId"];
-                if (orgIdNode != null)
-                    conn.OrgId = orgIdNode.InnerText;
-                XmlNode versionNode = node["Version"];
-                if (versionNode != null)
-                    conn.Version = versionNode.InnerText;
-
-                crmConnections.Add(conn);
-            }
-
-            Connections.ItemsSource = crmConnections;
-
-            if (Connections.SelectedIndex == -1 && crmConnections.Count > 0)
-                Connections.SelectedIndex = 0;
-        }
-
-        private string DecodeString(string value)
-        {
-            byte[] data = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(data);
-        }
-
-        private string EncodeString(string value)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
-        }
-
-        private bool AddOrUpdateConnection(Project vsProject, string connectionName, string connString, string orgId, string versionNum, bool showPrompt)
-        {
-            try
-            {
-                var path = Path.GetDirectoryName(vsProject.FullName);
-                if (!ConfigFileExists(vsProject))
-                {
-                    _logger.WriteToOutputWindow("Error Adding Or Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return false;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-                //Check if connection alredy exists for project
-                XmlNodeList connectionStrings = doc.GetElementsByTagName("ConnectionString");
-                if (connectionStrings.Count > 0)
-                {
-                    foreach (XmlNode node in connectionStrings)
-                    {
-                        string decodedString = DecodeString(node.InnerText);
-                        if (decodedString != connString) continue;
-
-                        if (showPrompt)
-                        {
-                            MessageBoxResult result = MessageBox.Show("Update Connection?", "Connection Already Added",
-                                MessageBoxButton.YesNo);
-
-                            //Update existing connection
-                            if (result != MessageBoxResult.Yes)
-                                return false;
-                        }
-
-                        XmlNode connectionU = node.ParentNode;
-                        if (connectionU != null)
-                        {
-                            XmlNode nameNode = connectionU["Name"];
-                            if (nameNode != null)
-                                nameNode.InnerText = connectionName;
-                            XmlNode versionNode = connectionU["Version"];
-                            if (versionNode != null)
-                                versionNode.InnerText = versionNum;
-                        }
-
-                        doc.Save(path + "\\CRMDeveloperExtensions.config");
-                        return true;
-                    }
-                }
-
-                //Add the connection elements
-                XmlNodeList connections = doc.GetElementsByTagName("Connections");
-                XmlElement connection = doc.CreateElement("Connection");
-                XmlElement name = doc.CreateElement("Name");
-                name.InnerText = connectionName;
-                connection.AppendChild(name);
-                XmlElement org = doc.CreateElement("OrgId");
-                org.InnerText = orgId;
-                connection.AppendChild(org);
-                XmlElement connectionString = doc.CreateElement("ConnectionString");
-                connectionString.InnerText = EncodeString(connString);
-                connection.AppendChild(connectionString);
-                XmlElement version = doc.CreateElement("Version");
-                version.InnerText = versionNum;
-                connection.AppendChild(version);
-                XmlElement selected = doc.CreateElement("Selected");
-                selected.InnerText = "True";
-                connection.AppendChild(selected);
-                connections[0].AppendChild(connection);
-
-                _connectionAdded = true;
-
-                doc.Save(path + "\\CRMDeveloperExtensions.config");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Adding Or Updating Connection: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-                return false;
-            }
-        }
-
-        private void Delete_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                MessageBoxResult result = MessageBox.Show("Are you sure?" + Environment.NewLine + Environment.NewLine +
-                    "This will delete the connection information and all associated mappings.", "Delete Connection", MessageBoxButton.YesNo);
-                if (result != MessageBoxResult.Yes) return;
-
-                if (_selectedConn == null) return;
-                if (string.IsNullOrEmpty(_selectedConn.ConnectionString)) return;
-
-                var path = Path.GetDirectoryName(_selectedProject.FullName);
-                if (!ConfigFileExists(_selectedProject))
-                {
-                    _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return;
-                }
-
-                if (!ConfigFileExists(_selectedProject)) return;
-
-                //Delete Connection
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-                XmlNodeList connections = doc.GetElementsByTagName("Connection");
-                if (connections.Count == 0) return;
-
-                List<XmlNode> nodesToRemove = new List<XmlNode>();
-                foreach (XmlNode connection in connections)
-                {
-                    XmlNode orgId = connection["OrgId"];
-                    if (orgId == null) continue;
-                    if (orgId.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
-
-                    nodesToRemove.Add(connection);
-                }
-
-                foreach (XmlNode xmlNode in nodesToRemove)
-                {
-                    if (xmlNode.ParentNode != null)
-                        xmlNode.ParentNode.RemoveChild(xmlNode);
-                }
-                doc.Save(path + "\\CRMDeveloperExtensions.config");
-
-                //Delete related Files
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-                XmlNodeList files = doc.GetElementsByTagName("File");
-                if (files.Count > 0)
-                {
-                    nodesToRemove = new List<XmlNode>();
-                    foreach (XmlNode file in files)
-                    {
-                        XmlNode orgId = file["OrgId"];
-                        if (orgId == null) continue;
-                        if (orgId.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
-
-                        nodesToRemove.Add(file);
-                    }
-
-                    foreach (XmlNode xmlNode in nodesToRemove)
-                    {
-                        if (xmlNode.ParentNode != null)
-                            xmlNode.ParentNode.RemoveChild(xmlNode);
-                    }
-                    doc.Save(path + "\\CRMDeveloperExtensions.config");
-                }
-
-                Customizations.IsEnabled = false;
-                Solutions.IsEnabled = false;
-                Package.IsEnabled = false;
-                Unpackage.IsEnabled = false;
-                SolutionToPackage.ItemsSource = null;
-
-                GetConnections();
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-            }
-        }
-
-        private void Connect_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedConn == null) return;
-
-            string connString = _selectedConn.ConnectionString;
-            if (string.IsNullOrEmpty(connString)) return;
-
-            UpdateSelectedConnection(true);
-            GetSolutions(connString);
-
-            Expander.IsExpanded = false;
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
             Package.IsEnabled = true;
             Unpackage.IsEnabled = true;
         }
 
-        private void WindowEventsOnWindowActivated(Window gotFocus, Window lostFocus)
+        private void ConnPane_OnProjectChanged(object sender, EventArgs e)
         {
-            if (_projects == null)
-                _projects = _dte.Solution.Projects;
-
-            //No solution loaded
-            if (_solution.Count == 0)
-                return;
-
-            //Lost focus
-            if (gotFocus.Caption != SolutionPackager.Resources.ResourceManager.GetString("ToolWindowTitle")) return;
-
-            Projects.IsEnabled = true;
-            AddConnection.IsEnabled = true;
-            Connections.IsEnabled = true;
-
-            foreach (Project project in _projects)
-            {
-                SolutionProjectAdded(project);
-            }
-        }
-
-        private void Projects_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //No solution loaded
-            if (_solution.Count == 0) return;
-
             Customizations.IsEnabled = false;
             Solutions.IsEnabled = false;
             Package.IsEnabled = false;
             Unpackage.IsEnabled = false;
             SolutionToPackage.ItemsSource = null;
-
-            ComboBoxItem item = (ComboBoxItem)Projects.SelectedItem;
-            if (item == null) return;
-            if (string.IsNullOrEmpty(item.Content.ToString())) return;
-
-            _selectedProject = (Project)((ComboBoxItem)Projects.SelectedItem).Tag;
-            GetConnections();
         }
 
-        private void ModifyConnection_Click(object sender, RoutedEventArgs e)
+        private void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
         {
-            if (_selectedConn == null) return;
-            if (string.IsNullOrEmpty(_selectedConn.ConnectionString)) return;
-
-            string name = _selectedConn.Name;
-            Connection connection = new Connection(name, _selectedConn.ConnectionString);
-            bool? result = connection.ShowDialog();
-
-            if (!result.HasValue || !result.Value) return;
-
-            var configExists = ConfigFileExists(_selectedProject);
-            if (!configExists)
-                CreateConfigFile(_selectedProject);
-
-            Expander.IsExpanded = false;
-
-            AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, false);
-
-            GetConnections();
-            foreach (CrmConn conn in Connections.Items)
-            {
-                if (conn.Name != connection.ConnectionName) continue;
-
-                Connections.SelectedItem = conn;
-                GetSolutions(conn.ConnectionString);
-                break;
-            }
+            GetSolutions(e.ModifiedConnection.ConnectionString);
         }
 
         private void Info_OnClick(object sender, RoutedEventArgs e)
@@ -517,8 +141,8 @@ namespace SolutionPackager
 
         private void OpenCrmPage(string url)
         {
-            if (_selectedConn == null) return;
-            string connString = _selectedConn.ConnectionString;
+            if (ConnPane.SelectedConnection == null) return;
+            string connString = ConnPane.SelectedConnection.ConnectionString;
             if (string.IsNullOrEmpty(connString)) return;
 
             string[] connParts = connString.Split(';');
@@ -611,7 +235,7 @@ namespace SolutionPackager
         {
             try
             {
-                string projectName = _selectedProject.Name;
+                string projectName = ConnPane.SelectedProject.Name;
                 Project project = GetProjectByName(projectName);
                 if (project == null)
                     return new ObservableCollection<CrmSolution>();
@@ -627,7 +251,7 @@ namespace SolutionPackager
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
 
                 List<string> projectNames = new List<string>();
-                foreach (Project p in _projects)
+                foreach (Project p in ConnPane.Projects)
                 {
                     projectNames.Add(p.Name.ToUpper());
                 }
@@ -641,7 +265,7 @@ namespace SolutionPackager
                     {
                         XmlNode orgIdNode = solutionNode["OrgId"];
                         if (orgIdNode == null) continue;
-                        if (orgIdNode.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
+                        if (orgIdNode.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
                         XmlNode solutionId = solutionNode["SolutionId"];
                         if (solutionId == null) continue;
@@ -664,7 +288,7 @@ namespace SolutionPackager
                 {
                     XmlNode orgIdNode = solution["OrgId"];
                     if (orgIdNode == null) continue;
-                    if (orgIdNode.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
+                    if (orgIdNode.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
                     XmlNode solutionId = solution["SolutionId"];
                     if (solutionId == null) continue;
@@ -696,7 +320,7 @@ namespace SolutionPackager
 
         private Project GetProjectByName(string projectName)
         {
-            foreach (Project project in _projects)
+            foreach (Project project in ConnPane.Projects)
             {
                 if (project.Name != projectName) continue;
 
@@ -794,88 +418,25 @@ namespace SolutionPackager
 
         private void ResetForm()
         {
-            Connections.ItemsSource = null;
-            Connections.Items.Clear();
-            Connections.IsEnabled = false;
-            Projects.ItemsSource = null;
-            Projects.Items.Clear();
-            Projects.IsEnabled = false;
-            AddConnection.IsEnabled = false;
             Package.IsEnabled = false;
             Unpackage.IsEnabled = false;
             Customizations.IsEnabled = false;
             Solutions.IsEnabled = false;
         }
 
-        private void SolutionProjectAdded(Project project)
-        {
-            //Don't want to include the VS Miscellaneous Files Project - which appears occasionally and during a diff operation
-            if (project.Name.ToUpper() == "MISCELLANEOUS FILES")
-                return;
-
-            bool addProject = true;
-            foreach (ComboBoxItem projectItem in Projects.Items)
-            {
-                if (projectItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
-
-                addProject = false;
-                break;
-            }
-
-            if (addProject)
-            {
-                ComboBoxItem item = new ComboBoxItem() { Content = project.Name, Tag = project };
-                Projects.Items.Add(item);
-            }
-
-            if (Projects.SelectedIndex == -1)
-                Projects.SelectedIndex = 0;
-
-            _projects = _dte.Solution.Projects;
-        }
-
         private void SolutionProjectRemoved(Project project)
         {
-            foreach (ComboBoxItem comboBoxItem in Projects.Items)
+            if (ConnPane.SelectedProject != null)
             {
-                if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
-                if (comboBoxItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
-
-                Projects.Items.Remove(comboBoxItem);
-                break;
-            }
-
-            if (_selectedProject != null)
-            {
-                if (_selectedProject.FullName == project.FullName)
+                if (ConnPane.SelectedProject.FullName == project.FullName)
                 {
                     SolutionToPackage.ItemsSource = null;
-                    Connections.ItemsSource = null;
-                    Connections.Items.Clear();
-                    Connections.IsEnabled = false;
-                    AddConnection.IsEnabled = false;
                     Package.IsEnabled = false;
                     Unpackage.IsEnabled = false;
                     Customizations.IsEnabled = false;
                     Solutions.IsEnabled = false;
                 }
             }
-
-            _projects = _dte.Solution.Projects;
-        }
-
-        private void SolutionProjectRenamed(Project project, string oldName)
-        {
-            string name = Path.GetFileNameWithoutExtension(oldName);
-            foreach (ComboBoxItem comboBoxItem in Projects.Items)
-            {
-                if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
-                if (name != null && comboBoxItem.Content.ToString().ToUpper() != name.ToUpper()) continue;
-
-                comboBoxItem.Content = project.Name;
-            }
-
-            _projects = _dte.Solution.Projects;
         }
 
         private async void Unpackage_OnClick(object sender, RoutedEventArgs e)
@@ -890,7 +451,7 @@ namespace SolutionPackager
 
             CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
 
-            string path = await System.Threading.Tasks.Task.Run(() => GetSolutionFromCrm(_selectedConn.ConnectionString, selectedSolution));
+            string path = await System.Threading.Tasks.Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution));
             if (string.IsNullOrEmpty(path))
             {
                 _dte.StatusBar.Clear();
@@ -932,9 +493,9 @@ namespace SolutionPackager
             //TODO: Adjust for larger solutions?
             System.Threading.Thread.Sleep(1000);
 
-            RemoveDeletedItems(extractedFolder.FullName, _selectedProject.ProjectItems);
-            ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(_selectedProject.FullName),
-                _selectedProject.ProjectItems);
+            RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
+            ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
+                ConnPane.SelectedProject.ProjectItems);
 
             Directory.Delete(extractedFolder.FullName, true);
         }
@@ -1019,7 +580,7 @@ namespace SolutionPackager
             string command = toolPath + " /action: Pack";
             command += " /zipfile:" + "\"" + Path.GetTempPath() + selectedSolution.UniqueName + "_" +
                         FormatVersionString(selectedSolution.Version) + ".zip" + "\"";
-            command += " /folder: " + "\"" + Path.GetDirectoryName(_selectedProject.FullName) + "\"";
+            command += " /folder: " + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\"";
 
             cw.SendInput("shell " + command, true);
         }
@@ -1072,9 +633,8 @@ namespace SolutionPackager
 
         private void SolutionToPackage_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBoxItem projectItem = (ComboBoxItem)Projects.SelectedItem;
-            if (projectItem == null) return;
-            if (string.IsNullOrEmpty(projectItem.Content.ToString())) return;
+            var selectedProject = ConnPane.SelectedProject;
+            if (selectedProject == null) return;
 
             CrmSolution solution = (CrmSolution)SolutionToPackage.SelectedItem;
             if (solution == null)
@@ -1084,7 +644,7 @@ namespace SolutionPackager
                 return;
             }
 
-            solution.BoundProject = projectItem.Content.ToString();
+            solution.BoundProject = selectedProject.Name;
             AddOrUpdateMapping(solution);
 
             Package.IsEnabled = solution.SolutionId != Guid.Empty;
@@ -1094,8 +654,8 @@ namespace SolutionPackager
         {
             try
             {
-                var projectPath = Path.GetDirectoryName(_selectedProject.FullName);
-                if (!ConfigFileExists(_selectedProject))
+                var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
+                if (!ConfigFileExists(ConnPane.SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;
@@ -1111,7 +671,7 @@ namespace SolutionPackager
                     foreach (XmlNode node in solutionNodes)
                     {
                         XmlNode orgId = node["OrgId"];
-                        if (orgId != null && orgId.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
+                        if (orgId != null && orgId.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
                         XmlNode projectNameNode = node["ProjectName"];
                         if (projectNameNode != null && projectNameNode.InnerText.ToUpper() != solution.BoundProject.ToUpper())
@@ -1143,7 +703,7 @@ namespace SolutionPackager
                 {
                     XmlNode solutionNode = doc.CreateElement("Solution");
                     XmlNode org = doc.CreateElement("OrgId");
-                    org.InnerText = _selectedConn.OrgId;
+                    org.InnerText = ConnPane.SelectedConnection.OrgId;
                     solutionNode.AppendChild(org);
                     XmlNode projectNameNode2 = doc.CreateElement("ProjectName");
                     projectNameNode2.InnerText = solution.BoundProject;

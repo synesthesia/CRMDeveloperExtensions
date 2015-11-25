@@ -21,21 +21,27 @@ namespace CommonResources
     {
         private readonly DTE _dte;
         private readonly Solution _solution;
-        private Projects _projects;
         private readonly Logger _logger;
         private bool _connectionAdded;
 
         public event EventHandler ProjectChanged;
-        public event EventHandler<ConnectionChangedEventArgs> ConnectionChanged;
+        public event EventHandler<ConnectionSelectedEventArgs> ConnectionSelected;
+        public event EventHandler<ConnectionModifiedEventArgs> ConnectionModified;
+        public event EventHandler<ConnectionAddedEventArgs> ConnectionAdded;
+        public event EventHandler ConnectionDeleted;
         public event EventHandler<ConnectEventArgs> Connected;
 
+        
         public Project SelectedProject { get; private set; }
         public CrmConn SelectedConnection { get; private set; }
+        public Projects Projects { get; private set; }
+
+         
 
         public ConnectionPane()
         {
             InitializeComponent();
-
+            
             _logger = new Logger();
 
             _dte = Package.GetGlobalService(typeof(DTE)) as DTE;
@@ -61,7 +67,7 @@ namespace CommonResources
         private void SolutionProjectRenamed(Project project, string oldName)
         {
             string name = Path.GetFileNameWithoutExtension(oldName);
-            foreach (ComboBoxItem comboBoxItem in Projects.Items)
+            foreach (ComboBoxItem comboBoxItem in ProjectsDdl.Items)
             {
                 if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
                 if (name != null && comboBoxItem.Content.ToString().ToUpper() != name.ToUpper()) continue;
@@ -69,17 +75,18 @@ namespace CommonResources
                 comboBoxItem.Content = project.Name;
             }
 
-            _projects = _dte.Solution.Projects;
+            Projects = _dte.Solution.Projects;
         }
 
         private void SolutionProjectRemoved(Project project)
         {
-            foreach (ComboBoxItem comboBoxItem in Projects.Items)
+            // TODO: Can this be replaced with LINQ?
+            foreach (ComboBoxItem comboBoxItem in ProjectsDdl.Items)
             {
                 if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
                 if (comboBoxItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
 
-                Projects.Items.Remove(comboBoxItem);
+                ProjectsDdl.Items.Remove(comboBoxItem);
                 break;
             }
 
@@ -94,7 +101,7 @@ namespace CommonResources
                 }
             }
 
-            _projects = _dte.Solution.Projects;
+            Projects = _dte.Solution.Projects;
         }
 
         private void ConnectionPane_OnUnloaded(object sender, RoutedEventArgs e)
@@ -109,8 +116,8 @@ namespace CommonResources
 
         private void WindowEventsOnWindowActivated(Window gotFocus, Window lostFocus)
         {
-            if (_projects == null)
-                _projects = _dte.Solution.Projects;
+            if (Projects == null)
+                Projects = _dte.Solution.Projects;
 
             //No solution loaded
             if (_solution.Count == 0)
@@ -118,12 +125,15 @@ namespace CommonResources
                 ResetForm();
                 return;
             }
+            
+            // TODO: What is the purpose of this line?
+            //if (gotFocus.Caption != SolutionPackager.Resources.ResourceManager.GetString("ToolWindowTitle")) return;
 
-            Projects.IsEnabled = true;
+            ProjectsDdl.IsEnabled = true;
             AddConnection.IsEnabled = true;
             Connections.IsEnabled = true;
 
-            foreach (Project project in _projects)
+            foreach (Project project in Projects)
             {
                 SolutionProjectAdded(project);
             }
@@ -136,7 +146,7 @@ namespace CommonResources
                 return;
 
             bool addProject = true;
-            foreach (ComboBoxItem projectItem in Projects.Items)
+            foreach (ComboBoxItem projectItem in ProjectsDdl.Items)
             {
                 if (projectItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
 
@@ -147,24 +157,23 @@ namespace CommonResources
             if (addProject)
             {
                 ComboBoxItem item = new ComboBoxItem() { Content = project.Name, Tag = project };
-                Projects.Items.Add(item);
+                ProjectsDdl.Items.Add(item);
             }
 
-            if (Projects.SelectedIndex == -1)
-                Projects.SelectedIndex = 0;
+            if (ProjectsDdl.SelectedIndex == -1)
+                ProjectsDdl.SelectedIndex = 0;
 
-            _projects = _dte.Solution.Projects;
+            Projects = _dte.Solution.Projects;
         }
 
         private void ResetForm()
         {
-
             Connections.ItemsSource = null;
             Connections.Items.Clear();
             Connections.IsEnabled = false;
-            Projects.ItemsSource = null;
-            Projects.Items.Clear();
-            Projects.IsEnabled = false;
+            ProjectsDdl.ItemsSource = null;
+            ProjectsDdl.Items.Clear();
+            ProjectsDdl.IsEnabled = false;
             AddConnection.IsEnabled = false;
         }
 
@@ -173,11 +182,16 @@ namespace CommonResources
             //No solution loaded
             if (_solution.Count == 0) return;
 
-            ComboBoxItem item = (ComboBoxItem)Projects.SelectedItem;
+            ComboBoxItem item = (ComboBoxItem)ProjectsDdl.SelectedItem;
             if (item == null) return;
-            if (string.IsNullOrEmpty(item.Content.ToString())) return;
+            if (string.IsNullOrEmpty(item.Content.ToString()))
+            {
+                SelectedProject = null;
+                OnProjectChanged();
+                return;
+            }
 
-            SelectedProject = (Project)((ComboBoxItem)Projects.SelectedItem).Tag;
+            SelectedProject = (Project)((ComboBoxItem)ProjectsDdl.SelectedItem).Tag;
             GetConnections();
 
             OnProjectChanged();
@@ -252,6 +266,11 @@ namespace CommonResources
                 {
                     _connectionAdded = false;
                 }
+                else
+                {
+                    // TODO: Is it really necessary to update the selected connection here?
+                    UpdateSelectedConnection(false);
+                }
             }
             else
             {
@@ -260,7 +279,7 @@ namespace CommonResources
                 ModifyConnection.IsEnabled = false;
             }
 
-            OnConnectionChanged(new ConnectionChangedEventArgs
+            OnConnectionSelected(new ConnectionSelectedEventArgs
             {
                 SelectedConnection = SelectedConnection,
                 ConnectionAdded = _connectionAdded
@@ -284,11 +303,18 @@ namespace CommonResources
             if (!change) return;
 
             GetConnections();
+
+            // TODO: Can this be done using LINQ?
             foreach (CrmConn conn in Connections.Items)
             {
                 if (conn.Name != connection.ConnectionName) continue;
 
                 Connections.SelectedItem = conn;
+                OnConnectionAdded(new ConnectionAddedEventArgs
+                {
+                    AddedConnection = conn
+                });
+
                 break;
             }
         }
@@ -307,7 +333,7 @@ namespace CommonResources
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
 
-                //Check if connection alredy exists for project
+                //Check if connection already exists for project
                 XmlNodeList connectionStrings = doc.GetElementsByTagName("ConnectionString");
                 if (connectionStrings.Count > 0)
                 {
@@ -420,11 +446,16 @@ namespace CommonResources
             AddOrUpdateConnection(SelectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, false);
 
             GetConnections();
+            // TODO: Can this be replaced with LINQ?
             foreach (CrmConn conn in Connections.Items)
             {
                 if (conn.Name != connection.ConnectionName) continue;
 
                 Connections.SelectedItem = conn;
+                OnConnectionModified(new ConnectionModifiedEventArgs
+                {
+                    ModifiedConnection = conn
+                });
                 break;
             }
         }
@@ -496,6 +527,8 @@ namespace CommonResources
                 }
 
                 GetConnections();
+
+                OnConnectionDeleted();
             }
             catch (Exception ex)
             {
@@ -566,15 +599,33 @@ namespace CommonResources
             if (handler != null) handler(this, EventArgs.Empty);
         }
 
-        protected virtual void OnConnectionChanged(ConnectionChangedEventArgs e)
+        protected virtual void OnConnectionSelected(ConnectionSelectedEventArgs e)
         {
-            var handler = ConnectionChanged;
+            var handler = ConnectionSelected;
             if (handler != null) handler(this, e);
         }
 
         protected virtual void OnConnected(ConnectEventArgs e)
         {
             var handler = Connected;
+            if (handler != null) handler(this, e);
+        }
+
+        protected virtual void OnConnectionAdded(ConnectionAddedEventArgs e)
+        {
+            var handler = ConnectionAdded;
+            if (handler != null) handler(this, e);
+        }
+
+        protected virtual void OnConnectionDeleted()
+        {
+            var handler = ConnectionDeleted;
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnConnectionModified(ConnectionModifiedEventArgs e)
+        {
+            var handler = ConnectionModified;
             if (handler != null) handler(this, e);
         }
     }
@@ -584,10 +635,20 @@ namespace CommonResources
         public string ConnectionString { get; set; }
     }
 
-    public class ConnectionChangedEventArgs
+    public class ConnectionSelectedEventArgs
     {
         public CrmConn SelectedConnection { get; set; }
 
         public bool ConnectionAdded { get; set; }
+    }
+
+    public class ConnectionAddedEventArgs
+    {
+        public CrmConn AddedConnection { get; set; }
+    }
+
+    public class ConnectionModifiedEventArgs
+    {
+        public CrmConn ModifiedConnection { get; set; }
     }
 }
