@@ -88,7 +88,7 @@ namespace PluginDeployer
             return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
 
-        private void ConnPane_OnConnectionChanged(object sender, ConnectionChangedEventArgs e)
+        private void ConnPane_OnConnectionChanged(object sender, ConnectionSelectedEventArgs e)
         {
             if (e.SelectedConnection != null)
             {

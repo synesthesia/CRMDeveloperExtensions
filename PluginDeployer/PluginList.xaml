@@ -16,7 +16,7 @@
         </Grid.ColumnDefinitions>
         <commonResources:ConnectionPane Grid.Column="0" Name="ConnPane"
                                         ProjectChanged="ConnPane_OnProjectChanged"
-                                        ConnectionChanged="ConnPane_OnConnectionChanged"
+                                        ConnectionSelected="ConnPane_OnConnectionChanged"
                                         Connected="ConnPane_OnConnected"/>
         <Grid Column="1" HorizontalAlignment="Stretch">
             <StackPanel>
