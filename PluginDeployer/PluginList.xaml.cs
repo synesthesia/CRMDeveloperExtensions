@@ -30,7 +30,6 @@ namespace PluginDeployer
     {
         private readonly DTE _dte;
         private readonly Solution _solution;
-        private Projects _projects;
         private readonly Logger _logger;
         private bool _isIlMergeInstalled;
 
@@ -308,9 +307,6 @@ namespace PluginDeployer
 
         private void WindowEventsOnWindowActivated(Window gotFocus, Window lostFocus)
         {
-            if (_projects == null)
-                _projects = _dte.Solution.Projects;
-
             //No solution loaded
             if (_solution.Count == 0)
             {
@@ -345,8 +341,6 @@ namespace PluginDeployer
                     Solutions.IsEnabled = false;
                 }
             }
-
-            _projects = _dte.Solution.Projects;
         }
 
         private void BeforeSolutionClosing()
@@ -511,7 +505,7 @@ namespace PluginDeployer
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
 
                 List<string> projectNames = new List<string>();
-                foreach (Project p in _projects)
+                foreach (Project p in ConnPane.Projects)
                 {
                     projectNames.Add(p.Name.ToUpper());
                 }
@@ -580,7 +574,7 @@ namespace PluginDeployer
 
         private Project GetProjectByName(string projectName)
         {
-            foreach (Project project in _projects)
+            foreach (Project project in ConnPane.Projects)
             {
                 if (project.Name != projectName) continue;
 

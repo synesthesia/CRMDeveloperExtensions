@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.Text;
 using System.Xml;
+using CommonResources.Models;
 using Window = EnvDTE.Window;
 
 namespace ReportDeployer
