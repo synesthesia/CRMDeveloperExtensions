@@ -56,12 +56,17 @@ namespace CommonResources
             var windowEvents = events.WindowEvents;
             windowEvents.WindowActivated += WindowEventsOnWindowActivated;
 
-            windowEvents.WindowActivated += WindowEventsOnWindowActivated;
             var solutionEvents = events.SolutionEvents;
             solutionEvents.BeforeClosing += BeforeSolutionClosing;
             solutionEvents.ProjectAdded += SolutionProjectAdded;
+            solutionEvents.Opened += SolutionEventsOnOpened;
             solutionEvents.ProjectRemoved += SolutionProjectRemoved;
             solutionEvents.ProjectRenamed += SolutionProjectRenamed;
+        }
+
+        private void SolutionEventsOnOpened()
+        {
+            Projects = _dte.Solution.Projects;
         }
 
         private void SolutionProjectRenamed(Project project, string oldName)
@@ -310,6 +315,7 @@ namespace CommonResources
                 if (conn.Name != connection.ConnectionName) continue;
 
                 Connections.SelectedItem = conn;
+                // TODO: Should this actually fire OnConnectionSelected?
                 OnConnectionAdded(new ConnectionAddedEventArgs
                 {
                     AddedConnection = conn
