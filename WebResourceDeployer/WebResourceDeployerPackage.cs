@@ -14,6 +14,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Windows;
 using System.Xml;
+using CommonResources.Models;
 using WebResourceDeployer.Models;
 using Window = EnvDTE.Window;
 
