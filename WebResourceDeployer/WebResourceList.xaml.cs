@@ -1,5 +1,4 @@
-﻿using CrmConnectionWindow;
-using EnvDTE;
+﻿using EnvDTE;
 using EnvDTE80;
 using InfoWindow;
 using Microsoft.Crm.Sdk.Messages;
@@ -30,6 +29,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
+using CommonResources;
 using WebResourceDeployer.Models;
 using Window = EnvDTE.Window;
 
@@ -40,22 +40,12 @@ namespace WebResourceDeployer
         //All DTE objects need to be declared here or else things stop working
         private readonly DTE _dte;
         private readonly Solution _solution;
-        private readonly Events _events;
-        private readonly Events2 _events2;
-        private readonly SolutionEvents _solutionEvents;
-        private readonly ProjectItemsEvents _projectItemsEvents;
-        private Projects _projects;
-        private IVsSolutionEvents _vsSolutionEvents;
         private readonly IVsSolution _vsSolution;
-        private uint _solutionEventsCookie;
 
         private List<WebResourceItem> _movedWebResourceItems;
         private List<string> _movedBoundFiles;
         private uint _movedItemid;
-        private CrmConn _selectedConn;
-        private Project _selectedProject;
         private bool _projectEventsRegistered;
-        private bool _connectionAdded;
         private readonly Logger _logger;
 
         private readonly FieldInfo _menuDropAlignmentField;
@@ -65,6 +55,7 @@ namespace WebResourceDeployer
 
         public WebResourceList()
         {
+            uint solutionEventsCookie;
             InitializeComponent();
 
             _logger = new Logger();
@@ -77,24 +68,21 @@ namespace WebResourceDeployer
             if (_solution == null)
                 return;
 
-            _events = _dte.Events;
-            var windowEvents = _events.WindowEvents;
+            var events = _dte.Events;
+            var windowEvents = events.WindowEvents;
             windowEvents.WindowActivated += WindowEventsOnWindowActivated;
-            _solutionEvents = _events.SolutionEvents;
-            _solutionEvents.BeforeClosing += BeforeSolutionClosing;
-            _solutionEvents.Opened += SolutionOpened;
-            _solutionEvents.BeforeClosing += SolutionBeforeClosing;
-            _solutionEvents.ProjectAdded += SolutionProjectAdded;
-            _solutionEvents.ProjectRemoved += SolutionProjectRemoved;
-            _solutionEvents.ProjectRenamed += SolutionProjectRenamed;
+            var solutionEvents = events.SolutionEvents;
+            solutionEvents.BeforeClosing += BeforeSolutionClosing;
+            solutionEvents.BeforeClosing += SolutionBeforeClosing;
+            solutionEvents.ProjectRemoved += SolutionProjectRemoved;
 
-            _events2 = (Events2)_dte.Events;
-            _projectItemsEvents = _events2.ProjectItemsEvents;
-            _projectItemsEvents.ItemRenamed += ProjectItemRenamed;
+            var events2 = (Events2)_dte.Events;
+            var projectItemsEvents = events2.ProjectItemsEvents;
+            projectItemsEvents.ItemRenamed += ProjectItemRenamed;
 
-            _vsSolutionEvents = new VsSolutionEvents(this);
+            IVsSolutionEvents vsSolutionEvents = new VsSolutionEvents(this);
             _vsSolution = (IVsSolution)ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution));
-            _vsSolution.AdviseSolutionEvents(_vsSolutionEvents, out _solutionEventsCookie);
+            _vsSolution.AdviseSolutionEvents(vsSolutionEvents, out solutionEventsCookie);
 
             //Fix for Tablet/Touchscreen left-right menu
             _menuDropAlignmentField = typeof(SystemParameters).GetField("_menuDropAlignment", BindingFlags.NonPublic | BindingFlags.Static);
@@ -118,26 +106,11 @@ namespace WebResourceDeployer
 
         private void WindowEventsOnWindowActivated(Window gotFocus, Window lostFocus)
         {
-            if (_projects == null)
-                _projects = _dte.Solution.Projects;
-
             //No solution loaded
             if (_solution.Count == 0)
             {
                 ResetForm();
                 return;
-            }
-
-            //Lost focus
-            if (gotFocus.Caption != WebResourceDeployer.Resources.ResourceManager.GetString("ToolWindowTitle")) return;
-
-            Projects.IsEnabled = true;
-            AddConnection.IsEnabled = true;
-            Connections.IsEnabled = true;
-
-            foreach (Project project in _projects)
-            {
-                SolutionProjectAdded(project);
             }
 
             if (!_projectEventsRegistered)
@@ -150,7 +123,7 @@ namespace WebResourceDeployer
         private void RegisterProjectEvents()
         {
             //Manually register the OnAfterOpenProject event on the existing projects as they are already opened by the time the event would normally be registered
-            foreach (Project project in _projects)
+            foreach (Project project in ConnPane.Projects)
             {
                 IVsHierarchy projectHierarchy;
                 if (_vsSolution.GetProjectOfUniqueName(project.UniqueName, out projectHierarchy) != VSConstants.S_OK)
@@ -224,7 +197,7 @@ namespace WebResourceDeployer
                 }
             }
 
-            ProjectFileList.ItemsSource = GetProjectFiles(_selectedProject.Name);
+            ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject.Name);
         }
 
         public void ProjectItemRemoved(ProjectItem projectItem, uint itemid)
@@ -346,11 +319,11 @@ namespace WebResourceDeployer
                     _movedItemid = 0;
                 }
 
-                ProjectFileList.ItemsSource = GetProjectFiles(_selectedProject.Name);
+                ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject.Name);
             }
             else if (projectItem.Kind.ToUpper() == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //Folder
             {
-                ObservableCollection<MenuItem> projectFolders = GetProjectFolders(_selectedProject.Name);
+                ObservableCollection<MenuItem> projectFolders = GetProjectFolders(ConnPane.SelectedProject.Name);
 
                 foreach (WebResourceItem webResourceItem in webResources)
                 {
@@ -389,48 +362,16 @@ namespace WebResourceDeployer
         private bool IsItemInSelectedProject(ProjectItem projectItem)
         {
             Project project = projectItem.ContainingProject;
-            return _selectedProject == project;
-        }
-
-        private void SolutionOpened()
-        {
-            _projects = _dte.Solution.Projects;
-        }
-
-        private void SolutionProjectRenamed(Project project, string oldName)
-        {
-            string name = Path.GetFileNameWithoutExtension(oldName);
-            foreach (ComboBoxItem comboBoxItem in Projects.Items)
-            {
-                if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
-                if (name != null && comboBoxItem.Content.ToString().ToUpper() != name.ToUpper()) continue;
-
-                comboBoxItem.Content = project.Name;
-            }
-
-            _projects = _dte.Solution.Projects;
+            return ConnPane.SelectedProject == project;
         }
 
         private void SolutionProjectRemoved(Project project)
         {
-            foreach (ComboBoxItem comboBoxItem in Projects.Items)
+            if (ConnPane.SelectedProject != null)
             {
-                if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
-                if (comboBoxItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
-
-                Projects.Items.Remove(comboBoxItem);
-                break;
-            }
-
-            if (_selectedProject != null)
-            {
-                if (_selectedProject.FullName == project.FullName)
+                if (ConnPane.SelectedProject.FullName == project.FullName)
                 {
                     WebResourceGrid.ItemsSource = null;
-                    Connections.ItemsSource = null;
-                    Connections.Items.Clear();
-                    Connections.IsEnabled = false;
-                    AddConnection.IsEnabled = false;
                     Publish.IsEnabled = false;
                     Customizations.IsEnabled = false;
                     Solutions.IsEnabled = false;
@@ -438,35 +379,6 @@ namespace WebResourceDeployer
                     AddWebResource.IsEnabled = false;
                 }
             }
-
-            _projects = _dte.Solution.Projects;
-        }
-
-        private void SolutionProjectAdded(Project project)
-        {
-            //Don't want to include the VS Miscellaneous Files Project - which appears occasionally and during a diff operation
-            if (project.Name.ToUpper() == "MISCELLANEOUS FILES")
-                return;
-
-            bool addProject = true;
-            foreach (ComboBoxItem projectItem in Projects.Items)
-            {
-                if (projectItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
-
-                addProject = false;
-                break;
-            }
-
-            if (addProject)
-            {
-                ComboBoxItem item = new ComboBoxItem() { Content = project.Name, Tag = project };
-                Projects.Items.Add(item);
-            }
-
-            if (Projects.SelectedIndex == -1)
-                Projects.SelectedIndex = 0;
-
-            _projects = _dte.Solution.Projects;
         }
 
         private void BeforeSolutionClosing()
@@ -477,13 +389,6 @@ namespace WebResourceDeployer
         private void ResetForm()
         {
             WebResourceGrid.ItemsSource = null;
-            Connections.ItemsSource = null;
-            Connections.Items.Clear();
-            Connections.IsEnabled = false;
-            Projects.ItemsSource = null;
-            Projects.Items.Clear();
-            Projects.IsEnabled = false;
-            AddConnection.IsEnabled = false;
             Publish.IsEnabled = false;
             Customizations.IsEnabled = false;
             Solutions.IsEnabled = false;
@@ -491,135 +396,10 @@ namespace WebResourceDeployer
             AddWebResource.IsEnabled = false;
         }
 
-        private async void AddConnection_Click(object sender, RoutedEventArgs e)
+        private async void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
-            Connection connection = new Connection(null, null);
-            bool? result = connection.ShowDialog();
-
-            if (!result.HasValue || !result.Value) return;
-
-            var configExists = ConfigFileExists(_selectedProject);
-            if (!configExists)
-                CreateConfigFile(_selectedProject);
-
-            Expander.IsExpanded = false;
-
-            bool change = AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
-
-            if (!change) return;
-
-            GetConnections();
-            foreach (CrmConn conn in Connections.Items)
-            {
-                if (conn.Name != connection.ConnectionName) continue;
-
-                Connections.SelectedItem = conn;
-                await GetSolutions();
-                await GetWebResources(connection.ConnectionString);
-                break;
-            }
-        }
-
-        private bool AddOrUpdateConnection(Project vsProject, string connectionName, string connString, string orgId, string versionNum, bool showPrompt)
-        {
-            try
-            {
-                var path = Path.GetDirectoryName(vsProject.FullName);
-                if (!ConfigFileExists(vsProject))
-                {
-                    _logger.WriteToOutputWindow("Error Adding Or Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return false;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-                //Check if connection alredy exists for project
-                XmlNodeList connectionStrings = doc.GetElementsByTagName("ConnectionString");
-                if (connectionStrings.Count > 0)
-                {
-                    foreach (XmlNode node in connectionStrings)
-                    {
-                        string decodedString = DecodeString(node.InnerText);
-                        if (decodedString != connString) continue;
-
-                        if (showPrompt)
-                        {
-                            MessageBoxResult result = MessageBox.Show("Update Connection?", "Connection Already Added",
-                                MessageBoxButton.YesNo);
-
-                            //Update existing connection
-                            if (result != MessageBoxResult.Yes)
-                                return false;
-                        }
-
-                        XmlNode connectionU = node.ParentNode;
-                        if (connectionU != null)
-                        {
-                            XmlNode nameNode = connectionU["Name"];
-                            if (nameNode != null)
-                                nameNode.InnerText = connectionName;
-                            XmlNode versionNode = connectionU["Version"];
-                            if (versionNode != null)
-                                versionNode.InnerText = versionNum;
-                        }
-
-                        doc.Save(path + "\\CRMDeveloperExtensions.config");
-                        return true;
-                    }
-                }
-
-                //Add the connection elements
-                XmlNodeList connections = doc.GetElementsByTagName("Connections");
-                XmlElement connection = doc.CreateElement("Connection");
-                XmlElement name = doc.CreateElement("Name");
-                name.InnerText = connectionName;
-                connection.AppendChild(name);
-                XmlElement org = doc.CreateElement("OrgId");
-                org.InnerText = orgId;
-                connection.AppendChild(org);
-                XmlElement connectionString = doc.CreateElement("ConnectionString");
-                connectionString.InnerText = EncodeString(connString);
-                connection.AppendChild(connectionString);
-                XmlElement version = doc.CreateElement("Version");
-                version.InnerText = versionNum;
-                connection.AppendChild(version);
-                XmlElement selected = doc.CreateElement("Selected");
-                selected.InnerText = "True";
-                connection.AppendChild(selected);
-                connections[0].AppendChild(connection);
-
-                _connectionAdded = true;
-
-                doc.Save(path + "\\CRMDeveloperExtensions.config");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Adding Or Updating Connection: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-                return false;
-            }
-        }
-
-        private void CreateConfigFile(Project vsProject)
-        {
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                XmlElement webResourceDeployer = doc.CreateElement("WebResourceDeployer");
-                XmlElement connections = doc.CreateElement("Connections");
-                XmlElement files = doc.CreateElement("Files");
-                webResourceDeployer.AppendChild(connections);
-                webResourceDeployer.AppendChild(files);
-                doc.AppendChild(webResourceDeployer);
-
-                var path = Path.GetDirectoryName(vsProject.FullName);
-                doc.Save(path + "/CRMDeveloperExtensions.config");
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Creating Config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-            }
+            await GetSolutions();
+            await GetWebResources(e.AddedConnection.ConnectionString);
         }
 
         private bool ConfigFileExists(Project project)
@@ -630,7 +410,7 @@ namespace WebResourceDeployer
 
         private Project GetProjectByName(string projectName)
         {
-            foreach (Project project in _projects)
+            foreach (Project project in ConnPane.Projects)
             {
                 if (project.Name != projectName) continue;
 
@@ -760,50 +540,6 @@ namespace WebResourceDeployer
             return projectFolders;
         }
 
-        private void GetConnections()
-        {
-            Connections.ItemsSource = null;
-
-            var path = Path.GetDirectoryName(_selectedProject.FullName);
-            XmlDocument doc = new XmlDocument();
-
-            if (!ConfigFileExists(_selectedProject))
-            {
-                _logger.WriteToOutputWindow("Error Retrieving Connections From Config File: Missing CRMDeveloperExtensions.config file", Logger.MessageType.Error);
-                return;
-            }
-
-            doc.Load(path + "\\CRMDeveloperExtensions.config");
-            XmlNodeList connections = doc.GetElementsByTagName("Connection");
-            if (connections.Count == 0) return;
-
-            List<CrmConn> crmConnections = new List<CrmConn>();
-
-            foreach (XmlNode node in connections)
-            {
-                CrmConn conn = new CrmConn();
-                XmlNode nameNode = node["Name"];
-                if (nameNode != null)
-                    conn.Name = nameNode.InnerText;
-                XmlNode connectionStringNode = node["ConnectionString"];
-                if (connectionStringNode != null)
-                    conn.ConnectionString = DecodeString(connectionStringNode.InnerText);
-                XmlNode orgIdNode = node["OrgId"];
-                if (orgIdNode != null)
-                    conn.OrgId = orgIdNode.InnerText;
-                XmlNode versionNode = node["Version"];
-                if (versionNode != null)
-                    conn.Version = versionNode.InnerText;
-
-                crmConnections.Add(conn);
-            }
-
-            Connections.ItemsSource = crmConnections;
-
-            if (Connections.SelectedIndex == -1 && crmConnections.Count > 0)
-                Connections.SelectedIndex = 0;
-        }
-
         private static string EncodedImage(string filePath, string extension)
         {
             string encodedImage;
@@ -855,41 +591,27 @@ namespace WebResourceDeployer
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         }
 
-        private string DecodeString(string value)
-        {
-            byte[] data = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(data);
-        }
-
         private byte[] DecodeWebResource(string value)
         {
             return Convert.FromBase64String(value);
         }
 
-        private async void Connect_Click(object sender, RoutedEventArgs e)
+        private async void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
-            if (_selectedConn == null) return;
-
-            string connString = _selectedConn.ConnectionString;
-            if (string.IsNullOrEmpty(connString)) return;
-
-            UpdateSelectedConnection(true);
-
             WebResourceType.SelectedIndex = -1;
             ShowManaged.IsChecked = false;
 
-            Expander.IsExpanded = false;
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
             SolutionList.IsEnabled = true;
 
             await GetSolutions();
-            await GetWebResources(connString);
+            await GetWebResources(e.ConnectionString);
         }
 
         private async Task<bool> GetWebResources(string connString)
         {
-            string projectName = _selectedProject.Name;
+            string projectName = ConnPane.SelectedProject.Name;
             CrmConnection connection = CrmConnection.Parse(connString);
 
             _dte.StatusBar.Text = "Connecting to CRM and getting web resources...";
@@ -1047,7 +769,7 @@ namespace WebResourceDeployer
         {
             try
             {
-                string projectName = _selectedProject.Name;
+                string projectName = ConnPane.SelectedProject.Name;
                 Project project = GetProjectByName(projectName);
                 if (project == null)
                     return new List<WebResourceItem>();
@@ -1074,7 +796,7 @@ namespace WebResourceDeployer
                     {
                         XmlNode orgIdNode = file["OrgId"];
                         if (orgIdNode == null) continue;
-                        if (orgIdNode.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
+                        if (orgIdNode.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
                         XmlNode webResourceId = file["WebResourceId"];
                         if (webResourceId == null) continue;
@@ -1103,7 +825,7 @@ namespace WebResourceDeployer
                 {
                     XmlNode orgIdNode = file["OrgId"];
                     if (orgIdNode == null) continue;
-                    if (orgIdNode.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
+                    if (orgIdNode.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
                     XmlNode webResourceId = file["WebResourceId"];
                     if (webResourceId == null) continue;
@@ -1211,8 +933,8 @@ namespace WebResourceDeployer
         {
             try
             {
-                var projectPath = Path.GetDirectoryName(_selectedProject.FullName);
-                if (!ConfigFileExists(_selectedProject))
+                var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
+                if (!ConfigFileExists(ConnPane.SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;
@@ -1231,7 +953,7 @@ namespace WebResourceDeployer
                     foreach (XmlNode node in fileNodes)
                     {
                         XmlNode orgId = node["OrgId"];
-                        if (orgId != null && orgId.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
+                        if (orgId != null && orgId.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
                         XmlNode webResourceId = node["WebResourceId"];
                         if (webResourceId != null && webResourceId.InnerText.ToUpper() !=
@@ -1287,7 +1009,7 @@ namespace WebResourceDeployer
                 {
                     XmlNode file = doc.CreateElement("File");
                     XmlNode org = doc.CreateElement("OrgId");
-                    org.InnerText = _selectedConn.OrgId;
+                    org.InnerText = ConnPane.SelectedConnection.OrgId;
                     file.AppendChild(org);
                     XmlNode path = doc.CreateElement("Path");
                     path.InnerText = item.BoundFile;
@@ -1334,8 +1056,8 @@ namespace WebResourceDeployer
                     folder = String.Empty;
             }
 
-            string connString = _selectedConn.ConnectionString;
-            string projectName = ((ComboBoxItem)Projects.SelectedItem).Content.ToString();
+            string connString = ConnPane.SelectedConnection.ConnectionString;
+            string projectName = ConnPane.SelectedProject.Name;
             DownloadWebResource(webResourceId, folder, connString, projectName);
         }
 
@@ -1345,8 +1067,8 @@ namespace WebResourceDeployer
             string folder = item.Header.ToString();
             Guid webResourceId = (Guid)item.CommandParameter;
 
-            string connString = _selectedConn.ConnectionString;
-            string projectName = _selectedProject.Name;
+            string connString = ConnPane.SelectedConnection.ConnectionString;
+            string projectName = ConnPane.SelectedProject.Name;
             DownloadWebResource(webResourceId, folder, connString, projectName);
         }
 
@@ -1474,7 +1196,7 @@ namespace WebResourceDeployer
             if (selectedItems.Any(p => p.BoundFile.ToUpper().EndsWith("TS")))
             {
                 SolutionBuild solutionBuild = _dte.Solution.SolutionBuild;
-                solutionBuild.BuildProject(_dte.Solution.SolutionBuild.ActiveConfiguration.Name, _selectedProject.UniqueName, true);
+                solutionBuild.BuildProject(_dte.Solution.SolutionBuild.ActiveConfiguration.Name, ConnPane.SelectedProject.UniqueName, true);
             }
 
             UpdateWebResources(selectedItems);
@@ -1482,11 +1204,11 @@ namespace WebResourceDeployer
 
         private async void UpdateWebResources(List<WebResourceItem> items)
         {
-            string projectName = _selectedProject.Name;
+            string projectName = ConnPane.SelectedProject.Name;
             Project project = GetProjectByName(projectName);
             if (project == null) return;
 
-            string connString = _selectedConn.ConnectionString;
+            string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
             CrmConnection connection = CrmConnection.Parse(connString);
 
@@ -1495,7 +1217,7 @@ namespace WebResourceDeployer
 
             bool success;
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
-            Version version = Version.Parse(_selectedConn.Version);
+            Version version = Version.Parse(ConnPane.SelectedConnection.Version);
             if (version.Major == 5 && version.Revision < 3200)
                 success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(items, project, connection));
             else
@@ -1696,18 +1418,12 @@ namespace WebResourceDeployer
             }
         }
 
-        private void Connections_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ConnPane_OnConnectionSelected(object sender, ConnectionSelectedEventArgs e)
         {
-            _selectedConn = (CrmConn)Connections.SelectedItem;
-            if (_selectedConn != null)
+            if (e.SelectedConnection != null)
             {
-                Connect.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
-                Delete.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
-                ModifyConnection.IsEnabled = !string.IsNullOrEmpty(_selectedConn.Name);
-
-                if (_connectionAdded)
+                if (e.ConnectionAdded)
                 {
-                    _connectionAdded = false;
                     Customizations.IsEnabled = true;
                     Solutions.IsEnabled = true;
                     SolutionList.IsEnabled = true;
@@ -1715,7 +1431,6 @@ namespace WebResourceDeployer
                 }
                 else
                 {
-                    UpdateSelectedConnection(false);
                     Customizations.IsEnabled = false;
                     Solutions.IsEnabled = false;
                     SolutionList.IsEnabled = false;
@@ -1724,9 +1439,6 @@ namespace WebResourceDeployer
             }
             else
             {
-                Connect.IsEnabled = false;
-                Delete.IsEnabled = false;
-                ModifyConnection.IsEnabled = false;
                 Customizations.IsEnabled = false;
                 Solutions.IsEnabled = false;
                 SolutionList.IsEnabled = false;
@@ -1741,56 +1453,13 @@ namespace WebResourceDeployer
             WebResourceGrid.IsEnabled = false;
         }
 
-        private void UpdateSelectedConnection(bool makeSelected)
-        {
-            try
-            {
-                var path = Path.GetDirectoryName(_selectedProject.FullName);
-                if (!ConfigFileExists(_selectedProject))
-                {
-                    _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-                XmlNodeList connections = doc.GetElementsByTagName("Connection");
-                if (connections.Count > 0)
-                {
-                    foreach (XmlNode node in connections)
-                    {
-                        XmlNode name = node["Name"];
-                        if (name == null) continue;
-
-                        XmlNode selected = node["Selected"];
-                        if (selected == null) continue;
-
-                        if (makeSelected)
-                            selected.InnerText = name.InnerText != _selectedConn.Name ? "False" : "True";
-                        else
-                            selected.InnerText = "False";
-                    }
-
-                    doc.Save(path + "\\CRMDeveloperExtensions.config");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message, Logger.MessageType.Error);
-            }
-        }
-
         private void WebResourceType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             FilterWebResources();
         }
 
-        private void Projects_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ConnPane_OnProjectChanged(object sender, EventArgs e)
         {
-            //No solution loaded
-            if (_solution.Count == 0) return;
-
             WebResourceGrid.ItemsSource = null;
             WebResourceType.IsEnabled = false;
             ShowManaged.IsEnabled = false;
@@ -1801,117 +1470,20 @@ namespace WebResourceDeployer
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
 
-            ComboBoxItem item = (ComboBoxItem)Projects.SelectedItem;
-            if (item == null) return;
-            if (string.IsNullOrEmpty(item.Content.ToString())) return;
-
-            _selectedProject = (Project)((ComboBoxItem)Projects.SelectedItem).Tag;
-            ProjectFileList.ItemsSource = GetProjectFiles(_selectedProject.Name);
-            GetConnections();
+            ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject.Name);
         }
 
-        private void ModifyConnection_Click(object sender, RoutedEventArgs e)
+        private void ConnPane_OnConnectionDeleted(object sender, EventArgs e)
         {
-            if (_selectedConn == null) return;
-            if (string.IsNullOrEmpty(_selectedConn.ConnectionString)) return;
-
-            string name = _selectedConn.Name;
-            Connection connection = new Connection(name, _selectedConn.ConnectionString);
-            bool? result = connection.ShowDialog();
-
-            if (!result.HasValue || !result.Value) return;
-
-            var configExists = ConfigFileExists(_selectedProject);
-            if (!configExists)
-                CreateConfigFile(_selectedProject);
-
-            Expander.IsExpanded = false;
-
-            AddOrUpdateConnection(_selectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, false);
-        }
-
-        private void Delete_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                MessageBoxResult result = MessageBox.Show("Are you sure?" + Environment.NewLine + Environment.NewLine +
-                    "This will delete the connection information and all associated mappings.", "Delete Connection", MessageBoxButton.YesNo);
-                if (result != MessageBoxResult.Yes) return;
-
-                if (_selectedConn == null) return;
-                if (string.IsNullOrEmpty(_selectedConn.ConnectionString)) return;
-
-                var path = Path.GetDirectoryName(_selectedProject.FullName);
-                if (!ConfigFileExists(_selectedProject))
-                {
-                    _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return;
-                }
-
-                if (!ConfigFileExists(_selectedProject)) return;
-
-                //Delete Connection
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-                XmlNodeList connections = doc.GetElementsByTagName("Connection");
-                if (connections.Count == 0) return;
-
-                List<XmlNode> nodesToRemove = new List<XmlNode>();
-                foreach (XmlNode connection in connections)
-                {
-                    XmlNode orgId = connection["OrgId"];
-                    if (orgId == null) continue;
-                    if (orgId.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
-
-                    nodesToRemove.Add(connection);
-                }
-
-                foreach (XmlNode xmlNode in nodesToRemove)
-                {
-                    if (xmlNode.ParentNode != null)
-                        xmlNode.ParentNode.RemoveChild(xmlNode);
-                }
-                doc.Save(path + "\\CRMDeveloperExtensions.config");
-
-                //Delete related Files
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-                XmlNodeList files = doc.GetElementsByTagName("File");
-                if (files.Count > 0)
-                {
-                    nodesToRemove = new List<XmlNode>();
-                    foreach (XmlNode file in files)
-                    {
-                        XmlNode orgId = file["OrgId"];
-                        if (orgId == null) continue;
-                        if (orgId.InnerText.ToUpper() != _selectedConn.OrgId.ToUpper()) continue;
-
-                        nodesToRemove.Add(file);
-                    }
-
-                    foreach (XmlNode xmlNode in nodesToRemove)
-                    {
-                        if (xmlNode.ParentNode != null)
-                            xmlNode.ParentNode.RemoveChild(xmlNode);
-                    }
-                    doc.Save(path + "\\CRMDeveloperExtensions.config");
-                }
-
-                WebResourceGrid.ItemsSource = null;
-                WebResourceType.IsEnabled = false;
-                ShowManaged.IsEnabled = false;
-                Publish.IsEnabled = false;
-                Customizations.IsEnabled = false;
-                Solutions.IsEnabled = false;
-                SolutionList.IsEnabled = false;
-                AddWebResource.IsEnabled = false;
-                WebResourceGrid.IsEnabled = false;
-
-                GetConnections();
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-            }
+            WebResourceGrid.ItemsSource = null;
+            WebResourceType.IsEnabled = false;
+            ShowManaged.IsEnabled = false;
+            Publish.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
+            SolutionList.IsEnabled = false;
+            AddWebResource.IsEnabled = false;
+            WebResourceGrid.IsEnabled = false;
         }
 
         private void OpenWebResource_OnClick(object sender, RoutedEventArgs e)
@@ -1979,8 +1551,8 @@ namespace WebResourceDeployer
         {
             try
             {
-                if (_selectedConn == null) return;
-                string connString = _selectedConn.ConnectionString;
+                if (ConnPane.SelectedConnection == null) return;
+                string connString = ConnPane.SelectedConnection.ConnectionString;
                 if (string.IsNullOrEmpty(connString)) return;
 
                 CrmConnection connection = CrmConnection.Parse(connString);
@@ -2007,7 +1579,7 @@ namespace WebResourceDeployer
                     File.WriteAllBytes(tempFile, DecodeWebResource(webResource.GetAttributeValue<string>("content")));
 
                     //Get the corresponding project item 
-                    string projectName = _selectedProject.Name;
+                    string projectName = ConnPane.SelectedProject.Name;
                     Project project = GetProjectByName(projectName);
                     var projectPath = Path.GetDirectoryName(project.FullName);
                     if (projectPath == null) return;
@@ -2053,7 +1625,7 @@ namespace WebResourceDeployer
 
         private void AddWebResource_Click(object sender, RoutedEventArgs e)
         {
-            NewWebResource newWebResource = new NewWebResource(_selectedConn, _selectedProject, GetProjectFiles(_selectedProject.Name));
+            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection, ConnPane.SelectedProject, GetProjectFiles(ConnPane.SelectedProject.Name));
             bool? result = newWebResource.ShowDialog();
 
             if (result != true) return;
@@ -2070,7 +1642,7 @@ namespace WebResourceDeployer
                 AllowCompare = SetAllowCompare(newWebResource.NewType),
                 TypeName = GetWebResourceTypeNameByNumber(newWebResource.NewType.ToString()),
                 Type = newWebResource.NewType,
-                ProjectFolders = GetProjectFolders(_selectedProject.Name),
+                ProjectFolders = GetProjectFolders(ConnPane.SelectedProject.Name),
                 SolutionId = newWebResource.NewSolutionId
             };
 
@@ -2100,7 +1672,7 @@ namespace WebResourceDeployer
                     AllowCompare = SetAllowCompare(newWebResource.NewType),
                     TypeName = GetWebResourceTypeNameByNumber(newWebResource.NewType.ToString()),
                     Type = newWebResource.NewType,
-                    ProjectFolders = GetProjectFolders(_selectedProject.Name),
+                    ProjectFolders = GetProjectFolders(ConnPane.SelectedProject.Name),
                     SolutionId = new Guid("FD140AAF-4DF4-11DD-BD17-0019B9312238")
                 };
 
@@ -2169,8 +1741,8 @@ namespace WebResourceDeployer
 
         private void OpenCrmPage(string url)
         {
-            if (_selectedConn == null) return;
-            string connString = _selectedConn.ConnectionString;
+            if (ConnPane.SelectedConnection == null) return;
+            string connString = ConnPane.SelectedConnection.ConnectionString;
             if (string.IsNullOrEmpty(connString)) return;
 
             string[] connParts = connString.Split(';');
@@ -2192,9 +1764,9 @@ namespace WebResourceDeployer
 
         private void SolutionList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_selectedConn == null) return;
+            if (ConnPane.SelectedConnection == null) return;
 
-            string connString = _selectedConn.ConnectionString;
+            string connString = ConnPane.SelectedConnection.ConnectionString;
             if (string.IsNullOrEmpty(connString)) return;
 
             FilterWebResources();
@@ -2208,7 +1780,7 @@ namespace WebResourceDeployer
             LockOverlay.Visibility = Visibility.Visible;
 
             List<CrmSolution> solutions = new List<CrmSolution>();
-            CrmConnection connection = CrmConnection.Parse(_selectedConn.ConnectionString);
+            CrmConnection connection = CrmConnection.Parse(ConnPane.SelectedConnection.ConnectionString);
 
             EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveSolutionsFromCrm(connection));
             if (results == null)

@@ -36,8 +36,6 @@ namespace CommonResources
         public CrmConn SelectedConnection { get; private set; }
         public Projects Projects { get; private set; }
 
-         
-
         public ConnectionPane()
         {
             InitializeComponent();
@@ -416,6 +414,7 @@ namespace CommonResources
             try
             {
                 XmlDocument doc = new XmlDocument();
+                // TODO: This could be given a more generic named since it is no longer related to only the PluginDeployer
                 XmlElement pluginDeployer = doc.CreateElement("PluginDeployer");
                 XmlElement connections = doc.CreateElement("Connections");
                 XmlElement projects = doc.CreateElement("Assemblies");
@@ -451,7 +450,9 @@ namespace CommonResources
 
             AddOrUpdateConnection(SelectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, false);
 
+            // TODO: Is this necessary?
             GetConnections();
+            
             // TODO: Can this be replaced with LINQ?
             foreach (CrmConn conn in Connections.Items)
             {

@@ -199,7 +199,6 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\CrmConn.cs" />
     <Compile Include="Models\CrmSolution.cs" />
     <Compile Include="NewWebResource.xaml.cs">
       <DependentUpon>NewWebResource.xaml</DependentUpon>
@@ -275,6 +274,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonResources\CommonResources.csproj">
+      <Project>{4f82019c-685b-4349-ace2-091ad63004b9}</Project>
+      <Name>CommonResources</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CrmConnectionWindow\CrmConnectionWindow.csproj">
       <Project>{ccbcccd5-4ade-4b52-b77b-6c453dc30e1d}</Project>
       <Name>CrmConnectionWindow</Name>
