@@ -29,6 +29,9 @@ namespace SolutionPackager
         private readonly Logger _logger;
         private static OrganizationService _orgService;
 
+        //TODO: make setting
+        private bool _storeSolutionFiles = true;
+
         public SolutionList()
         {
             InitializeComponent();
@@ -475,7 +478,8 @@ namespace SolutionPackager
             CommandWindow cw = _dte2.ToolWindows.CommandWindow;
 
             //TODO: Make user setting
-            string toolPath = @"""C:\Users\jason.lattimer\Documents\SDK\CRM SDK\2015 SDK 7.1.0\SDK\Bin\SolutionPackager.exe""";
+            //TODO: check if populated
+            string toolPath = @"""D:\CRM SDK\2015 SDK 7.1.1\SDK\Bin\SolutionPackager.exe""";
 
             string tempDirectory = Path.GetDirectoryName(path);
             if (Directory.Exists(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path)))
@@ -487,21 +491,44 @@ namespace SolutionPackager
             command += " /zipfile:" + "\"" + path + "\"";
             command += " /folder: " + "\"" + extractedFolder.FullName + "\"";
             command += " /clobber";
-            
+
             cw.SendInput("shell " + command, true);
 
             //TODO: Adjust for larger solutions?
             System.Threading.Thread.Sleep(1000);
 
-            RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
-            ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
+            bool solutionFileDelete = RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
+            bool solutionFileAddChange = ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
                 ConnPane.SelectedProject.ProjectItems);
 
             Directory.Delete(extractedFolder.FullName, true);
+
+            if (!_storeSolutionFiles)
+                return;
+
+            //No solution changes
+            if (!solutionFileDelete && !solutionFileAddChange)
+                return;
+
+            //Store solution files in project
+            Project project = ConnPane.SelectedProject;
+            string projectPath = Path.GetDirectoryName(project.FullName);
+            if (!Directory.Exists(projectPath + "\\" + "Solutions"))
+                project.ProjectItems.AddFolder("Solutions");
+
+            string filename = Path.GetFileName(path);
+            if (File.Exists(projectPath + "\\Solutions\\" + filename))
+                File.Delete(projectPath + "\\" + "Solutions\\" + filename);
+
+            File.Move(path, projectPath + "\\" + "Solutions\\" + filename);
+
+            project.ProjectItems.AddFromFile(projectPath + "\\" + "Solutions\\" + filename);
         }
 
-        private void ProcessDownloadedSolution(DirectoryInfo extractedFolder, string baseFolder, ProjectItems projectItems)
+        private bool ProcessDownloadedSolution(DirectoryInfo extractedFolder, string baseFolder, ProjectItems projectItems)
         {
+            bool itemChanged = false;
+
             //Handle file adds
             foreach (FileInfo file in extractedFolder.GetFiles())
             {
@@ -513,6 +540,7 @@ namespace SolutionPackager
 
                 File.Copy(file.FullName, baseFolder + "\\" + file.Name, true);
                 projectItems.AddFromFile(baseFolder + "\\" + file.Name);
+                itemChanged = true;
             }
 
             //Handle folder adds
@@ -522,49 +550,85 @@ namespace SolutionPackager
                     Directory.CreateDirectory(baseFolder + "\\" + folder.Name);
 
                 var newProjectItems = projectItems;
-
-                ProcessDownloadedSolution(folder, baseFolder + "\\" + folder.Name, newProjectItems);
+                bool subItemChanged = ProcessDownloadedSolution(folder, baseFolder + "\\" + folder.Name, newProjectItems);
+                if (subItemChanged)
+                    itemChanged = true;
             }
+
+            return itemChanged;
         }
 
-        private static void RemoveDeletedItems(string extractedFolder, ProjectItems projectItems)
+        private static bool RemoveDeletedItems(string extractedFolder, ProjectItems projectItems)
         {
+            bool itemChanged = false;
+
             //Handle file & folder deletes
             foreach (ProjectItem projectItem in projectItems)
             {
                 string name = projectItem.FileNames[0];
-                if (projectItem.Kind.ToUpper() == "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}") //File
+                switch (projectItem.Kind.ToUpper())
                 {
-                    name = Path.GetFileName(name);
-                    if (!File.Exists(extractedFolder + "\\" + name))
+                    case "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}":
+                        name = Path.GetFileName(name);
+                        if (File.Exists(extractedFolder + "\\" + name))
+                            continue;
+
                         projectItem.Delete();
-                }
-                else if (projectItem.Kind.ToUpper() == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //Folder
-                {
-                    name = new DirectoryInfo(name).Name;
-                    if (!Directory.Exists(extractedFolder + "\\" + name))
-                        projectItem.Delete();
-                    else
-                    {
-                        if (projectItem.ProjectItems.Count > 0)
-                            RemoveDeletedItems(extractedFolder + "\\" + name, projectItem.ProjectItems);
-                    }
+                        itemChanged = true;
+                        break;
+                    case "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}":
+                        name = new DirectoryInfo(name).Name;
+                        if (name == "Solutions")
+                            continue;
+
+                        if (!Directory.Exists(extractedFolder + "\\" + name))
+                        {
+                            projectItem.Delete();
+                            itemChanged = true;
+                        }
+                        else
+                        {
+                            if (projectItem.ProjectItems.Count <= 0)
+                                continue;
+
+                            bool subItemChanged = RemoveDeletedItems(extractedFolder + "\\" + name,
+                                projectItem.ProjectItems);
+                            if (subItemChanged)
+                                itemChanged = true;
+                        }
+                        break;
                 }
             }
+
+            return itemChanged;
         }
 
         private static bool FileEquals(string path1, string path2)
         {
-            byte[] file1 = File.ReadAllBytes(path1);
-            byte[] file2 = File.ReadAllBytes(path2);
-            if (file1.Length != file2.Length)
+            FileInfo first = new FileInfo(path1);
+            FileInfo second = new FileInfo(path2);
+
+            if (first.Length != second.Length)
                 return false;
 
-            for (int i = 0; i < file1.Length; i++)
+            int iterations = (int)Math.Ceiling((double)first.Length / sizeof(Int64));
+
+            using (FileStream fs1 = first.OpenRead())
+            using (FileStream fs2 = second.OpenRead())
             {
-                if (file1[i] != file2[i])
-                    return false;
+                byte[] one = new byte[sizeof(Int64)];
+                byte[] two = new byte[sizeof(Int64)];
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    fs1.Read(one, 0, sizeof(Int64));
+                    fs2.Read(two, 0, sizeof(Int64));
+
+                    if (BitConverter.ToInt64(one, 0) != BitConverter.ToInt64(two, 0))
+                        return false;
+                }
             }
+
             return true;
         }
 
@@ -573,7 +637,8 @@ namespace SolutionPackager
             CommandWindow cw = _dte2.ToolWindows.CommandWindow;
 
             //TODO: Make user setting
-            string toolPath = @"""C:\Users\jason.lattimer\Documents\SDK\CRM SDK\2015 SDK 7.1.0\SDK\Bin\SolutionPackager.exe""";
+            //TODO: check if populated
+            string toolPath = @"""D:\CRM SDK\2015 SDK 7.1.1\SDK\Bin\SolutionPackager.exe""";
 
             CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
 
