@@ -274,7 +274,7 @@ namespace TemplateWizards
                         if (_needsClient == "True")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "6.0.4.1");
                         break;
-                    case "CRM 2013 SP1 (6.1.X)":
+                    case "CRM 2013 (6.1.X)":
                         InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "6.1.1");
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "6.1.1");
@@ -292,6 +292,16 @@ namespace TemplateWizards
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.0.0.1");
                         break;
                     case "CRM 2015 (7.1.X)":
+                        project.DTE.SuppressUI = true;
+                        project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
+                        project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "7.1.1");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "7.1.1");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0");
+                        break;
+                    case "CRM 2015 (8.0.X)":
                         project.DTE.SuppressUI = true;
                         project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
                         project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
@@ -618,13 +628,16 @@ namespace TemplateWizards
                                         sdkVersion = "CRM 2013 (6.0.X)";
                                         break;
                                     case "6.1.1":
-                                        sdkVersion = "CRM 2013 SP1 (6.1.X)";
+                                        sdkVersion = "CRM 2013 (6.1.X)";
                                         break;
                                     case "7.0.0.1":
                                         sdkVersion = "CRM 2015 (7.0.X)";
                                         break;
                                     case "7.1.0":
                                         sdkVersion = "CRM 2015 (7.1.X)";
+                                        break;
+                                    case "8.0.0":
+                                        sdkVersion = "CRM 2015 (8.0.X)";
                                         break;
                                 }
                             }

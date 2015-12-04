@@ -54,9 +54,10 @@
             this.DefaultSdkVersion.Items.AddRange(new object[] {
             "CRM 2011 (5.0.X)",
             "CRM 2013 (6.0.X)",
-            "CRM 2013 SP1 (6.1.X)",
+            "CRM 2013 (6.1.X)",
             "CRM 2015 (7.0.X)",
-            "CRM 2015 (7.1.X)"});
+            "CRM 2015 (7.1.X)",
+            "CRM 2015 (8.0.X)"});
             this.DefaultSdkVersion.Location = new System.Drawing.Point(151, 25);
             this.DefaultSdkVersion.Name = "DefaultSdkVersion";
             this.DefaultSdkVersion.Size = new System.Drawing.Size(163, 21);
