@@ -30,23 +30,33 @@ namespace CrmConnectionWindow
             {
                 Name.Text = name;
                 Url.IsEnabled = false;
-                ConnectionType.Visibility = Visibility.Hidden;
+                ConnectionType.IsEnabled = false;
             }
 
             if (!string.IsNullOrEmpty(connectionString))
             {
                 ConnectionString = connectionString;
-
                 ParseConnection(connectionString);
-
                 SetConnectionString();
+
+                return;
             }
 
-            ConnectionType.SelectedIndex = 0;
+            if (string.IsNullOrEmpty(connectionString))
+                ConnectionType.SelectedIndex = 0;
         }
 
         private void ParseConnection(string connectionString)
         {
+            if (connectionString.ToUpper().Contains("DYNAMICS.COM"))
+                ConnectionType.SelectedIndex = 0;
+            else if (!connectionString.ToUpper().Contains("USERNAME"))
+                ConnectionType.SelectedIndex = 2;
+            else if (Url.Text.Contains("."))
+                ConnectionType.SelectedIndex = 3;
+            else
+                ConnectionType.SelectedIndex = 1;
+
             string[] parts = connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string part in parts)
             {

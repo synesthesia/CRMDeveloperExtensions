@@ -14,9 +14,6 @@ using Window = EnvDTE.Window;
 
 namespace CommonResources
 {
-    /// <summary>
-    /// Interaction logic for ConnectionPane.xaml
-    /// </summary>
     public partial class ConnectionPane
     {
         private readonly DTE _dte;
@@ -31,15 +28,15 @@ namespace CommonResources
         public event EventHandler ConnectionDeleted;
         public event EventHandler<ConnectEventArgs> Connected;
 
-        
         public Project SelectedProject { get; private set; }
         public CrmConn SelectedConnection { get; private set; }
         public Projects Projects { get; private set; }
+        public string SourceWindow { get; set; }
 
         public ConnectionPane()
         {
             InitializeComponent();
-            
+
             _logger = new Logger();
 
             _dte = Package.GetGlobalService(typeof(DTE)) as DTE;
@@ -83,7 +80,6 @@ namespace CommonResources
 
         private void SolutionProjectRemoved(Project project)
         {
-            // TODO: Can this be replaced with LINQ?
             foreach (ComboBoxItem comboBoxItem in ProjectsDdl.Items)
             {
                 if (string.IsNullOrEmpty(comboBoxItem.Content.ToString())) continue;
@@ -128,9 +124,10 @@ namespace CommonResources
                 ResetForm();
                 return;
             }
-            
-            // TODO: What is the purpose of this line?
-            //if (gotFocus.Caption != SolutionPackager.Resources.ResourceManager.GetString("ToolWindowTitle")) return;
+
+            //WindowEventsOnWindowActivated in this project can be called when activating another window
+            //so we don't want to contine further unless our window is active
+            if (!gotFocus.Caption.StartsWith("CRM Developer Extensions")) return;
 
             ProjectsDdl.IsEnabled = true;
             AddConnection.IsEnabled = true;
@@ -266,14 +263,7 @@ namespace CommonResources
                 ModifyConnection.IsEnabled = !string.IsNullOrEmpty(SelectedConnection.Name);
 
                 if (_connectionAdded)
-                {
                     _connectionAdded = false;
-                }
-                else
-                {
-                    // TODO: Is it really necessary to update the selected connection here?
-                    UpdateSelectedConnection(false);
-                }
             }
             else
             {
@@ -307,7 +297,6 @@ namespace CommonResources
 
             GetConnections();
 
-            // TODO: Can this be done using LINQ?
             foreach (CrmConn conn in Connections.Items)
             {
                 if (conn.Name != connection.ConnectionName) continue;
@@ -321,6 +310,8 @@ namespace CommonResources
 
                 break;
             }
+
+            UpdateSelectedConnection(true);
         }
 
         private bool AddOrUpdateConnection(Project vsProject, string connectionName, string connString, string orgId, string versionNum, bool showPrompt)
@@ -414,13 +405,27 @@ namespace CommonResources
             try
             {
                 XmlDocument doc = new XmlDocument();
-                // TODO: This could be given a more generic named since it is no longer related to only the PluginDeployer
-                XmlElement pluginDeployer = doc.CreateElement("PluginDeployer");
+                XmlElement root = doc.CreateElement(SourceWindow);
+                doc.AppendChild(root);
                 XmlElement connections = doc.CreateElement("Connections");
-                XmlElement projects = doc.CreateElement("Assemblies");
-                pluginDeployer.AppendChild(connections);
-                pluginDeployer.AppendChild(projects);
-                doc.AppendChild(pluginDeployer);
+                root.AppendChild(connections);
+
+                //Keeeping the different root element names as not not introduce a breaking change
+                //and figuring there should also only be 1 deployer type in use per VS project 
+                switch (SourceWindow)
+                {
+                    case "PluginDeployer":
+                        XmlElement assemblies = doc.CreateElement("Assemblies");
+                        root.AppendChild(assemblies);
+                        break;
+                    case "WebResourceDeployer":
+                    case "ReportDeployer":
+                        break;
+                    case "SolutionPackager":
+                        XmlElement solution = doc.CreateElement("Solutions");
+                        root.AppendChild(solution);
+                        break;
+                }
 
                 var path = Path.GetDirectoryName(vsProject.FullName);
                 doc.Save(path + "/CRMDeveloperExtensions.config");
@@ -450,10 +455,9 @@ namespace CommonResources
 
             AddOrUpdateConnection(SelectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, false);
 
-            // TODO: Is this necessary?
+            //Keep to refresh the connections in the list
             GetConnections();
-            
-            // TODO: Can this be replaced with LINQ?
+
             foreach (CrmConn conn in Connections.Items)
             {
                 if (conn.Name != connection.ConnectionName) continue;
