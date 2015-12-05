@@ -17,7 +17,7 @@
         <commonResources:ConnectionPane Grid.Column="0" Name="ConnPane" ConnectionAdded="ConnPane_OnConnectionAdded"
                                         Connected="ConnPane_OnConnected" ConnectionSelected="ConnPane_OnConnectionSelected"
                                         ProjectChanged="ConnPane_OnProjectChanged" ConnectionModified="ConnPane_OnConnectionModified"
-                                        ConnectionDeleted="ConnPane_OnConnectionDeleted"/>
+                                        ConnectionDeleted="ConnPane_OnConnectionDeleted" SourceWindow="ReportDeployer" />
         <Grid Column="1" HorizontalAlignment="Stretch">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                 <Button x:Name="Info" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Info_OnClick" Background="White">
