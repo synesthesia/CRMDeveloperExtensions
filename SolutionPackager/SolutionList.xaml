@@ -17,7 +17,7 @@
         <commonResources:ConnectionPane Name="ConnPane" Grid.Column="0" ConnectionSelected="ConnPane_OnConnectionChanged"
                                         ConnectionAdded="ConnPane_OnConnectionAdded" ConnectionDeleted="ConnPane_OnConnectionDeleted"
                                         Connected="ConnPane_OnConnected" ProjectChanged="ConnPane_OnProjectChanged"
-                                        ConnectionModified="ConnPane_OnConnectionModified" />
+                                        ConnectionModified="ConnPane_OnConnectionModified" SourceWindow="SolutionPackager" />
         <Grid Column="1" HorizontalAlignment="Stretch">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
@@ -39,7 +39,8 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Solutions</Label>
-                    <ComboBox x:Name="SolutionToPackage" Margin="5,5,0,0" VerticalAlignment="Top" ToolTip="Solution To Package" SelectionChanged="SolutionToPackage_OnSelectionChanged" IsEnabled="False">
+                    <ComboBox x:Name="SolutionToPackage" Margin="5,5,0,0" VerticalAlignment="Top" ToolTip="Solution To Package" SelectionChanged="SolutionToPackage_OnSelectionChanged" 
+                              IsEnabled="False" MinWidth="200">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock>

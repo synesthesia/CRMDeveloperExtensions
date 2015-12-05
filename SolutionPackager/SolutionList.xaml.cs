@@ -29,9 +29,6 @@ namespace SolutionPackager
         private readonly Logger _logger;
         private static OrganizationService _orgService;
 
-        //TODO: make setting
-        private bool _storeSolutionFiles = true;
-
         public SolutionList()
         {
             InitializeComponent();
@@ -155,7 +152,7 @@ namespace SolutionPackager
                 string[] urlParts = urlPart.Split('=');
                 string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "General"];
                 bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
 
                 if (useDefaultWebBrowser) //User's default browser
@@ -475,54 +472,74 @@ namespace SolutionPackager
 
         private void ExtractPackage(string path)
         {
-            CommandWindow cw = _dte2.ToolWindows.CommandWindow;
+            try
+            {
+                CommandWindow cw = _dte2.ToolWindows.CommandWindow;
 
-            //TODO: Make user setting
-            //TODO: check if populated
-            string toolPath = @"""D:\CRM SDK\2015 SDK 7.1.1\SDK\Bin\SolutionPackager.exe""";
+                var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+                string spPath = (string)props.Item("SolutionPackagerPath").Value;
 
-            string tempDirectory = Path.GetDirectoryName(path);
-            if (Directory.Exists(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path)))
-                Directory.Delete(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path), true);
-            DirectoryInfo extractedFolder =
-                Directory.CreateDirectory(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path));
+                if (string.IsNullOrEmpty(spPath))
+                {
+                    MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
+                    return;
+                }
 
-            string command = toolPath + " /action: Extract";
-            command += " /zipfile:" + "\"" + path + "\"";
-            command += " /folder: " + "\"" + extractedFolder.FullName + "\"";
-            command += " /clobber";
+                if (!spPath.EndsWith("\\"))
+                    spPath += "\\";
 
-            cw.SendInput("shell " + command, true);
+                string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
 
-            //TODO: Adjust for larger solutions?
-            System.Threading.Thread.Sleep(1000);
+                string tempDirectory = Path.GetDirectoryName(path);
+                if (Directory.Exists(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path)))
+                    Directory.Delete(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path), true);
+                DirectoryInfo extractedFolder =
+                    Directory.CreateDirectory(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path));
 
-            bool solutionFileDelete = RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
-            bool solutionFileAddChange = ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
-                ConnPane.SelectedProject.ProjectItems);
+                string command = toolPath + " /action: Extract";
+                command += " /zipfile:" + "\"" + path + "\"";
+                command += " /folder: " + "\"" + extractedFolder.FullName + "\"";
+                command += " /clobber";
 
-            Directory.Delete(extractedFolder.FullName, true);
+                cw.SendInput("shell " + command, true);
 
-            if (!_storeSolutionFiles)
-                return;
+                //TODO: Adjust for larger solutions?
+                System.Threading.Thread.Sleep(1000);
 
-            //No solution changes
-            if (!solutionFileDelete && !solutionFileAddChange)
-                return;
+                bool solutionFileDelete = RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
+                bool solutionFileAddChange = ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
+                    ConnPane.SelectedProject.ProjectItems);
 
-            //Store solution files in project
-            Project project = ConnPane.SelectedProject;
-            string projectPath = Path.GetDirectoryName(project.FullName);
-            if (!Directory.Exists(projectPath + "\\" + "Solutions"))
-                project.ProjectItems.AddFolder("Solutions");
+                Directory.Delete(extractedFolder.FullName, true);
 
-            string filename = Path.GetFileName(path);
-            if (File.Exists(projectPath + "\\Solutions\\" + filename))
-                File.Delete(projectPath + "\\" + "Solutions\\" + filename);
+                props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+                bool saveSolutionFiles = (bool)props.Item("SaveSolutionFiles").Value;
 
-            File.Move(path, projectPath + "\\" + "Solutions\\" + filename);
+                if (!saveSolutionFiles)
+                    return;
 
-            project.ProjectItems.AddFromFile(projectPath + "\\" + "Solutions\\" + filename);
+                //No solution changes
+                if (!solutionFileDelete && !solutionFileAddChange)
+                    return;
+
+                //Store solution files in project
+                Project project = ConnPane.SelectedProject;
+                string projectPath = Path.GetDirectoryName(project.FullName);
+                if (!Directory.Exists(projectPath + "\\" + "Solutions"))
+                    project.ProjectItems.AddFolder("Solutions");
+
+                string filename = Path.GetFileName(path);
+                if (File.Exists(projectPath + "\\Solutions\\" + filename))
+                    File.Delete(projectPath + "\\" + "Solutions\\" + filename);
+
+                File.Move(path, projectPath + "\\" + "Solutions\\" + filename);
+
+                project.ProjectItems.AddFromFile(projectPath + "\\" + "Solutions\\" + filename);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error launching Solution Deployer: " + Environment.NewLine + Environment.NewLine + ex.Message);
+            }
         }
 
         private bool ProcessDownloadedSolution(DirectoryInfo extractedFolder, string baseFolder, ProjectItems projectItems)
@@ -636,9 +653,19 @@ namespace SolutionPackager
         {
             CommandWindow cw = _dte2.ToolWindows.CommandWindow;
 
-            //TODO: Make user setting
-            //TODO: check if populated
-            string toolPath = @"""D:\CRM SDK\2015 SDK 7.1.1\SDK\Bin\SolutionPackager.exe""";
+            var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+            string spPath = (string)props.Item("SolutionPackagerPath").Value;
+
+            if (string.IsNullOrEmpty(spPath))
+            {
+                MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
+                return;
+            }
+
+            if (!spPath.EndsWith("\\"))
+                spPath += "\\";
+
+            string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
 
             CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
 
