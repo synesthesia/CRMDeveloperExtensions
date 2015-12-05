@@ -7,14 +7,9 @@ namespace UserOptions
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [ProvideMenuResource("Menus.ctmenu", 1), Guid(GuidList.GuidUserOptionsPkgString)]
-    [ProvideOptionPage(typeof(OptionPageCustom), "CRM Developer Extensions", "Settings", 0, 0, true)]
+    [ProvideOptionPage(typeof(OptionPageCustom), "CRM Developer Extensions", "General", 101, 102, true)]
     public sealed class UserOptionsPackage : Package
     {
-        protected override void Initialize()
-        {
-            base.Initialize();
-
-        }
     }
 
     [ClassInterface(ClassInterfaceType.AutoDual)]
@@ -43,10 +38,7 @@ namespace UserOptions
             set { _enableCrmSdkSearch = value; }
         }
 
-        public bool AllowPublishManagedWebResources { get; set; }
-        public bool AllowPublishManagedReports { get; set; }
         public bool UseDefaultWebBrowser { get; set; }
-        public string RegistrationToolPath { get; set; }
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -58,11 +50,8 @@ namespace UserOptions
                 {
                     DefaultCrmSdkVersion = this,
                     DefaultProjectKeyFileName = this,
-                    AllowPublishManagedWebResources = this,
-                    AllowPublishManagedReports = this,
                     UseDefaultWebBrowser = this,
-                    EnableCrmSdkSearch = this,
-                    RegistraionToolPath = this
+                    EnableCrmSdkSearch = this
                 };
                 page.Initialize();
                 return page;

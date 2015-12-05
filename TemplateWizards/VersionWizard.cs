@@ -301,7 +301,7 @@ namespace TemplateWizards
                         if (_needsClient == "True")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0");
                         break;
-                    case "CRM 2015 (8.0.X)":
+                    case "CRM 2016 (8.0.X)":
                         project.DTE.SuppressUI = true;
                         project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
                         project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
@@ -637,7 +637,7 @@ namespace TemplateWizards
                                         sdkVersion = "CRM 2015 (7.1.X)";
                                         break;
                                     case "8.0.0":
-                                        sdkVersion = "CRM 2015 (8.0.X)";
+                                        sdkVersion = "CRM 2016 (8.0.X)";
                                         break;
                                 }
                             }
