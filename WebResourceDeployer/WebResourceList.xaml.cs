@@ -784,7 +784,7 @@ namespace WebResourceDeployer
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "Web Resource Deployer"];
                 bool allowPublish = (bool)props.Item("AllowPublishManagedWebResources").Value;
 
                 XmlNodeList mappedFiles = doc.GetElementsByTagName("File");
@@ -940,7 +940,7 @@ namespace WebResourceDeployer
                     return;
                 }
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "Web Resource Deployer"];
                 bool allowPublish = (bool)props.Item("AllowPublishManagedWebResources").Value;
 
                 XmlDocument doc = new XmlDocument();
@@ -1752,7 +1752,7 @@ namespace WebResourceDeployer
                 string[] urlParts = urlPart.Split('=');
                 string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "General"];
                 bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
 
                 if (useDefaultWebBrowser) //User's default browser

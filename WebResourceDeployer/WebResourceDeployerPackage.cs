@@ -324,7 +324,7 @@ namespace WebResourceDeployer
                 if (string.IsNullOrEmpty(selectedConnection.ConnectionString)) return Guid.Empty;
                 if (string.IsNullOrEmpty(selectedConnection.OrgId)) return Guid.Empty;
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "Web Resource Deployer"];
                 bool allowPublish = (bool)props.Item("AllowPublishManagedWebResources").Value;
 
                 //Get the mapped file info

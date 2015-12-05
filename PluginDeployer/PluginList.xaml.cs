@@ -709,7 +709,7 @@ namespace PluginDeployer
                 string[] urlParts = urlPart.Split('=');
                 string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "General"];
                 bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
 
                 if (useDefaultWebBrowser) //User's default browser
@@ -721,7 +721,7 @@ namespace PluginDeployer
 
         private void RegistrationTool_OnClick(object sender, RoutedEventArgs e)
         {
-            var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+            var props = _dte.Properties["CRM Developer Extensions", "Plug-in Deployer"];
             string prtPath = (string)props.Item("RegistrationToolPath").Value;
 
             if (string.IsNullOrEmpty(prtPath))

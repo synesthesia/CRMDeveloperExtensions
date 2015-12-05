@@ -212,7 +212,7 @@ namespace ReportDeployer
                 if (string.IsNullOrEmpty(selectedConnection.ConnectionString)) return Guid.Empty;
                 if (string.IsNullOrEmpty(selectedConnection.OrgId)) return Guid.Empty;
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "Report Deployer"];
                 bool allowPublish = (bool)props.Item("AllowPublishManagedReports").Value;
 
                 //Get the mapped file info

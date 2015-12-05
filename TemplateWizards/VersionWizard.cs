@@ -51,7 +51,7 @@ namespace TemplateWizards
                 }
 
                 //Find default SDK version
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "General"];
                 string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value;
 
                 //TypeScript projects
@@ -444,7 +444,7 @@ namespace TemplateWizards
                     StrongNameFreeBuffer(buffer);
                 }
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "General"];
                 string defaultKeyFileName = props.Item("DefaultProjectKeyFileName").Value;
 
                 foreach (ProjectItem item in project.ProjectItems)
