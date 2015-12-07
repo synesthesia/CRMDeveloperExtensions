@@ -55,6 +55,10 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <CheckBox x:Name="DownloadManaged" Margin="5,5,0,0" Content="Download Managed Solution?" Width="200" HorizontalAlignment="Left" 
+                              Checked="DownloadManaged_Checked" Unchecked="DownloadManaged_Checked" IsEnabled="False"></CheckBox>
+                </StackPanel>
             </StackPanel>
             <Grid x:Name="LockOverlay" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" ZIndex="10" Background="{DynamicResource OverlayColor}" Visibility="Hidden">
                 <Label x:Name="LockMessage" Content="Working..." VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="36"></Label>

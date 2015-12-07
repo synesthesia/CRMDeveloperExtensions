@@ -10,5 +10,6 @@ namespace SolutionPackager.Models
         public string UniqueName { get; set; }
         public Version Version { get; set; }
         public string BoundProject { get; set; }
+        public bool DownloadManagedSolution { get; set; }
     }
 }

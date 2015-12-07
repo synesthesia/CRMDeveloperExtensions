@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using EnvDTE;
 using EnvDTE80;
 using InfoWindow;
 using Microsoft.Crm.Sdk.Messages;
@@ -14,10 +15,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
-using CommonResources;
 using Window = EnvDTE.Window;
 
 namespace SolutionPackager
@@ -52,6 +53,22 @@ namespace SolutionPackager
             solutionEvents.BeforeClosing += BeforeSolutionClosing;
             solutionEvents.BeforeClosing += SolutionBeforeClosing;
             solutionEvents.ProjectRemoved += SolutionProjectRemoved;
+
+            SetDownloadManagedEnabled(false);
+            DownloadManaged.IsChecked = false;
+        }
+
+        private void SetDownloadManagedEnabled(bool enabled)
+        {
+            var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+            bool saveSolutionFiles = (bool)props.Item("SaveSolutionFiles").Value;
+            if (!saveSolutionFiles)
+            {
+                DownloadManaged.IsEnabled = false;
+                return;
+            }
+
+            DownloadManaged.IsEnabled = enabled;
         }
 
         private void ConnPane_OnConnectionChanged(object sender, ConnectionSelectedEventArgs e)
@@ -77,6 +94,8 @@ namespace SolutionPackager
 
             Package.IsEnabled = false;
             Unpackage.IsEnabled = false;
+            SetDownloadManagedEnabled(false);
+            DownloadManaged.IsChecked = false;
         }
 
         private bool ConfigFileExists(Project project)
@@ -97,6 +116,8 @@ namespace SolutionPackager
             Package.IsEnabled = false;
             Unpackage.IsEnabled = false;
             SolutionToPackage.ItemsSource = null;
+            SetDownloadManagedEnabled(false);
+            DownloadManaged.IsChecked = false;
         }
 
         private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
@@ -105,8 +126,7 @@ namespace SolutionPackager
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
-            Package.IsEnabled = true;
-            Unpackage.IsEnabled = true;
+            SetDownloadManagedEnabled(true);
         }
 
         private void ConnPane_OnProjectChanged(object sender, EventArgs e)
@@ -116,6 +136,8 @@ namespace SolutionPackager
             Package.IsEnabled = false;
             Unpackage.IsEnabled = false;
             SolutionToPackage.ItemsSource = null;
+            SetDownloadManagedEnabled(false);
+            DownloadManaged.IsChecked = false;
         }
 
         private void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
@@ -169,7 +191,7 @@ namespace SolutionPackager
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => GetSolutionsFromCrm(connString));
+            EntityCollection results = await Task.Run(() => GetSolutionsFromCrm(connString));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -223,8 +245,15 @@ namespace SolutionPackager
             solutions = HandleMappings(solutions);
             SolutionToPackage.ItemsSource = solutions;
             if (solutions.Count(s => !string.IsNullOrEmpty(s.BoundProject)) > 0)
+            {
                 SolutionToPackage.SelectedItem = solutions.First(s => !string.IsNullOrEmpty(s.BoundProject));
-            SolutionToPackage.IsEnabled = true;
+                SolutionToPackage.IsEnabled = false;
+            }
+            else
+                SolutionToPackage.IsEnabled = true;
+
+            DownloadManaged.IsChecked =
+                solutions.First(s => !string.IsNullOrEmpty(s.BoundProject)).DownloadManagedSolution;
 
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
@@ -279,6 +308,11 @@ namespace SolutionPackager
                             nodesToRemove.Add(projectNameNode);
                         else
                             sItem.BoundProject = projectNameNode.InnerText;
+
+                        XmlNode downloadManagedNode = solutionNode["DownloadManaged"];
+                        bool downloadManaged = false;
+                        bool hasDownloadManaged = downloadManagedNode != null && bool.TryParse(downloadManagedNode.InnerText, out downloadManaged);
+                        sItem.DownloadManagedSolution = hasDownloadManaged && downloadManaged;
                     }
                 }
 
@@ -422,26 +456,31 @@ namespace SolutionPackager
             Unpackage.IsEnabled = false;
             Customizations.IsEnabled = false;
             Solutions.IsEnabled = false;
+            SetDownloadManagedEnabled(false);
+            DownloadManaged.IsChecked = false;
         }
 
         private void SolutionProjectRemoved(Project project)
         {
-            if (ConnPane.SelectedProject != null)
-            {
-                if (ConnPane.SelectedProject.FullName == project.FullName)
-                {
-                    SolutionToPackage.ItemsSource = null;
-                    Package.IsEnabled = false;
-                    Unpackage.IsEnabled = false;
-                    Customizations.IsEnabled = false;
-                    Solutions.IsEnabled = false;
-                }
-            }
+            if (ConnPane.SelectedProject == null)
+                return;
+            if (ConnPane.SelectedProject.FullName != project.FullName)
+                return;
+
+            SolutionToPackage.ItemsSource = null;
+            Package.IsEnabled = false;
+            Unpackage.IsEnabled = false;
+            Customizations.IsEnabled = false;
+            Solutions.IsEnabled = false;
+            SetDownloadManagedEnabled(false);
+            DownloadManaged.IsChecked = false;
         }
 
         private async void Unpackage_OnClick(object sender, RoutedEventArgs e)
         {
-            _dte.StatusBar.Text = "Connecting to CRM and getting solution...";
+            SolutionToPackage.IsEnabled = false;
+
+            _dte.StatusBar.Text = "Connecting to CRM and getting unmanaged solution...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -450,27 +489,50 @@ namespace SolutionPackager
                 return;
 
             CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
+            bool? downloadManaged = DownloadManaged.IsChecked;
 
-            string path = await System.Threading.Tasks.Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution));
+            string path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, false));
             if (string.IsNullOrEmpty(path))
             {
                 _dte.StatusBar.Clear();
                 LockOverlay.Visibility = Visibility.Hidden;
-                MessageBox.Show("Error Retrieving Solution. See the Output Window for additional details.");
+                MessageBox.Show("Error Retrieving Unmanaged Solution. See the Output Window for additional details.");
                 return;
             }
 
-            _logger.WriteToOutputWindow("Retrieved Solution From CRM", Logger.MessageType.Info);
+            _logger.WriteToOutputWindow("Retrieved Unmanaged Solution From CRM", Logger.MessageType.Info);
             _dte.StatusBar.Text = "Extracting solution...";
 
-            await System.Threading.Tasks.Task.Run(() => ExtractPackage(path));
+            Project project = ConnPane.SelectedProject;
+            bool solutionChange = await Task.Run(() => ExtractPackage(path, selectedSolution, project, downloadManaged));
+
+            if (downloadManaged == true)
+            {
+                _dte.StatusBar.Text = "Connecting to CRM and getting managed solution...";
+                path =
+                    await
+                        Task.Run(
+                            () =>
+                                GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, true));
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    _dte.StatusBar.Clear();
+                    LockOverlay.Visibility = Visibility.Hidden;
+                    MessageBox.Show("Error Retrieving Managed Solution. See the Output Window for additional details.");
+                    return;
+                }
+
+                _logger.WriteToOutputWindow("Retrieved Managed Solution From CRM", Logger.MessageType.Info);
+                StoreSolutionFile(path, project, solutionChange);
+            }
 
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
         }
 
-        private void ExtractPackage(string path)
+        private async Task<bool> ExtractPackage(string path, CrmSolution selectedSolution, Project project, bool? downloadManaged)
         {
             try
             {
@@ -482,7 +544,7 @@ namespace SolutionPackager
                 if (string.IsNullOrEmpty(spPath))
                 {
                     MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
-                    return;
+                    return false;
                 }
 
                 if (!spPath.EndsWith("\\"))
@@ -512,33 +574,62 @@ namespace SolutionPackager
 
                 Directory.Delete(extractedFolder.FullName, true);
 
-                props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+                //Solution change or file not present
+                bool solutionChange = solutionFileDelete || solutionFileAddChange;
+                StoreSolutionFile(path, project, solutionChange);
+
+                //Download Managed
+                if (downloadManaged != true)
+                    return false;
+
+                path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, true));
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    _dte.StatusBar.Clear();
+                    LockOverlay.Visibility = Visibility.Hidden;
+                    MessageBox.Show("Error Retrieving Solution. See the Output Window for additional details.");
+                    return false;
+                }
+
+                return solutionChange;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error launching Solution Packager: " + Environment.NewLine + Environment.NewLine + ex.Message);
+                return false;
+            }
+        }
+
+        private void StoreSolutionFile(string path, Project project, bool solutionChange)
+        {
+            try
+            {
+                var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
                 bool saveSolutionFiles = (bool)props.Item("SaveSolutionFiles").Value;
 
                 if (!saveSolutionFiles)
                     return;
 
-                //No solution changes
-                if (!solutionFileDelete && !solutionFileAddChange)
-                    return;
-
-                //Store solution files in project
-                Project project = ConnPane.SelectedProject;
                 string projectPath = Path.GetDirectoryName(project.FullName);
-                if (!Directory.Exists(projectPath + "\\" + "Solutions"))
-                    project.ProjectItems.AddFolder("Solutions");
+                if (!Directory.Exists(projectPath + "\\" + "_Solutions"))
+                    project.ProjectItems.AddFolder("_Solutions");
 
                 string filename = Path.GetFileName(path);
-                if (File.Exists(projectPath + "\\Solutions\\" + filename))
-                    File.Delete(projectPath + "\\" + "Solutions\\" + filename);
+                if (File.Exists(projectPath + "\\_Solutions\\" + filename))
+                    File.Delete(projectPath + "\\" + "_Solutions\\" + filename);
 
-                File.Move(path, projectPath + "\\" + "Solutions\\" + filename);
+                if (!solutionChange && File.Exists(projectPath + "\\_Solutions\\" + filename))
+                    return;
 
-                project.ProjectItems.AddFromFile(projectPath + "\\" + "Solutions\\" + filename);
+                File.Move(path, projectPath + "\\" + "_Solutions\\" + filename);
+
+                project.ProjectItems.AddFromFile(projectPath + "\\" + "_Solutions\\" + filename);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error launching Solution Deployer: " + Environment.NewLine + Environment.NewLine + ex.Message);
+                _logger.WriteToOutputWindow("Error storing solution file to project: " + path +
+                    Environment.NewLine + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
             }
         }
 
@@ -595,7 +686,7 @@ namespace SolutionPackager
                         break;
                     case "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}":
                         name = new DirectoryInfo(name).Name;
-                        if (name == "Solutions")
+                        if (name == "_Solutions")
                             continue;
 
                         if (!Directory.Exists(extractedFolder + "\\" + name))
@@ -677,7 +768,7 @@ namespace SolutionPackager
             cw.SendInput("shell " + command, true);
         }
 
-        private string GetSolutionFromCrm(string connString, CrmSolution selectedSolution)
+        private string GetSolutionFromCrm(string connString, CrmSolution selectedSolution, bool managed)
         {
             try
             {
@@ -687,7 +778,7 @@ namespace SolutionPackager
                 {
                     ExportSolutionRequest request = new ExportSolutionRequest
                     {
-                        Managed = false,
+                        Managed = managed,
                         SolutionName = selectedSolution.UniqueName
                     };
 
@@ -695,7 +786,7 @@ namespace SolutionPackager
 
                     var tempFolder = Path.GetTempPath();
                     string fileName = Path.GetFileName(selectedSolution.UniqueName + "_" +
-                        FormatVersionString(selectedSolution.Version) + ".zip");
+                        FormatVersionString(selectedSolution.Version) + ((managed) ? "_managed" : String.Empty) + ".zip");
                     var tempFile = Path.Combine(tempFolder, fileName);
                     if (File.Exists(tempFile))
                         File.Delete(tempFile);
@@ -729,10 +820,12 @@ namespace SolutionPackager
             if (selectedProject == null) return;
 
             CrmSolution solution = (CrmSolution)SolutionToPackage.SelectedItem;
-            if (solution == null)
+            if (solution == null || solution.SolutionId == Guid.Empty)
             {
                 Package.IsEnabled = false;
                 Unpackage.IsEnabled = false;
+                SetDownloadManagedEnabled(false);
+                DownloadManaged.IsChecked = false;
                 return;
             }
 
@@ -740,6 +833,9 @@ namespace SolutionPackager
             AddOrUpdateMapping(solution);
 
             Package.IsEnabled = solution.SolutionId != Guid.Empty;
+            Unpackage.IsEnabled = solution.SolutionId != Guid.Empty;
+            SetDownloadManagedEnabled(solution.SolutionId != Guid.Empty);
+            DownloadManaged.IsChecked = solution.DownloadManagedSolution;
         }
 
         private void AddOrUpdateMapping(CrmSolution solution)
@@ -782,6 +878,9 @@ namespace SolutionPackager
                             XmlNode solutionIdNode = node["SolutionId"];
                             if (solutionIdNode != null)
                                 solutionIdNode.InnerText = solution.SolutionId.ToString();
+                            XmlNode downloadManagedNode = node["DownloadManaged"];
+                            if (downloadManagedNode != null)
+                                downloadManagedNode.InnerText = (DownloadManaged.IsChecked == true) ? "true" : "false";
                         }
 
                         doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
@@ -803,6 +902,9 @@ namespace SolutionPackager
                     XmlNode solutionId = doc.CreateElement("SolutionId");
                     solutionId.InnerText = solution.SolutionId.ToString();
                     solutionNode.AppendChild(solutionId);
+                    XmlNode downloadManaged = doc.CreateElement("DownloadManaged");
+                    downloadManaged.InnerText = (DownloadManaged.IsChecked == true) ? "true" : "false";
+                    solutionNode.AppendChild(downloadManaged);
                     projects[0].AppendChild(solutionNode);
 
                     doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
@@ -812,6 +914,16 @@ namespace SolutionPackager
             {
                 _logger.WriteToOutputWindow("Error Updating Mappings In Config File: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
             }
+        }
+
+        private void DownloadManaged_Checked(object sender, RoutedEventArgs e)
+        {
+            var selectedProject = ConnPane.SelectedProject;
+            if (selectedProject == null) return;
+
+            CrmSolution solution = (CrmSolution)SolutionToPackage.SelectedItem;
+            if (solution != null && solution.SolutionId != Guid.Empty)
+                AddOrUpdateMapping(solution);
         }
     }
 }
