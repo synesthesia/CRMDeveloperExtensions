@@ -252,8 +252,8 @@ namespace SolutionPackager
             else
                 SolutionToPackage.IsEnabled = true;
 
-            DownloadManaged.IsChecked =
-                solutions.First(s => !string.IsNullOrEmpty(s.BoundProject)).DownloadManagedSolution;
+            CrmSolution crmSolution = solutions.FirstOrDefault(s => !string.IsNullOrEmpty(s.BoundProject));
+            DownloadManaged.IsChecked = crmSolution != null && solutions.First(s => !string.IsNullOrEmpty(s.BoundProject)).DownloadManagedSolution;
 
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
@@ -534,6 +534,7 @@ namespace SolutionPackager
 
         private async Task<bool> ExtractPackage(string path, CrmSolution selectedSolution, Project project, bool? downloadManaged)
         {
+            //https://msdn.microsoft.com/en-us/library/jj602987.aspx#arguments
             try
             {
                 CommandWindow cw = _dte2.ToolWindows.CommandWindow;
@@ -742,6 +743,8 @@ namespace SolutionPackager
 
         private void Package_OnClick(object sender, RoutedEventArgs e)
         {
+            //https://msdn.microsoft.com/en-us/library/jj602987.aspx#arguments
+
             CommandWindow cw = _dte2.ToolWindows.CommandWindow;
 
             var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
