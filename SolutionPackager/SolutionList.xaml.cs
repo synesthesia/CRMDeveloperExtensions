@@ -18,7 +18,12 @@ using System.ServiceModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Xml;
+using Microsoft.Internal.VisualStudio.PlatformUI;
+using Microsoft.Win32;
+using DialogResult = System.Windows.Forms.DialogResult;
+using MessageBox = System.Windows.MessageBox;
 using Window = EnvDTE.Window;
 
 namespace SolutionPackager
@@ -504,7 +509,8 @@ namespace SolutionPackager
             _dte.StatusBar.Text = "Extracting solution...";
 
             Project project = ConnPane.SelectedProject;
-            bool solutionChange = await Task.Run(() => ExtractPackage(path, selectedSolution, project, downloadManaged));
+            var path1 = path;
+            bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
 
             if (downloadManaged == true)
             {
@@ -741,34 +747,117 @@ namespace SolutionPackager
             return true;
         }
 
-        private void Package_OnClick(object sender, RoutedEventArgs e)
+        private async void Package_OnClick(object sender, RoutedEventArgs e)
         {
-            //https://msdn.microsoft.com/en-us/library/jj602987.aspx#arguments
+            CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
+            if (selectedSolution == null || selectedSolution.SolutionId == Guid.Empty)
+                return;
 
-            CommandWindow cw = _dte2.ToolWindows.CommandWindow;
-
-            var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
-            string spPath = (string)props.Item("SolutionPackagerPath").Value;
-
-            if (string.IsNullOrEmpty(spPath))
+            string solutionXmlPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\Other\\Solution.xml";
+            if (!File.Exists(solutionXmlPath))
             {
-                MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
+                MessageBox.Show("Solution.xml does not exist at: " +
+                                Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\Other");
                 return;
             }
 
-            if (!spPath.EndsWith("\\"))
-                spPath += "\\";
+            XmlDocument doc = new XmlDocument();
+            doc.Load(solutionXmlPath);
 
-            string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
+            XmlNodeList versionNodes = doc.GetElementsByTagName("Version");
+            if (versionNodes.Count != 1)
+            {
+                MessageBox.Show("Invalid Solutions.xml: could not locate Versions node");
+                return;
+            }
 
-            CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
+            Version version;
+            bool validVersion = Version.TryParse(versionNodes[0].InnerText, out version);
+            if (!validVersion)
+            {
+                MessageBox.Show("Invalid Solutions.xml: invalid version");
+                return;
+            }
 
-            string command = toolPath + " /action: Pack";
-            command += " /zipfile:" + "\"" + Path.GetTempPath() + selectedSolution.UniqueName + "_" +
-                        FormatVersionString(selectedSolution.Version) + ".zip" + "\"";
-            command += " /folder: " + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\"";
+            var selectedProject = ConnPane.SelectedProject;
+            if (selectedProject == null) return;
 
-            cw.SendInput("shell " + command, true);
+            string savePath;
+            var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+            bool saveSolutionFiles = (bool)props.Item("SaveSolutionFiles").Value;
+            if (saveSolutionFiles)
+                savePath = Path.GetDirectoryName(selectedProject.FullName) + "\\_Solutions";
+            else
+            {
+                FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+                DialogResult result = folderDialog.ShowDialog();
+                if (result == DialogResult.OK)
+                    savePath = folderDialog.SelectedPath;
+                else
+                    return;
+            }
+
+            if (File.Exists(savePath + "\\" + selectedSolution.UniqueName + "_" +
+                            FormatVersionString(version) + ".zip"))
+            {
+                MessageBoxResult result = MessageBox.Show("Overwrite solution version: " + version + "?", "Overwrite?", MessageBoxButton.YesNo);
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
+            await Task.Run(() => CreatePackage(selectedSolution, version, savePath, selectedProject));
+        }
+
+        private void CreatePackage(CrmSolution selectedSolution, Version version, string savePath, Project project)
+        {
+            try
+            {
+                //https://msdn.microsoft.com/en-us/library/jj602987.aspx#arguments
+
+                CommandWindow cw = _dte2.ToolWindows.CommandWindow;
+
+                var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+                string spPath = (string)props.Item("SolutionPackagerPath").Value;
+
+                if (string.IsNullOrEmpty(spPath))
+                {
+                    MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
+                    return;
+                }
+
+                if (!spPath.EndsWith("\\"))
+                    spPath += "\\";
+
+                string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
+                string filename = selectedSolution.UniqueName + "_" +
+                                  FormatVersionString(version) + ".zip";
+
+                string command = toolPath + " /action: Pack";
+                command += " /zipfile:" + "\"" + savePath + "\\" + filename + "\"";
+                command += " /folder: " + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\"";
+
+                cw.SendInput("shell " + command, true);
+
+                AddNewSolutionToProject(savePath, project, filename);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error launching Solution Packager: " + Environment.NewLine + Environment.NewLine + ex.Message);
+            }
+        }
+
+        private void AddNewSolutionToProject(string savePath, Project project, string filename)
+        {
+            var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
+            bool saveSolutionFiles = (bool)props.Item("SaveSolutionFiles").Value;
+
+            if (!saveSolutionFiles)
+                return;
+
+            //TODO: Adjust for larger solutions?
+            System.Threading.Thread.Sleep(2000);
+
+            project.ProjectItems.AddFromFile(savePath + "\\" + filename);
         }
 
         private string GetSolutionFromCrm(string connString, CrmSolution selectedSolution, bool managed)
