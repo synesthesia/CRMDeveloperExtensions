@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,6 +21,8 @@ namespace CommonResources
         private readonly Solution _solution;
         private readonly Logger _logger;
         private bool _connectionAdded;
+
+        const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
 
         public event EventHandler ProjectChanged;
         public event EventHandler<ConnectionSelectedEventArgs> ConnectionSelected;
@@ -133,7 +136,7 @@ namespace CommonResources
             AddConnection.IsEnabled = true;
             Connections.IsEnabled = true;
 
-            foreach (Project project in Projects)
+            foreach (var project in Projects.Cast<Project>().OrderBy(x => x.FullName))
             {
                 SolutionProjectAdded(project);
             }
@@ -144,6 +147,9 @@ namespace CommonResources
             //Don't want to include the VS Miscellaneous Files Project - which appears occasionally and during a diff operation
             if (project.Name.ToUpper() == "MISCELLANEOUS FILES")
                 return;
+
+            // Exclude solution folders 
+            if (project.Kind != null && project.Kind.ToUpper() == SolutionFolder) return;
 
             bool addProject = true;
             foreach (ComboBoxItem projectItem in ProjectsDdl.Items)
