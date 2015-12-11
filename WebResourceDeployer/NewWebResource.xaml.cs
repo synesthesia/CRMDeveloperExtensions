@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -167,6 +168,11 @@ namespace WebResourceDeployer
             int type = Convert.ToInt32(((ComboBoxItem)Type.SelectedItem).Tag.ToString());
             string prefix = Prefix.Text;
             string name = Name.Text;
+
+            bool isNameValid = ValidateName();
+            if (!isNameValid)
+                return;
+
             string displayName = DisplayName.Text;
 
             LockOverlay.Visibility = Visibility.Visible;
@@ -434,6 +440,32 @@ namespace WebResourceDeployer
         private string EncodeString(string value)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+        }
+
+        private bool ValidateName()
+        {
+            string error =
+                "Web resource names may only include letters, numbers, periods, and nonconsecutive forward slash characters.";
+
+            if (string.IsNullOrEmpty(Name.Text))
+                return true;
+
+            string name = Name.Text.Trim();
+
+            Regex r = new Regex("^[a-zA-Z0-9_.\\/]*$");
+            if (!r.IsMatch(name))
+            {
+                MessageBox.Show(error);
+                return false;
+            }
+
+            if (name.Contains("//"))
+            {
+                MessageBox.Show(error);
+                return false;
+            }
+
+            return true;
         }
     }
 }
