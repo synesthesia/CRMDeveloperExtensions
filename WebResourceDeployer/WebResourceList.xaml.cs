@@ -72,7 +72,6 @@ namespace WebResourceDeployer
             var windowEvents = events.WindowEvents;
             windowEvents.WindowActivated += WindowEventsOnWindowActivated;
             var solutionEvents = events.SolutionEvents;
-            solutionEvents.BeforeClosing += BeforeSolutionClosing;
             solutionEvents.BeforeClosing += SolutionBeforeClosing;
             solutionEvents.ProjectRemoved += SolutionProjectRemoved;
 
@@ -136,6 +135,8 @@ namespace WebResourceDeployer
 
         private void SolutionBeforeClosing()
         {
+            ResetForm();
+
             //Close the Web Resource Deployer window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {
@@ -381,11 +382,6 @@ namespace WebResourceDeployer
             }
         }
 
-        private void BeforeSolutionClosing()
-        {
-            ResetForm();
-        }
-
         private void ResetForm()
         {
             WebResourceGrid.ItemsSource = null;
@@ -398,6 +394,13 @@ namespace WebResourceDeployer
 
         private async void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
+            WebResourceType.SelectedIndex = -1;
+            ShowManaged.IsChecked = false;
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            SolutionList.IsEnabled = true;
+
             await GetSolutions();
             await GetWebResources(e.AddedConnection.ConnectionString);
         }

@@ -59,7 +59,6 @@ namespace ReportDeployer
             var windowEvents = events.WindowEvents;
             windowEvents.WindowActivated += WindowEventsOnWindowActivated;
             var solutionEvents = events.SolutionEvents;
-            solutionEvents.BeforeClosing += BeforeSolutionClosing;
             solutionEvents.BeforeClosing += SolutionBeforeClosing;
             solutionEvents.ProjectRemoved += SolutionProjectRemoved;
 
@@ -100,6 +99,8 @@ namespace ReportDeployer
 
         private void SolutionBeforeClosing()
         {
+            ResetForm();
+
             //Close the Report Deployer window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {
@@ -257,11 +258,6 @@ namespace ReportDeployer
             Reports.IsEnabled = false;
             Solutions.IsEnabled = false;
             AddReport.IsEnabled = false;
-        }
-
-        private void BeforeSolutionClosing()
-        {
-            ResetForm();
         }
 
         private void ResetForm()

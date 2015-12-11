@@ -51,7 +51,6 @@ namespace PluginDeployer
             var windowEvents = events.WindowEvents;
             windowEvents.WindowActivated += WindowEventsOnWindowActivated;
             var solutionEvents = events.SolutionEvents;
-            solutionEvents.BeforeClosing += BeforeSolutionClosing;
             solutionEvents.BeforeClosing += SolutionBeforeClosing;
             solutionEvents.ProjectRemoved += SolutionProjectRemoved;
 
@@ -348,13 +347,10 @@ namespace PluginDeployer
             }
         }
 
-        private void BeforeSolutionClosing()
-        {
-            ResetForm();
-        }
-
         private void SolutionBeforeClosing()
         {
+            ResetForm();
+
             //Close the Web Plug-in Deployer window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {

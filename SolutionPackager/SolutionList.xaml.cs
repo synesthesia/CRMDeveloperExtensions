@@ -20,8 +20,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Xml;
-using Microsoft.Internal.VisualStudio.PlatformUI;
-using Microsoft.Win32;
 using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = System.Windows.MessageBox;
 using Window = EnvDTE.Window;
@@ -55,7 +53,6 @@ namespace SolutionPackager
 
             var events = _dte.Events;
             var solutionEvents = events.SolutionEvents;
-            solutionEvents.BeforeClosing += BeforeSolutionClosing;
             solutionEvents.BeforeClosing += SolutionBeforeClosing;
             solutionEvents.ProjectRemoved += SolutionProjectRemoved;
 
@@ -436,13 +433,10 @@ namespace SolutionPackager
             }
         }
 
-        private void BeforeSolutionClosing()
-        {
-            ResetForm();
-        }
-
         private void SolutionBeforeClosing()
         {
+            ResetForm();
+
             //Close the tool window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {
