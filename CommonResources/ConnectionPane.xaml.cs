@@ -426,6 +426,8 @@ namespace CommonResources
                         break;
                     case "WebResourceDeployer":
                     case "ReportDeployer":
+                        XmlElement files = doc.CreateElement("Files");
+                        root.AppendChild(files);
                         break;
                     case "SolutionPackager":
                         XmlElement solution = doc.CreateElement("Solutions");
