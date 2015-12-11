@@ -1,15 +1,15 @@
-﻿using System;
+﻿using CommonResources.Models;
+using CrmConnectionWindow;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
+using OutputLogger;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
-using CommonResources.Models;
-using CrmConnectionWindow;
-using EnvDTE;
-using Microsoft.VisualStudio.Shell;
-using OutputLogger;
 using Window = EnvDTE.Window;
 
 namespace CommonResources
@@ -153,13 +153,9 @@ namespace CommonResources
                 if (project == null) continue;
 
                 if (project.Kind.ToUpper() == SolutionFolder)
-                {
                     list.AddRange(GetFolderProjects(project));
-                }
                 else
-                {
                     list.Add(project);
-                }
             }
 
             return list;
@@ -176,13 +172,9 @@ namespace CommonResources
                 if (subProject == null) continue;
 
                 if (subProject.Kind.ToUpper() == SolutionFolder)
-                {
                     list.AddRange(GetFolderProjects(subProject));
-                }
                 else
-                {
                     list.Add(subProject);
-                }
             }
 
             return list;
@@ -195,12 +187,14 @@ namespace CommonResources
                 return;
 
             // Exclude solution folders 
-            if (project.Kind != null && project.Kind.ToUpper() == SolutionFolder) return;
+            if (project.Kind != null && project.Kind.ToUpper() == SolutionFolder)
+                return;
 
             bool addProject = true;
             foreach (ComboBoxItem projectItem in ProjectsDdl.Items)
             {
-                if (projectItem.Content.ToString().ToUpper() != project.Name.ToUpper()) continue;
+                if (projectItem.Content.ToString().ToUpper() != project.Name.ToUpper())
+                    continue;
 
                 addProject = false;
                 break;
