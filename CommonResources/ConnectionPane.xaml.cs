@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -136,10 +135,57 @@ namespace CommonResources
             AddConnection.IsEnabled = true;
             Connections.IsEnabled = true;
 
-            foreach (var project in Projects.Cast<Project>().OrderBy(x => x.FullName))
+            foreach (var project in GetProjects())
             {
                 SolutionProjectAdded(project);
             }
+        }
+
+        private IEnumerable<Project> GetProjects()
+        {
+            var list = new List<Project>();
+            var item = _dte.Solution.Projects.GetEnumerator();
+
+            while (item.MoveNext())
+            {
+                var project = item.Current as Project;
+
+                if (project == null) continue;
+
+                if (project.Kind.ToUpper() == SolutionFolder)
+                {
+                    list.AddRange(GetFolderProjects(project));
+                }
+                else
+                {
+                    list.Add(project);
+                }
+            }
+
+            return list;
+        }
+
+        private static IEnumerable<Project> GetFolderProjects(Project folder)
+        {
+            var list = new List<Project>();
+
+            foreach (ProjectItem item in folder.ProjectItems)
+            {
+                var subProject = item.SubProject;
+
+                if (subProject == null) continue;
+
+                if (subProject.Kind.ToUpper() == SolutionFolder)
+                {
+                    list.AddRange(GetFolderProjects(subProject));
+                }
+                else
+                {
+                    list.Add(subProject);
+                }
+            }
+
+            return list;
         }
 
         private void SolutionProjectAdded(Project project)
