@@ -239,14 +239,7 @@
   <ItemGroup>
     <Resource Include="Resources\package_24.png" />
     <Resource Include="Resources\unpackage_24.png" />
-    <Resource Include="Resources\solutions_24.png" />
-    <Resource Include="Resources\minus-24.png" />
-    <Resource Include="Resources\connected-24.png" />
-    <Resource Include="Resources\info-24.png" />
-    <Resource Include="Resources\customizations_24.png" />
     <Content Include="Resources\Package.ico" />
-    <Resource Include="Resources\settings-24.png" />
-    <Resource Include="Resources\plus-24.png" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="SolutionList.xaml">

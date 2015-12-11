@@ -252,16 +252,10 @@
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\publish-24.png" />
-    <Resource Include="Resources\plus-24.png" />
-    <Resource Include="Resources\settings-24.png" />
     <Resource Include="Resources\sw-file-icon_16.png" />
-    <Resource Include="Resources\connected-24.png" />
-    <Resource Include="Resources\minus-24.png" />
     <Resource Include="Resources\compare-16.png" />
     <Resource Include="Resources\download-16.png" />
     <Resource Include="Resources\open-16.png" />
-    <Resource Include="Resources\info-24.png" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="NewWebResource.xaml">
@@ -290,12 +284,6 @@
       <Project>{062e2258-9817-4834-a946-65cb2b57eab3}</Project>
       <Name>OutputLogger</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\customizations_24.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\solutions_24.png" />
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>

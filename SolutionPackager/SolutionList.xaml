@@ -22,7 +22,7 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                     <Button x:Name="Info" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Info_OnClick" Background="White">
-                        <Image Source="Resources/info-24.png" Width="24" Height="24" ToolTip="Information"></Image>
+                        <Image Source="/CommonResources;component/Resources/info-24.png" Width="24" Height="24" ToolTip="Information"></Image>
                     </Button>
                     <Button x:Name="Unpackage" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Unpackage_OnClick" IsEnabled="False" Background="White">
                         <Image Source="Resources/unpackage_24.png" Width="24" Height="24" ToolTip="Unpackage Solution"></Image>
@@ -31,10 +31,10 @@
                         <Image Source="Resources/package_24.png" Width="24" Height="24" ToolTip="Package Solution"></Image>
                     </Button>
                     <Button x:Name="Customizations" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Customizations_OnClick" IsEnabled="False" Background="White">
-                        <Image Source="Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
+                        <Image Source="/CommonResources;component/Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
                     </Button>
                     <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
-                        <Image Source="Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
+                        <Image Source="/CommonResources;component/Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">

@@ -236,14 +236,7 @@
   <ItemGroup>
     <Resource Include="Resources\report-16.png" />
     <Resource Include="Resources\sw-file-icon_16.png" />
-    <Resource Include="Resources\settings-24.png" />
-    <Resource Include="Resources\publish-24.png" />
-    <Resource Include="Resources\plus-24.png" />
-    <Resource Include="Resources\connected-24.png" />
-    <Resource Include="Resources\info-24.png" />
-    <Resource Include="Resources\minus-24.png" />
     <Resource Include="Resources\download-16.png" />
-    <Resource Include="Resources\open-16.png" />
     <Resource Include="Resources\deletecache-24.png" />
   </ItemGroup>
   <ItemGroup>
@@ -278,12 +271,6 @@
     <VSCTCompile Include="ReportDeployer.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\customizations_24.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\solutions_24.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\reports_24.png" />
