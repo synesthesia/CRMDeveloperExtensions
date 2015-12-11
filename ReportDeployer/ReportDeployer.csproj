@@ -275,6 +275,9 @@
   <ItemGroup>
     <Resource Include="Resources\reports_24.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\open-16.png" />
+  </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>
