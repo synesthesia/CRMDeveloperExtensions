@@ -14,7 +14,7 @@
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <commonResources:ConnectionPane Grid.Column="0" Name="ConnPane"
+        <commonResources:ConnectionPane Grid.Column="0" Name="ConnPane" ConnectionAdded="ConnPane_OnConnectionAdded"
                                         ProjectChanged="ConnPane_OnProjectChanged"
                                         ConnectionSelected="ConnPane_OnConnectionChanged"
                                         Connected="ConnPane_OnConnected" SourceWindow="PluginDeployer"/>

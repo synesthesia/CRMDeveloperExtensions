@@ -161,6 +161,11 @@ namespace PluginDeployer
             Solutions.IsEnabled = true;
         }
 
+        private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
+        {
+            GetPlugins(e.AddedConnection.ConnectionString);
+        }
+
         private void Info_OnClick(object sender, RoutedEventArgs e)
         {
             Info info = new Info();
