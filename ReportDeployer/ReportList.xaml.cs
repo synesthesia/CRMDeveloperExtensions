@@ -1017,7 +1017,8 @@ namespace ReportDeployer
 
             Guid reportId = new Guid(((Button)sender).CommandParameter.ToString());
 
-            OpenCrmPage("crmreports/" + page + "?id=%7b" + reportId + "%7d");
+            SharedWindow.OpenCrmPage("crmreports/" + page + "?id=%7b" + reportId + "%7d",
+                ConnPane.SelectedConnection, _dte);
         }
 
         private void ShowManaged_Checked(object sender, RoutedEventArgs e)
@@ -1166,40 +1167,20 @@ namespace ReportDeployer
 
         private void Customizations_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d");
+            SharedWindow.OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d",
+                ConnPane.SelectedConnection, _dte);
         }
 
         private void Solutions_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution");
+            SharedWindow.OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution",
+                ConnPane.SelectedConnection, _dte);
         }
 
         private void Reports_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenCrmPage("main.aspx?area=nav_reports&etc=9100&page=CS&pageType=EntityList&web=false");
-        }
-
-        private void OpenCrmPage(string url)
-        {
-            if (ConnPane.SelectedConnection == null) return;
-            string connString = ConnPane.SelectedConnection.ConnectionString;
-            if (string.IsNullOrEmpty(connString)) return;
-
-            string[] connParts = connString.Split(';');
-            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
-            if (!string.IsNullOrEmpty(urlPart))
-            {
-                string[] urlParts = urlPart.Split('=');
-                string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
-
-                var props = _dte.Properties["CRM Developer Extensions", "General"];
-                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
-
-                if (useDefaultWebBrowser) //User's default browser
-                    System.Diagnostics.Process.Start(baseUrl + url);
-                else //Internal VS browser
-                    _dte.ItemOperations.Navigate(baseUrl + url);
-            }
+            SharedWindow.OpenCrmPage("main.aspx?area=nav_reports&etc=9100&page=CS&pageType=EntityList&web=false",
+                ConnPane.SelectedConnection, _dte);
         }
     }
 }

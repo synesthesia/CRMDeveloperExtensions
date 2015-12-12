@@ -51,7 +51,7 @@ namespace WebResourceDeployer
         private readonly FieldInfo _menuDropAlignmentField;
 
         readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO", "TS" };
-        readonly string[] _folderExtensions = {"BUNDLE", "TT"};
+        readonly string[] _folderExtensions = { "BUNDLE", "TT" };
 
         public WebResourceList()
         {
@@ -1491,7 +1491,8 @@ namespace WebResourceDeployer
         {
             Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
 
-            OpenCrmPage("main.aspx?etc=9333&id=%7b" + webResourceId + "%7d&pagetype=webresourceedit");
+            SharedWindow.OpenCrmPage("main.aspx?etc=9333&id=%7b" + webResourceId + "%7d&pagetype=webresourceedit",
+                ConnPane.SelectedConnection, _dte);
         }
 
         private void ShowManaged_Checked(object sender, RoutedEventArgs e)
@@ -1731,36 +1732,14 @@ namespace WebResourceDeployer
 
         private void Customizations_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d");
+            SharedWindow.OpenCrmPage("tools/solution/edit.aspx?id=%7bfd140aaf-4df4-11dd-bd17-0019b9312238%7d",
+                ConnPane.SelectedConnection, _dte);
         }
 
         private void Solutions_OnClick(object sender, RoutedEventArgs e)
         {
-
-            OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution");
-        }
-
-        private void OpenCrmPage(string url)
-        {
-            if (ConnPane.SelectedConnection == null) return;
-            string connString = ConnPane.SelectedConnection.ConnectionString;
-            if (string.IsNullOrEmpty(connString)) return;
-
-            string[] connParts = connString.Split(';');
-            string urlPart = connParts.FirstOrDefault(s => s.ToUpper().StartsWith("URL="));
-            if (!string.IsNullOrEmpty(urlPart))
-            {
-                string[] urlParts = urlPart.Split('=');
-                string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
-
-                var props = _dte.Properties["CRM Developer Extensions", "General"];
-                bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
-
-                if (useDefaultWebBrowser) //User's default browser
-                    System.Diagnostics.Process.Start(baseUrl + url);
-                else //Internal VS browser
-                    _dte.ItemOperations.Navigate(baseUrl + url);
-            }
+            SharedWindow.OpenCrmPage("tools/Solution/home_solution.aspx?etc=7100&sitemappath=Settings|Customizations|nav_solution",
+                ConnPane.SelectedConnection, _dte);
         }
 
         private void SolutionList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
