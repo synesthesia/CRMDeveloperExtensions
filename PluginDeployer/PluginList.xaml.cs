@@ -349,8 +349,6 @@ namespace PluginDeployer
 
         private void SolutionBeforeClosing()
         {
-            ResetForm();
-
             //Close the Web Plug-in Deployer window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {

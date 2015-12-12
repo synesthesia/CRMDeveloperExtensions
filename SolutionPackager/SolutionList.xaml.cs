@@ -435,8 +435,6 @@ namespace SolutionPackager
 
         private void SolutionBeforeClosing()
         {
-            ResetForm();
-
             //Close the tool window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {

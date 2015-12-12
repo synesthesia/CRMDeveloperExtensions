@@ -99,8 +99,6 @@ namespace ReportDeployer
 
         private void SolutionBeforeClosing()
         {
-            ResetForm();
-
             //Close the Report Deployer window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {

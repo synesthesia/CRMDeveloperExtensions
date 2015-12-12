@@ -135,8 +135,6 @@ namespace WebResourceDeployer
 
         private void SolutionBeforeClosing()
         {
-            ResetForm();
-
             //Close the Web Resource Deployer window - forces having to reopen for a new solution
             foreach (Window window in _dte.Windows)
             {
