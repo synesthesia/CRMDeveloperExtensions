@@ -557,6 +557,12 @@ namespace SolutionPackager
 
                 string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
 
+                if (!File.Exists(toolPath))
+                {
+                    MessageBox.Show("SolutionPackager.exe not found at: " + spPath);
+                    return false;
+                }
+
                 string tempDirectory = Path.GetDirectoryName(path);
                 if (Directory.Exists(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path)))
                     Directory.Delete(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path), true);
@@ -601,7 +607,7 @@ namespace SolutionPackager
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error launching Solution Packager: " + Environment.NewLine + Environment.NewLine + ex.Message);
+                _logger.WriteToOutputWindow("Error launching Solution Packager: " + Environment.NewLine + Environment.NewLine + ex.Message, Logger.MessageType.Error);
                 return false;
             }
         }
@@ -827,6 +833,13 @@ namespace SolutionPackager
                     spPath += "\\";
 
                 string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
+
+                if (!File.Exists(toolPath))
+                {
+                    MessageBox.Show("SolutionPackager.exe not found at: " + spPath);
+                    return;
+                }
+
                 string filename = selectedSolution.UniqueName + "_" +
                                   FormatVersionString(version) + ".zip";
 
@@ -840,7 +853,7 @@ namespace SolutionPackager
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error launching Solution Packager: " + Environment.NewLine + Environment.NewLine + ex.Message);
+                _logger.WriteToOutputWindow("Error launching Solution Packager: " + Environment.NewLine + Environment.NewLine + ex.Message, Logger.MessageType.Error);
             }
         }
 
