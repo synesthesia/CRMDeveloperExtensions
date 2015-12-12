@@ -109,6 +109,10 @@ namespace SolutionPackager
         private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
             GetSolutions(e.AddedConnection.ConnectionString);
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            SetDownloadManagedEnabled(true);
         }
 
         private void ConnPane_OnConnectionDeleted(object sender, EventArgs e)
@@ -528,6 +532,8 @@ namespace SolutionPackager
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
+
+            Package.IsEnabled = true;
         }
 
         private async Task<bool> ExtractPackage(string path, CrmSolution selectedSolution, Project project, bool? downloadManaged)
@@ -916,7 +922,9 @@ namespace SolutionPackager
             solution.BoundProject = selectedProject.Name;
             AddOrUpdateMapping(solution);
 
-            Package.IsEnabled = solution.SolutionId != Guid.Empty;
+            bool solutionDownloaded =
+                File.Exists(Path.GetDirectoryName(selectedProject.FullName) + "\\Other\\Solution.xml");
+            Package.IsEnabled = solution.SolutionId != Guid.Empty && solutionDownloaded;
             Unpackage.IsEnabled = solution.SolutionId != Guid.Empty;
             SetDownloadManagedEnabled(solution.SolutionId != Guid.Empty);
             DownloadManaged.IsChecked = solution.DownloadManagedSolution;
