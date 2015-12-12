@@ -732,6 +732,12 @@ namespace PluginDeployer
             if (!prtPath.EndsWith("\\"))
                 prtPath += "\\";
 
+            if (!File.Exists(prtPath + "PluginRegistration.exe"))
+            {
+                MessageBox.Show("PluginRegistration.exe not found at: " + prtPath);
+                return;
+            }
+
             try
             {
                 System.Diagnostics.Process.Start(prtPath + "PluginRegistration.exe");
