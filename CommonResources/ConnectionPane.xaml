@@ -5,8 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.11.0"
              mc:Ignorable="d" 
-             d:DesignHeight="150" d:DesignWidth="203"
-             Unloaded="ConnectionPane_OnUnloaded">
+             d:DesignHeight="150" d:DesignWidth="203">
     <Expander x:Name="Expander"  HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" ExpandDirection="Right" IsExpanded="True" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">
         <Expander.Header>
             <TextBlock Text="Connections">

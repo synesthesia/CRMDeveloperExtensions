@@ -105,11 +105,6 @@ namespace CommonResources
             Projects = _dte.Solution.Projects;
         }
 
-        private void ConnectionPane_OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            ResetForm();
-        }
-
         private void BeforeSolutionClosing()
         {
             ResetForm();
