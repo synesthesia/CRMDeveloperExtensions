@@ -323,6 +323,8 @@ namespace CommonResources
                 SelectedConnection = SelectedConnection,
                 ConnectionAdded = _connectionAdded
             });
+
+            SharedGlobals.SetGlobal("SelectedConnection", SelectedConnection, _dte);
         }
 
         private void AddConnection_Click(object sender, RoutedEventArgs e)
@@ -338,8 +340,7 @@ namespace CommonResources
 
             Expander.IsExpanded = false;
 
-            bool change = AddOrUpdateConnection(SelectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
-            if (!change) return;
+            AddOrUpdateConnection(SelectedProject, connection.ConnectionName, connection.ConnectionString, connection.OrgId, connection.Version, true);
 
             GetConnections();
 
@@ -356,11 +357,9 @@ namespace CommonResources
 
                 break;
             }
-
-            UpdateSelectedConnection(true);
         }
 
-        private bool AddOrUpdateConnection(Project vsProject, string connectionName, string connString, string orgId, string versionNum, bool showPrompt)
+        private void AddOrUpdateConnection(Project vsProject, string connectionName, string connString, string orgId, string versionNum, bool showPrompt)
         {
             try
             {
@@ -368,8 +367,10 @@ namespace CommonResources
                 if (!ConfigFileExists(vsProject))
                 {
                     _logger.WriteToOutputWindow("Error Adding Or Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return false;
+                    return;
                 }
+
+                FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config");
 
                 XmlDocument doc = new XmlDocument();
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
@@ -390,22 +391,43 @@ namespace CommonResources
 
                             //Update existing connection
                             if (result != MessageBoxResult.Yes)
-                                return false;
+                                return;
                         }
 
+                        bool changed = false;
                         XmlNode connectionU = node.ParentNode;
                         if (connectionU != null)
                         {
                             XmlNode nameNode = connectionU["Name"];
                             if (nameNode != null)
-                                nameNode.InnerText = connectionName;
+                            {
+                                string oldConnectionName = nameNode.InnerText;
+                                if (oldConnectionName != connectionName)
+                                {
+                                    nameNode.InnerText = connectionName;
+                                    changed = true;
+                                }
+                            }
                             XmlNode versionNode = connectionU["Version"];
                             if (versionNode != null)
-                                versionNode.InnerText = versionNum;
+                            {
+                                string oldVersionNum = versionNode.InnerText;
+                                if (oldVersionNum != versionNum)
+                                {
+                                    versionNode.InnerText = versionNum;
+                                    changed = true;
+                                }
+                            }
                         }
 
+                        if (!changed) return;
+
+                        if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                            file.IsReadOnly = false;
+
                         doc.Save(path + "\\CRMDeveloperExtensions.config");
-                        return true;
+
+                        return;
                     }
                 }
 
@@ -424,20 +446,18 @@ namespace CommonResources
                 XmlElement version = doc.CreateElement("Version");
                 version.InnerText = versionNum;
                 connection.AppendChild(version);
-                XmlElement selected = doc.CreateElement("Selected");
-                selected.InnerText = "True";
-                connection.AppendChild(selected);
                 connections[0].AppendChild(connection);
 
                 _connectionAdded = true;
 
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                    file.IsReadOnly = false;
+
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
-                return true;
             }
             catch (Exception ex)
             {
                 _logger.WriteToOutputWindow("Error Adding Or Updating Connection: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
-                return false;
             }
         }
 
@@ -523,10 +543,6 @@ namespace CommonResources
         {
             try
             {
-                MessageBoxResult result = MessageBox.Show("Are you sure?" + Environment.NewLine + Environment.NewLine +
-                    "This will delete the connection information and all associated mappings.", "Delete Connection", MessageBoxButton.YesNo);
-                if (result != MessageBoxResult.Yes) return;
-
                 if (SelectedConnection == null) return;
                 if (string.IsNullOrEmpty(SelectedConnection.ConnectionString)) return;
 
@@ -536,6 +552,10 @@ namespace CommonResources
                     _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;
                 }
+
+                MessageBoxResult result = MessageBox.Show("Are you sure?" + Environment.NewLine + Environment.NewLine +
+                    "This will delete the connection information and all associated mappings.", "Delete Connection", MessageBoxButton.YesNo);
+                if (result != MessageBoxResult.Yes) return;
 
                 if (!ConfigFileExists(SelectedProject)) return;
 
@@ -560,21 +580,42 @@ namespace CommonResources
                     if (xmlNode.ParentNode != null)
                         xmlNode.ParentNode.RemoveChild(xmlNode);
                 }
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                }
+
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
 
                 //Delete related Files
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
-                XmlNodeList files = doc.GetElementsByTagName("File");
-                if (files.Count > 0)
+
+                string type;
+                switch (SourceWindow)
+                {
+                    case "PluginDeployer":
+                        type = "Assembly";
+                        break;
+                    case "SolutionPackager":
+                        type = "Solution";
+                        break;
+                    default: //WebResourceDeployer or ReportDeployer
+                        type = "File";
+                        break;
+                }
+
+                XmlNodeList mapping = doc.GetElementsByTagName(type);
+                if (mapping.Count > 0)
                 {
                     nodesToRemove = new List<XmlNode>();
-                    foreach (XmlNode file in files)
+                    foreach (XmlNode fileNode in mapping)
                     {
-                        XmlNode orgId = file["OrgId"];
+                        XmlNode orgId = fileNode["OrgId"];
                         if (orgId == null) continue;
                         if (orgId.InnerText.ToUpper() != SelectedConnection.OrgId.ToUpper()) continue;
 
-                        nodesToRemove.Add(file);
+                        nodesToRemove.Add(fileNode);
                     }
 
                     foreach (XmlNode xmlNode in nodesToRemove)
@@ -602,54 +643,14 @@ namespace CommonResources
             string connString = SelectedConnection.ConnectionString;
             if (string.IsNullOrEmpty(connString)) return;
 
-            UpdateSelectedConnection(true);
-
             Expander.IsExpanded = false;
 
             OnConnected(new ConnectEventArgs
             {
                 ConnectionString = connString
             });
-        }
 
-        private void UpdateSelectedConnection(bool makeSelected)
-        {
-            try
-            {
-                var path = Path.GetDirectoryName(SelectedProject.FullName);
-                if (!ConfigFileExists(SelectedProject))
-                {
-                    _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-                XmlNodeList connections = doc.GetElementsByTagName("Connection");
-                if (connections.Count > 0)
-                {
-                    foreach (XmlNode node in connections)
-                    {
-                        XmlNode name = node["Name"];
-                        if (name == null) continue;
-
-                        XmlNode selected = node["Selected"];
-                        if (selected == null) continue;
-
-                        if (makeSelected)
-                            selected.InnerText = name.InnerText != SelectedConnection.Name ? "False" : "True";
-                        else
-                            selected.InnerText = "False";
-                    }
-
-                    doc.Save(path + "\\CRMDeveloperExtensions.config");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message, Logger.MessageType.Error);
-            }
+            AddOrUpdateConnection(SelectedProject, SelectedConnection.Name, SelectedConnection.ConnectionString, SelectedConnection.OrgId, SelectedConnection.Version, false);
         }
 
         protected virtual void OnProjectChanged()

@@ -124,6 +124,7 @@ namespace SolutionPackager
             SolutionToPackage.ItemsSource = null;
             SetDownloadManagedEnabled(false);
             DownloadManaged.IsChecked = false;
+            SolutionToPackage.SelectedItem = null;
         }
 
         private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
@@ -232,7 +233,9 @@ namespace SolutionPackager
             if (solutions.Count(s => !string.IsNullOrEmpty(s.BoundProject)) > 0)
             {
                 SolutionToPackage.SelectedItem = solutions.First(s => !string.IsNullOrEmpty(s.BoundProject));
-                SolutionToPackage.IsEnabled = false;
+                var selectedProject = ConnPane.SelectedProject;
+                if (selectedProject != null)
+                    SolutionToPackage.IsEnabled = !File.Exists(Path.GetDirectoryName(selectedProject.FullName) + "\\Other\\Solution.xml");
             }
             else
                 SolutionToPackage.IsEnabled = true;
@@ -327,6 +330,12 @@ namespace SolutionPackager
                     if (projects != null && projects.ParentNode != null)
                         projects.RemoveChild(xmlNode);
                 }
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                }
+
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
             }
             catch (Exception ex)
@@ -536,7 +545,7 @@ namespace SolutionPackager
 
                 string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
 
-                if (!File.Exists(toolPath))
+                if (!File.Exists(spPath + "SolutionPackager.exe"))
                 {
                     MessageBox.Show("SolutionPackager.exe not found at: " + spPath);
                     return false;
@@ -555,7 +564,7 @@ namespace SolutionPackager
 
                 cw.SendInput("shell " + command, true);
 
-                //TODO: Adjust for larger solutions?
+                //Need this
                 System.Threading.Thread.Sleep(1000);
 
                 bool solutionFileDelete = RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
@@ -813,7 +822,7 @@ namespace SolutionPackager
 
                 string toolPath = @"""" + spPath + "SolutionPackager.exe" + @"""";
 
-                if (!File.Exists(toolPath))
+                if (!File.Exists(spPath + "SolutionPackager.exe"))
                 {
                     MessageBox.Show("SolutionPackager.exe not found at: " + spPath);
                     return;
@@ -844,8 +853,8 @@ namespace SolutionPackager
             if (!saveSolutionFiles)
                 return;
 
-            //TODO: Adjust for larger solutions?
-            System.Threading.Thread.Sleep(2000);
+            //Need this
+            System.Threading.Thread.Sleep(1000);
 
             project.ProjectItems.AddFromFile(savePath + "\\" + filename);
         }
@@ -926,7 +935,7 @@ namespace SolutionPackager
         {
             try
             {
-                var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
+                var path = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
                 if (!ConfigFileExists(ConnPane.SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
@@ -934,7 +943,7 @@ namespace SolutionPackager
                 }
 
                 XmlDocument doc = new XmlDocument();
-                doc.Load(projectPath + "\\CRMDeveloperExtensions.config");
+                doc.Load(path + "\\CRMDeveloperExtensions.config");
 
                 //Update or delete existing mapping
                 XmlNodeList solutionNodes = doc.GetElementsByTagName("Solution");
@@ -942,6 +951,7 @@ namespace SolutionPackager
                 {
                     foreach (XmlNode node in solutionNodes)
                     {
+                        bool changed = false;
                         XmlNode orgId = node["OrgId"];
                         if (orgId != null && orgId.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
@@ -954,45 +964,75 @@ namespace SolutionPackager
                             //Delete
                             var parentNode = node.ParentNode;
                             if (parentNode != null)
+                            {
                                 parentNode.RemoveChild(node);
+                                changed = true;
+                            }
                         }
                         else
                         {
                             //Update
                             XmlNode solutionIdNode = node["SolutionId"];
                             if (solutionIdNode != null)
-                                solutionIdNode.InnerText = solution.SolutionId.ToString();
+                            {
+                                string oldSolutionId = solutionIdNode.InnerText;
+                                if (oldSolutionId != solution.SolutionId.ToString())
+                                {
+                                    solutionIdNode.InnerText = solution.SolutionId.ToString();
+                                    changed = true;
+                                }
+                            }
                             XmlNode downloadManagedNode = node["DownloadManaged"];
                             if (downloadManagedNode != null)
-                                downloadManagedNode.InnerText = (DownloadManaged.IsChecked == true) ? "true" : "false";
+                            {
+                                string oldDownloadManaged = downloadManagedNode.InnerText;
+                                string downloadManagedValue = (solution.DownloadManagedSolution) ? "true" : "false";
+                                if (oldDownloadManaged != downloadManagedValue)
+                                {
+                                    downloadManagedNode.InnerText = downloadManagedValue;
+                                    changed = true;
+                                }
+                            }
                         }
 
-                        doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+                        if (!changed) return;
+
+                        if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                        {
+                            FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                        }
+
+                        doc.Save(path + "\\CRMDeveloperExtensions.config");
                         return;
                     }
                 }
 
                 //Create new mapping
                 XmlNodeList projects = doc.GetElementsByTagName("Solutions");
-                if (projects.Count > 0)
-                {
-                    XmlNode solutionNode = doc.CreateElement("Solution");
-                    XmlNode org = doc.CreateElement("OrgId");
-                    org.InnerText = ConnPane.SelectedConnection.OrgId;
-                    solutionNode.AppendChild(org);
-                    XmlNode projectNameNode2 = doc.CreateElement("ProjectName");
-                    projectNameNode2.InnerText = solution.BoundProject;
-                    solutionNode.AppendChild(projectNameNode2);
-                    XmlNode solutionId = doc.CreateElement("SolutionId");
-                    solutionId.InnerText = solution.SolutionId.ToString();
-                    solutionNode.AppendChild(solutionId);
-                    XmlNode downloadManaged = doc.CreateElement("DownloadManaged");
-                    downloadManaged.InnerText = (DownloadManaged.IsChecked == true) ? "true" : "false";
-                    solutionNode.AppendChild(downloadManaged);
-                    projects[0].AppendChild(solutionNode);
+                if (projects.Count <= 0)
+                    return;
 
-                    doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+                XmlNode solutionNode = doc.CreateElement("Solution");
+                XmlNode org = doc.CreateElement("OrgId");
+                org.InnerText = ConnPane.SelectedConnection.OrgId;
+                solutionNode.AppendChild(org);
+                XmlNode projectNameNode2 = doc.CreateElement("ProjectName");
+                projectNameNode2.InnerText = solution.BoundProject;
+                solutionNode.AppendChild(projectNameNode2);
+                XmlNode solutionId = doc.CreateElement("SolutionId");
+                solutionId.InnerText = solution.SolutionId.ToString();
+                solutionNode.AppendChild(solutionId);
+                XmlNode downloadManaged = doc.CreateElement("DownloadManaged");
+                downloadManaged.InnerText = (DownloadManaged.IsChecked == true) ? "true" : "false";
+                solutionNode.AppendChild(downloadManaged);
+                projects[0].AppendChild(solutionNode);
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
                 }
+
+                doc.Save(path + "\\CRMDeveloperExtensions.config");
             }
             catch (Exception ex)
             {
@@ -1006,8 +1046,10 @@ namespace SolutionPackager
             if (selectedProject == null) return;
 
             CrmSolution solution = (CrmSolution)SolutionToPackage.SelectedItem;
-            if (solution != null && solution.SolutionId != Guid.Empty)
-                AddOrUpdateMapping(solution);
+            if (solution == null || solution.SolutionId == Guid.Empty) return;
+
+            solution.DownloadManagedSolution = DownloadManaged.IsChecked == true;
+            AddOrUpdateMapping(solution);
         }
     }
 }

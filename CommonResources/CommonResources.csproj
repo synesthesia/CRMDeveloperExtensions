@@ -71,6 +71,8 @@
     </Compile>
     <Compile Include="Models\CrmConn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SharedConfigFile.cs" />
+    <Compile Include="SharedGlobals.cs" />
     <Compile Include="SharedWindow.cs" />
   </ItemGroup>
   <ItemGroup>

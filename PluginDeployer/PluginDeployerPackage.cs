@@ -1,4 +1,6 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using CommonResources.Models;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Xrm.Client;
 using Microsoft.Xrm.Client.Services;
@@ -10,9 +12,6 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
-using System.Text;
-using System.Xml;
-using CommonResources.Models;
 using Window = EnvDTE.Window;
 
 namespace PluginDeployer
@@ -73,10 +72,7 @@ namespace PluginDeployer
                 return;
             }
 
-            SelectedItem item = _dte.SelectedItems.Item(1);
-            Project project = item.Project;
-
-            CrmConn selectedConnection = GetSelectedConnection(project);
+            CrmConn selectedConnection = (CrmConn)SharedGlobals.GetGlobal("SelectedConnection", _dte);
             if (selectedConnection == null)
             {
                 menuCommand.Visible = false;
@@ -94,7 +90,7 @@ namespace PluginDeployer
             SelectedItem item = _dte.SelectedItems.Item(1);
             Project project = item.Project;
 
-            CrmConn selectedConnection = GetSelectedConnection(project);
+            CrmConn selectedConnection = (CrmConn)SharedGlobals.GetGlobal("SelectedConnection", _dte);
             if (selectedConnection == null) return;
 
             Guid assemblyId = SelectedAssemblyItem.Item.AssemblyId;
@@ -165,65 +161,6 @@ namespace PluginDeployer
 
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
-        }
-
-        private CrmConn GetSelectedConnection(Project project)
-        {
-            CrmConn selectedConnection = new CrmConn();
-            var projectPath = Path.GetDirectoryName(project.FullName);
-            if (projectPath == null) return selectedConnection;
-
-            var path = Path.GetDirectoryName(project.FullName);
-            if (!ConfigFileExists(project)) return null;
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-            XmlNodeList connections = doc.GetElementsByTagName("Connection");
-            if (connections.Count == 0) return selectedConnection;
-
-            //Get the selected Connection info
-            foreach (XmlNode node in connections)
-            {
-                XmlNode selectedNode = node["Selected"];
-                if (selectedNode == null) continue;
-
-                bool selected;
-                bool isBool = Boolean.TryParse(selectedNode.InnerText, out selected);
-                if (!isBool) continue;
-                if (!selected) continue;
-
-                XmlNode connectionStringNode = node["ConnectionString"];
-                if (connectionStringNode == null) continue;
-
-                selectedConnection.ConnectionString = DecodeString(connectionStringNode.InnerText);
-
-                XmlNode orgIdNode = node["OrgId"];
-                if (orgIdNode == null) continue;
-
-                selectedConnection.OrgId = orgIdNode.InnerText;
-
-                XmlNode vesionNode = node["Version"];
-                if (vesionNode == null) continue;
-
-                selectedConnection.Version = vesionNode.InnerText;
-
-                break;
-            }
-
-            return selectedConnection;
-        }
-
-        private string DecodeString(string value)
-        {
-            byte[] data = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(data);
-        }
-
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
 
         private string GetOutputPath(Project project)

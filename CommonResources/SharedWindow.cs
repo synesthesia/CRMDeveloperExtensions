@@ -6,7 +6,7 @@ namespace CommonResources
 {
     public static class SharedWindow
     {
-        public static void OpenCrmPage(string url, CrmConn selectedConnection, DTE _dte)
+        public static void OpenCrmPage(string url, CrmConn selectedConnection, DTE dte)
         {
             if (selectedConnection == null) return;
             string connString = selectedConnection.ConnectionString;
@@ -19,13 +19,13 @@ namespace CommonResources
                 string[] urlParts = urlPart.Split('=');
                 string baseUrl = (urlParts[1].EndsWith("/")) ? urlParts[1] : urlParts[1] + "/";
 
-                var props = _dte.Properties["CRM Developer Extensions", "General"];
+                var props = dte.Properties["CRM Developer Extensions", "General"];
                 bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
 
                 if (useDefaultWebBrowser) //User's default browser
                     System.Diagnostics.Process.Start(baseUrl + url);
                 else //Internal VS browser
-                    _dte.ItemOperations.Navigate(baseUrl + url);
+                    dte.ItemOperations.Navigate(baseUrl + url);
             }
         }
     }

@@ -522,6 +522,12 @@ namespace ReportDeployer
                     if (files != null && files.ParentNode != null)
                         files.RemoveChild(xmlNode);
                 }
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                }
+
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
             }
             catch (Exception ex)
@@ -537,6 +543,7 @@ namespace ReportDeployer
             if (e.PropertyName == "BoundFile")
             {
                 ReportItem item = (ReportItem)sender;
+
                 AddOrUpdateMapping(item);
             }
 
@@ -602,11 +609,12 @@ namespace ReportDeployer
                 {
                     foreach (XmlNode node in fileNodes)
                     {
+                        bool changed = false;
                         XmlNode orgId = node["OrgId"];
                         if (orgId != null && orgId.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
-                        XmlNode reportId = node["ReportId"];
-                        if (reportId != null && reportId.InnerText.ToUpper() !=
+                        XmlNode exReportId = node["ReportId"];
+                        if (exReportId != null && exReportId.InnerText.ToUpper() !=
                             item.ReportId.ToString()
                                 .ToUpper()
                                 .Replace("{", String.Empty)
@@ -621,6 +629,7 @@ namespace ReportDeployer
                             {
                                 parentNode.RemoveChild(node);
 
+                                changed = true;
                                 item.Publish = false;
                                 item.AllowPublish = false;
                             }
@@ -628,9 +637,24 @@ namespace ReportDeployer
                         else
                         {
                             //Update
-                            XmlNode path = node["Path"];
-                            if (path != null)
-                                path.InnerText = item.BoundFile;
+                            XmlNode exPath = node["Path"];
+                            if (exPath != null)
+                            {
+                                string oldPath = exPath.InnerText;
+                                if (oldPath != item.BoundFile)
+                                {
+                                    exPath.InnerText = item.BoundFile;
+                                    changed = true;
+                                }
+                            }
+                        }
+
+                        if (!changed)
+                            return;
+
+                        if (SharedConfigFile.IsConfigReadOnly(projectPath + "\\CRMDeveloperExtensions.config"))
+                        {
+                            FileInfo file = new FileInfo(projectPath + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
                         }
 
                         doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
@@ -640,30 +664,35 @@ namespace ReportDeployer
 
                 //Create new mapping
                 XmlNodeList files = doc.GetElementsByTagName("Files");
-                if (files.Count > 0)
+                if (files.Count <= 0)
+                    return;
+
+                XmlNode fileNode = doc.CreateElement("File");
+                XmlNode org = doc.CreateElement("OrgId");
+                org.InnerText = ConnPane.SelectedConnection.OrgId;
+                fileNode.AppendChild(org);
+                XmlNode newPath = doc.CreateElement("Path");
+                newPath.InnerText = item.BoundFile;
+                fileNode.AppendChild(newPath);
+                XmlNode newReportId = doc.CreateElement("ReportId");
+                newReportId.InnerText = item.ReportId.ToString();
+                fileNode.AppendChild(newReportId);
+                XmlNode name = doc.CreateElement("Name");
+                name.InnerText = item.Name;
+                fileNode.AppendChild(name);
+                XmlNode isManaged = doc.CreateElement("IsManaged");
+                isManaged.InnerText = item.IsManaged.ToString();
+                fileNode.AppendChild(isManaged);
+                files[0].AppendChild(fileNode);
+
+                if (SharedConfigFile.IsConfigReadOnly(projectPath + "\\CRMDeveloperExtensions.config"))
                 {
-                    XmlNode file = doc.CreateElement("File");
-                    XmlNode org = doc.CreateElement("OrgId");
-                    org.InnerText = ConnPane.SelectedConnection.OrgId;
-                    file.AppendChild(org);
-                    XmlNode path = doc.CreateElement("Path");
-                    path.InnerText = item.BoundFile;
-                    file.AppendChild(path);
-                    XmlNode reportId = doc.CreateElement("ReportId");
-                    reportId.InnerText = item.ReportId.ToString();
-                    file.AppendChild(reportId);
-                    XmlNode name = doc.CreateElement("Name");
-                    name.InnerText = item.Name;
-                    file.AppendChild(name);
-                    XmlNode isManaged = doc.CreateElement("IsManaged");
-                    isManaged.InnerText = item.IsManaged.ToString();
-                    file.AppendChild(isManaged);
-                    files[0].AppendChild(file);
-
-                    doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
-
-                    item.AllowPublish = true;
+                    FileInfo file = new FileInfo(projectPath + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
                 }
+
+                doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+
+                item.AllowPublish = true;
             }
             catch (Exception ex)
             {

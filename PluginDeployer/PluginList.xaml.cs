@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using EnvDTE;
 using InfoWindow;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -19,7 +20,6 @@ using System.ServiceModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
-using CommonResources;
 using VSLangProj;
 using Path = System.IO.Path;
 using Window = EnvDTE.Window;
@@ -97,59 +97,19 @@ namespace PluginDeployer
                 }
                 else
                 {
-                    UpdateSelectedConnection(false);
                     Customizations.IsEnabled = false;
                     Solutions.IsEnabled = false;
+                    Assemblies.ItemsSource = null;
                 }
             }
             else
             {
                 Customizations.IsEnabled = false;
-                Solutions.IsEnabled = false;
+                Solutions.IsEnabled = false;      
             }
 
             Publish.IsEnabled = false;
             Assemblies.IsEnabled = false;
-        }
-
-        private void UpdateSelectedConnection(bool makeSelected)
-        {
-            try
-            {
-                var path = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
-                if (!ConfigFileExists(ConnPane.SelectedProject))
-                {
-                    _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
-                    return;
-                }
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-                XmlNodeList connections = doc.GetElementsByTagName("Connection");
-                if (connections.Count > 0)
-                {
-                    foreach (XmlNode node in connections)
-                    {
-                        XmlNode name = node["Name"];
-                        if (name == null) continue;
-
-                        XmlNode selected = node["Selected"];
-                        if (selected == null) continue;
-
-                        if (makeSelected)
-                            selected.InnerText = name.InnerText != ConnPane.SelectedConnection.Name ? "False" : "True";
-                        else
-                            selected.InnerText = "False";
-                    }
-
-                    doc.Save(path + "\\CRMDeveloperExtensions.config");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteToOutputWindow("Error Updating Connection: Missing CRMDeveloperExtensions.config File: " + ex.Message, Logger.MessageType.Error);
-            }
         }
 
         private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
@@ -561,6 +521,12 @@ namespace PluginDeployer
                     if (projects != null && projects.ParentNode != null)
                         projects.RemoveChild(xmlNode);
                 }
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                }
+
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
             }
             catch (Exception ex)
@@ -617,7 +583,7 @@ namespace PluginDeployer
         {
             try
             {
-                var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
+                var path = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
                 if (!ConfigFileExists(ConnPane.SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
@@ -625,7 +591,7 @@ namespace PluginDeployer
                 }
 
                 XmlDocument doc = new XmlDocument();
-                doc.Load(projectPath + "\\CRMDeveloperExtensions.config");
+                doc.Load(path + "\\CRMDeveloperExtensions.config");
 
                 //Update or delete existing mapping
                 XmlNodeList assemblyNodes = doc.GetElementsByTagName("Assembly");
@@ -633,6 +599,7 @@ namespace PluginDeployer
                 {
                     foreach (XmlNode node in assemblyNodes)
                     {
+                        bool changed = false;
                         XmlNode orgId = node["OrgId"];
                         if (orgId != null && orgId.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
@@ -645,39 +612,61 @@ namespace PluginDeployer
                             //Delete
                             var parentNode = node.ParentNode;
                             if (parentNode != null)
+                            {
                                 parentNode.RemoveChild(node);
+                                changed = true;
+                            }
                         }
                         else
                         {
                             //Update
                             XmlNode assemblyIdNode = node["AssemblyId"];
                             if (assemblyIdNode != null)
-                                assemblyIdNode.InnerText = item.AssemblyId.ToString();
+                            {
+                                string oldAssemblyId = assemblyIdNode.InnerText;
+                                if (oldAssemblyId != item.AssemblyId.ToString())
+                                {
+                                    assemblyIdNode.InnerText = item.AssemblyId.ToString();
+                                    changed = true;
+                                }
+                            }
                         }
 
-                        doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+                        if (!changed) return;
+
+                        if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                        {
+                            FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                        }
+
+                        doc.Save(path + "\\CRMDeveloperExtensions.config");
                         return;
                     }
                 }
 
                 //Create new mapping
                 XmlNodeList projects = doc.GetElementsByTagName("Assemblies");
-                if (projects.Count > 0)
-                {
-                    XmlNode assembly = doc.CreateElement("Assembly");
-                    XmlNode org = doc.CreateElement("OrgId");
-                    org.InnerText = ConnPane.SelectedConnection.OrgId;
-                    assembly.AppendChild(org);
-                    XmlNode projectNameNode2 = doc.CreateElement("ProjectName");
-                    projectNameNode2.InnerText = item.BoundProject;
-                    assembly.AppendChild(projectNameNode2);
-                    XmlNode assemblyId = doc.CreateElement("AssemblyId");
-                    assemblyId.InnerText = item.AssemblyId.ToString();
-                    assembly.AppendChild(assemblyId);
-                    projects[0].AppendChild(assembly);
+                if (projects.Count <= 0)
+                    return;
 
-                    doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+                XmlNode assembly = doc.CreateElement("Assembly");
+                XmlNode org = doc.CreateElement("OrgId");
+                org.InnerText = ConnPane.SelectedConnection.OrgId;
+                assembly.AppendChild(org);
+                XmlNode projectNameNode2 = doc.CreateElement("ProjectName");
+                projectNameNode2.InnerText = item.BoundProject;
+                assembly.AppendChild(projectNameNode2);
+                XmlNode assemblyId = doc.CreateElement("AssemblyId");
+                assemblyId.InnerText = item.AssemblyId.ToString();
+                assembly.AppendChild(assemblyId);
+                projects[0].AppendChild(assembly);
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
                 }
+
+                doc.Save(path + "\\CRMDeveloperExtensions.config");
             }
             catch (Exception ex)
             {

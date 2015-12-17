@@ -30,6 +30,7 @@ namespace CrmConnectionWindow
             if (!string.IsNullOrEmpty(name))
             {
                 Name.Text = name;
+                Name.IsEnabled = false;
                 Url.IsEnabled = false;
                 ConnectionType.IsEnabled = false;
             }
@@ -69,7 +70,15 @@ namespace CrmConnectionWindow
                 if (s[0] == "Username")
                     Username.Text = s[1];
                 if (s[0] == "Password")
-                    Password.Password = s[1];
+                {
+                    string password = s[1];
+                    if (password.StartsWith("'"))
+                        password = password.Substring(1, password.Length - 1);
+                    if (password.EndsWith("'"))
+                        password = password.Substring(0, password.Length - 1);
+
+                    Password.Password = password;
+                }
             }
         }
 
@@ -134,9 +143,7 @@ namespace CrmConnectionWindow
                 case "On-premises with provided user credentials":
                 case "On-premises (IFD) with claims":
                     if (!string.IsNullOrEmpty(Domain.Text))
-                    {
                         sb.AppendFormat("Domain={0};", Domain.Text.Trim());
-                    }
                     sb.AppendFormat("Username={0};Password='{1}';", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
                     break;
                 case "On-premises using Windows integrated security":

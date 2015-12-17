@@ -846,6 +846,12 @@ namespace WebResourceDeployer
                     if (files != null && files.ParentNode != null)
                         files.RemoveChild(xmlNode);
                 }
+
+                if (SharedConfigFile.IsConfigReadOnly(path + "\\CRMDeveloperExtensions.config"))
+                {
+                    FileInfo file = new FileInfo(path + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                }
+
                 doc.Save(path + "\\CRMDeveloperExtensions.config");
             }
             catch (Exception ex)
@@ -932,6 +938,8 @@ namespace WebResourceDeployer
 
         private void AddOrUpdateMapping(WebResourceItem item)
         {
+            int[] noCompare = { 5, 6, 7, 8, 10 };
+
             try
             {
                 var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
@@ -953,11 +961,12 @@ namespace WebResourceDeployer
                 {
                     foreach (XmlNode node in fileNodes)
                     {
+                        bool changed = false;
                         XmlNode orgId = node["OrgId"];
                         if (orgId != null && orgId.InnerText.ToUpper() != ConnPane.SelectedConnection.OrgId.ToUpper()) continue;
 
-                        XmlNode webResourceId = node["WebResourceId"];
-                        if (webResourceId != null && webResourceId.InnerText.ToUpper() !=
+                        XmlNode exWebResourceId = node["WebResourceId"];
+                        if (exWebResourceId != null && exWebResourceId.InnerText.ToUpper() !=
                             item.WebResourceId.ToString()
                                 .ToUpper()
                                 .Replace("{", String.Empty)
@@ -971,6 +980,7 @@ namespace WebResourceDeployer
                             if (parentNode != null)
                             {
                                 parentNode.RemoveChild(node);
+                                changed = true;
 
                                 item.Publish = false;
                                 item.AllowPublish = false;
@@ -980,59 +990,71 @@ namespace WebResourceDeployer
                         else
                         {
                             //Update
-                            XmlNode path = node["Path"];
-                            if (path != null)
+                            XmlNode exPath = node["Path"];
+                            if (exPath != null)
                             {
-                                path.InnerText = item.BoundFile;
-                                int[] noCompare = { 5, 6, 7, 8, 10 };
-                                if (!noCompare.Contains(item.Type))
-                                    item.AllowCompare = true;
+                                string oldBoundFile = exPath.InnerText;
+                                if (oldBoundFile != item.BoundFile)
+                                {
+                                    exPath.InnerText = item.BoundFile;
+                                    if (!noCompare.Contains(item.Type))
+                                        item.AllowCompare = true;
 
-                                item.AllowPublish = allowPublish || !item.IsManaged;
+                                    changed = true;
+                                    item.AllowPublish = allowPublish || !item.IsManaged;
+                                }
                             }
                         }
 
+                        if (!changed) return;
+
+                        if (SharedConfigFile.IsConfigReadOnly(projectPath + "\\CRMDeveloperExtensions.config"))
+                        {
+                            FileInfo file = new FileInfo(projectPath + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
+                        }
+
                         doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+
+                        if (!string.IsNullOrEmpty(item.BoundFile)) return;
+
+                        item.AllowPublish = false;
+                        item.Publish = false;
                         return;
                     }
                 }
 
-                if (string.IsNullOrEmpty(item.BoundFile))
-                {
-                    item.AllowPublish = false;
-                    item.Publish = false;
-                    return;
-                }
-
                 //Create new mapping
                 XmlNodeList files = doc.GetElementsByTagName("Files");
-                if (files.Count > 0)
+                if (files.Count <= 0)
+                    return;
+                XmlNode fileNode = doc.CreateElement("File");
+                XmlNode org = doc.CreateElement("OrgId");
+                org.InnerText = ConnPane.SelectedConnection.OrgId;
+                fileNode.AppendChild(org);
+                XmlNode newPath = doc.CreateElement("Path");
+                newPath.InnerText = item.BoundFile;
+                fileNode.AppendChild(newPath);
+                XmlNode newWebResourceId = doc.CreateElement("WebResourceId");
+                newWebResourceId.InnerText = item.WebResourceId.ToString();
+                fileNode.AppendChild(newWebResourceId);
+                XmlNode webResourceName = doc.CreateElement("WebResourceName");
+                webResourceName.InnerText = item.Name;
+                fileNode.AppendChild(webResourceName);
+                XmlNode isManaged = doc.CreateElement("IsManaged");
+                isManaged.InnerText = item.IsManaged.ToString();
+                fileNode.AppendChild(isManaged);
+                files[0].AppendChild(fileNode);
+
+                if (SharedConfigFile.IsConfigReadOnly(projectPath + "\\CRMDeveloperExtensions.config"))
                 {
-                    XmlNode file = doc.CreateElement("File");
-                    XmlNode org = doc.CreateElement("OrgId");
-                    org.InnerText = ConnPane.SelectedConnection.OrgId;
-                    file.AppendChild(org);
-                    XmlNode path = doc.CreateElement("Path");
-                    path.InnerText = item.BoundFile;
-                    file.AppendChild(path);
-                    XmlNode webResourceId = doc.CreateElement("WebResourceId");
-                    webResourceId.InnerText = item.WebResourceId.ToString();
-                    file.AppendChild(webResourceId);
-                    XmlNode webResourceName = doc.CreateElement("WebResourceName");
-                    webResourceName.InnerText = item.Name;
-                    file.AppendChild(webResourceName);
-                    XmlNode isManaged = doc.CreateElement("IsManaged");
-                    isManaged.InnerText = item.IsManaged.ToString();
-                    file.AppendChild(isManaged);
-                    files[0].AppendChild(file);
-
-                    doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
-
-                    item.AllowPublish = allowPublish || !item.IsManaged;
-                    int[] noCompare = { 5, 6, 7, 8, 10 };
-                    if (!noCompare.Contains(item.Type))
-                        item.AllowCompare = true;
+                    FileInfo file = new FileInfo(projectPath + "\\CRMDeveloperExtensions.config") { IsReadOnly = false };
                 }
+
+                doc.Save(projectPath + "\\CRMDeveloperExtensions.config");
+
+                item.AllowPublish = allowPublish || !item.IsManaged;
+                if (!noCompare.Contains(item.Type))
+                    item.AllowCompare = true;
             }
             catch (Exception ex)
             {
