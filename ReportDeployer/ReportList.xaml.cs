@@ -271,6 +271,10 @@ namespace ReportDeployer
         private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
             GetReports(e.AddedConnection.ConnectionString);
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            Reports.IsEnabled = true;
         }
 
         private bool ConfigFileExists(Project project)

@@ -123,6 +123,9 @@ namespace PluginDeployer
         private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
             GetPlugins(e.AddedConnection.ConnectionString);
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
         }
 
         private void Info_OnClick(object sender, RoutedEventArgs e)
