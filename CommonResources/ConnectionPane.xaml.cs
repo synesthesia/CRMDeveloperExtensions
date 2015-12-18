@@ -371,13 +371,13 @@ namespace CommonResources
                 doc.Load(path + "\\CRMDeveloperExtensions.config");
 
                 //Check if connection already exists for project
-                XmlNodeList connectionStrings = doc.GetElementsByTagName("ConnectionString");
-                if (connectionStrings.Count > 0)
+                XmlNodeList connectionNodes = doc.GetElementsByTagName("Connection");
+                if (connectionNodes.Count > 0)
                 {
-                    foreach (XmlNode node in connectionStrings)
+                    foreach (XmlNode node in connectionNodes)
                     {
-                        string decodedString = DecodeString(node.InnerText);
-                        if (decodedString != connString) continue;
+                        XmlNode nameNode = node["Name"];
+                        if (nameNode != null && nameNode.InnerText != connectionName) continue;
 
                         if (showPrompt)
                         {
@@ -390,28 +390,34 @@ namespace CommonResources
                         }
 
                         bool changed = false;
-                        XmlNode connectionU = node.ParentNode;
-                        if (connectionU != null)
+                        if (nameNode != null)
                         {
-                            XmlNode nameNode = connectionU["Name"];
-                            if (nameNode != null)
+                            string oldConnectionName = nameNode.InnerText;
+                            if (oldConnectionName != connectionName)
                             {
-                                string oldConnectionName = nameNode.InnerText;
-                                if (oldConnectionName != connectionName)
-                                {
-                                    nameNode.InnerText = connectionName;
-                                    changed = true;
-                                }
+                                nameNode.InnerText = connectionName;
+                                changed = true;
                             }
-                            XmlNode versionNode = connectionU["Version"];
-                            if (versionNode != null)
+                        }
+                        XmlNode versionNode = node["Version"];
+                        if (versionNode != null)
+                        {
+                            string oldVersionNum = versionNode.InnerText;
+                            if (oldVersionNum != versionNum)
                             {
-                                string oldVersionNum = versionNode.InnerText;
-                                if (oldVersionNum != versionNum)
-                                {
-                                    versionNode.InnerText = versionNum;
-                                    changed = true;
-                                }
+                                versionNode.InnerText = versionNum;
+                                changed = true;
+                            }
+                        }
+                        XmlNode connectionStringNode = node["ConnectionString"];
+                        if (connectionStringNode != null)
+                        {
+                            string oldConnectionString = connectionStringNode.InnerText;
+                            string encodedConnectionString = EncodeString(connString);
+                            if (oldConnectionString != encodedConnectionString)
+                            {
+                                connectionStringNode.InnerText = encodedConnectionString;
+                                changed = true;
                             }
                         }
 
