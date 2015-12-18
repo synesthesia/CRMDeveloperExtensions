@@ -106,9 +106,17 @@ namespace SolutionPackager
             return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
 
-        private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
+        private async void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
-            GetSolutions(e.AddedConnection.ConnectionString);
+            bool gotSolutions = await GetSolutions(e.AddedConnection.ConnectionString);
+
+            if (!gotSolutions)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SetDownloadManagedEnabled(false);
+                return;
+            }
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
@@ -127,9 +135,17 @@ namespace SolutionPackager
             SolutionToPackage.SelectedItem = null;
         }
 
-        private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
+        private async void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
-            GetSolutions(e.ConnectionString);
+            bool gotSolutions = await GetSolutions(e.ConnectionString);
+
+            if (!gotSolutions)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SetDownloadManagedEnabled(false);
+                return;
+            }
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
@@ -147,9 +163,21 @@ namespace SolutionPackager
             DownloadManaged.IsChecked = false;
         }
 
-        private void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
+        private async void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
         {
-            GetSolutions(e.ModifiedConnection.ConnectionString);
+            bool gotSolutions = await GetSolutions(e.ModifiedConnection.ConnectionString);
+
+            if (!gotSolutions)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SetDownloadManagedEnabled(false);
+                return;
+            }
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            SetDownloadManagedEnabled(true);
         }
 
         private void Info_OnClick(object sender, RoutedEventArgs e)
@@ -170,7 +198,7 @@ namespace SolutionPackager
                 ConnPane.SelectedConnection, _dte);
         }
 
-        private async void GetSolutions(string connString)
+        private async Task<bool> GetSolutions(string connString)
         {
             _dte.StatusBar.Text = "Connecting to CRM and getting solutions...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
@@ -181,9 +209,10 @@ namespace SolutionPackager
             if (results == null)
             {
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
                 MessageBox.Show("Error Retrieving Solutions. See the Output Window for additional details.");
-                return;
+                return false;
             }
 
             _logger.WriteToOutputWindow("Retrieved Solutions From CRM", Logger.MessageType.Info);
@@ -246,6 +275,8 @@ namespace SolutionPackager
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
+
+            return true;
         }
 
         private ObservableCollection<CrmSolution> HandleMappings(ObservableCollection<CrmSolution> sItems)

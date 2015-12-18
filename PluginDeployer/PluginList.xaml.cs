@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
@@ -105,24 +106,53 @@ namespace PluginDeployer
             else
             {
                 Customizations.IsEnabled = false;
-                Solutions.IsEnabled = false;      
+                Solutions.IsEnabled = false;
             }
 
             Publish.IsEnabled = false;
             Assemblies.IsEnabled = false;
         }
 
-        private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
+        private async void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
-            GetPlugins(e.ConnectionString);
+            bool gotPlugins = await GetPlugins(e.ConnectionString);
+
+            if (!gotPlugins)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                return;
+            }
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
         }
 
-        private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
+        private async void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
-            GetPlugins(e.AddedConnection.ConnectionString);
+            bool gotPlugins = await GetPlugins(e.AddedConnection.ConnectionString);
+
+            if (!gotPlugins)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                return;
+            }
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+        }
+
+        private async void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
+        {
+            bool gotPlugins = await GetPlugins(e.ModifiedConnection.ConnectionString);
+
+            if (!gotPlugins)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                return;
+            }
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
@@ -324,7 +354,7 @@ namespace PluginDeployer
             }
         }
 
-        private async void GetPlugins(string connString)
+        private async Task<bool> GetPlugins(string connString)
         {
             CrmConnection connection = CrmConnection.Parse(connString);
 
@@ -337,9 +367,10 @@ namespace PluginDeployer
             if (results == null)
             {
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
                 MessageBox.Show("Error Retrieving Assemblies. See the Output Window for additional details.");
-                return;
+                return false;
             }
 
             _logger.WriteToOutputWindow("Retrieved Assemblies From CRM", Logger.MessageType.Info);
@@ -385,6 +416,8 @@ namespace PluginDeployer
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
+
+            return true;
         }
 
         private EntityCollection RetrieveAssembliesFromCrm(CrmConnection connection)

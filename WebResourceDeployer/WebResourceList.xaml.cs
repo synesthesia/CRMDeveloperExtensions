@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using EnvDTE;
 using EnvDTE80;
 using InfoWindow;
 using Microsoft.Crm.Sdk.Messages;
@@ -29,7 +30,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
-using CommonResources;
 using WebResourceDeployer.Models;
 using Window = EnvDTE.Window;
 
@@ -395,12 +395,21 @@ namespace WebResourceDeployer
             WebResourceType.SelectedIndex = -1;
             ShowManaged.IsChecked = false;
 
+            bool gotSolutions = await GetSolutions();
+
+            if (!gotSolutions)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SolutionList.IsEnabled = false;
+                return;
+            }
+
+            await GetWebResources(e.AddedConnection.ConnectionString);
+
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
             SolutionList.IsEnabled = true;
-
-            await GetSolutions();
-            await GetWebResources(e.AddedConnection.ConnectionString);
         }
 
         private bool ConfigFileExists(Project project)
@@ -602,12 +611,43 @@ namespace WebResourceDeployer
             WebResourceType.SelectedIndex = -1;
             ShowManaged.IsChecked = false;
 
+            bool gotSolutions = await GetSolutions();
+
+            if (!gotSolutions)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SolutionList.IsEnabled = false;
+                return;
+            }
+
+            await GetWebResources(e.ConnectionString);
+
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
             SolutionList.IsEnabled = true;
+        }
 
-            await GetSolutions();
-            await GetWebResources(e.ConnectionString);
+        private async void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
+        {
+            WebResourceType.SelectedIndex = -1;
+            ShowManaged.IsChecked = false;
+
+            bool gotSolutions = await GetSolutions();
+
+            if (!gotSolutions)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                SolutionList.IsEnabled = false;
+                return;
+            }
+
+            await GetWebResources(e.ModifiedConnection.ConnectionString);
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            SolutionList.IsEnabled = true;
         }
 
         private async Task<bool> GetWebResources(string connString)
@@ -625,6 +665,7 @@ namespace WebResourceDeployer
             {
                 _dte.StatusBar.Clear();
                 LockOverlay.Visibility = Visibility.Hidden;
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 MessageBox.Show("Error Retrieving Web Resources. See the Output Window for additional details.");
                 return true;
             }
@@ -1790,7 +1831,7 @@ namespace WebResourceDeployer
                 _dte.StatusBar.Clear();
                 LockOverlay.Visibility = Visibility.Hidden;
                 MessageBox.Show("Error Retrieving Solutions. See the Output Window for additional details.");
-                return true;
+                return false;
             }
 
             _logger.WriteToOutputWindow("Retrieved Solutions From CRM", Logger.MessageType.Info);

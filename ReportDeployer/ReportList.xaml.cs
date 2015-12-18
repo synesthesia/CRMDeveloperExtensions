@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using EnvDTE;
 using InfoWindow;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -17,12 +18,12 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Xml;
-using CommonResources;
 using Button = System.Windows.Controls.Button;
 using CheckBox = System.Windows.Controls.CheckBox;
 using Window = EnvDTE.Window;
@@ -268,9 +269,17 @@ namespace ReportDeployer
             AddReport.IsEnabled = false;
         }
 
-        private void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
+        private async void ConnPane_OnConnectionAdded(object sender, ConnectionAddedEventArgs e)
         {
-            GetReports(e.AddedConnection.ConnectionString);
+            bool gotReports = await GetReports(e.AddedConnection.ConnectionString);
+
+            if (!gotReports)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                Reports.IsEnabled = false;
+                return;
+            }
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
@@ -341,16 +350,24 @@ namespace ReportDeployer
             return projectFiles;
         }
 
-        private void ConnPane_OnConnected(object sender, ConnectEventArgs e)
+        private async void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
-            GetReports(e.ConnectionString);
+            bool gotReports = await GetReports(e.ConnectionString);
+
+            if (!gotReports)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                Reports.IsEnabled = false;
+                return;
+            }
 
             Customizations.IsEnabled = true;
             Solutions.IsEnabled = true;
             Reports.IsEnabled = true;
         }
 
-        private async void GetReports(string connString)
+        private async Task<bool> GetReports(string connString)
         {
             string projectName = ConnPane.SelectedProject.Name;
             CrmConnection connection = CrmConnection.Parse(connString);
@@ -364,9 +381,10 @@ namespace ReportDeployer
             if (results == null)
             {
                 _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
                 MessageBox.Show("Error Retrieving Reports. See the Output Window for additional details.");
-                return;
+                return false;
             }
 
             _logger.WriteToOutputWindow("Retrieved Reports From CRM", Logger.MessageType.Info);
@@ -398,6 +416,8 @@ namespace ReportDeployer
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
+
+            return true;
         }
 
         private EntityCollection RetrieveReportsFromCrm(CrmConnection connection)
@@ -1024,9 +1044,21 @@ namespace ReportDeployer
             ReportGrid.IsEnabled = false;
         }
 
-        private void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
+        private async void ConnPane_OnConnectionModified(object sender, ConnectionModifiedEventArgs e)
         {
-            GetReports(e.ModifiedConnection.ConnectionString);
+            bool gotReports = await GetReports(e.ModifiedConnection.ConnectionString);
+
+            if (!gotReports)
+            {
+                Customizations.IsEnabled = false;
+                Solutions.IsEnabled = false;
+                Reports.IsEnabled = false;
+                return;
+            }
+
+            Customizations.IsEnabled = true;
+            Solutions.IsEnabled = true;
+            Reports.IsEnabled = true;
         }
 
         private void ConnPane_OnConnectionDeleted(object sender, EventArgs e)
