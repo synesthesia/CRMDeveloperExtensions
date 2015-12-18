@@ -717,53 +717,84 @@ namespace WebResourceDeployer
 
         private EntityCollection RetrieveWebResourcesFromCrm(CrmConnection connection)
         {
+            EntityCollection results = null;
             try
             {
                 using (OrganizationService orgService = new OrganizationService(connection))
                 {
-                    QueryExpression query = new QueryExpression
+                    int pageNumber = 1;
+                    string pagingCookie = null;
+                    bool moreRecords = true;
+
+                    while (moreRecords)
                     {
-                        EntityName = "solutioncomponent",
-                        ColumnSet = new ColumnSet("solutionid"),
-                        Criteria = new FilterExpression
+                        QueryExpression query = new QueryExpression
                         {
-                            Conditions =
+                            EntityName = "solutioncomponent",
+                            ColumnSet = new ColumnSet("solutionid"),
+                            Criteria = new FilterExpression
                             {
-                                new ConditionExpression
+                                Conditions =
                                 {
-                                    AttributeName = "componenttype",
-                                    Operator = ConditionOperator.Equal,
-                                    Values = { 61 }
-                                }
-                            }
-                        },
-                        LinkEntities =
-                        {
-                            new LinkEntity
-                            {
-                                Columns = new ColumnSet("name", "displayname", "webresourcetype", "ismanaged", "webresourceid"),
-                                EntityAlias = "webresource",
-                                LinkFromEntityName = "solutioncomponent",
-                                LinkFromAttributeName = "objectid",
-                                LinkToEntityName = "webresource",
-                                LinkToAttributeName = "webresourceid",
-                                LinkCriteria = new FilterExpression
-                                {
-                                    Conditions =
+                                    new ConditionExpression
                                     {
-                                        new ConditionExpression
+                                        AttributeName = "componenttype",
+                                        Operator = ConditionOperator.Equal,
+                                        Values = { 61 }
+                                    }
+                                }
+                            },
+                            LinkEntities =
+                            {
+                                new LinkEntity
+                                {
+                                    Columns =
+                                        new ColumnSet("name", "displayname", "webresourcetype", "ismanaged",
+                                            "webresourceid"),
+                                    EntityAlias = "webresource",
+                                    LinkFromEntityName = "solutioncomponent",
+                                    LinkFromAttributeName = "objectid",
+                                    LinkToEntityName = "webresource",
+                                    LinkToAttributeName = "webresourceid",
+                                    LinkCriteria = new FilterExpression
+                                    {
+                                        Conditions =
                                         {
-                                            AttributeName = "iscustomizable",
-                                            Operator = ConditionOperator.Equal,
-                                            Values = { true }
+                                            new ConditionExpression
+                                            {
+                                                AttributeName = "iscustomizable",
+                                                Operator = ConditionOperator.Equal,
+                                                Values = {true}
+                                            }
                                         }
                                     }
                                 }
+                            },
+                            PageInfo = new PagingInfo
+                            {
+                                PageNumber = pageNumber,
+                                PagingCookie = pagingCookie
                             }
-                        }
-                    };
+                        };
 
-                    return orgService.RetrieveMultiple(query);
+                        EntityCollection partialResults = orgService.RetrieveMultiple(query);
+
+                        if (partialResults.MoreRecords)
+                        {
+                            pageNumber++;
+                            pagingCookie = partialResults.PagingCookie;
+                        }
+
+                        moreRecords = partialResults.MoreRecords;
+
+                        if (partialResults.Entities == null) continue;
+
+                        if (results == null)
+                            results = new EntityCollection();
+                        results.Entities.AddRange(partialResults.Entities);
+                    }
+
+                    return results;
                 }
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
