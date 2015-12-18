@@ -79,6 +79,12 @@ namespace PluginDeployer
                 return;
             }
 
+            if (SelectedAssemblyItem.Item == null)
+            {
+                menuCommand.Visible = false;
+                return;
+            }
+
             Guid assemblyId = SelectedAssemblyItem.Item.AssemblyId;
             menuCommand.Visible = assemblyId != Guid.Empty;
         }
