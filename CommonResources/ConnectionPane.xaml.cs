@@ -108,6 +108,7 @@ namespace CommonResources
         private void BeforeSolutionClosing()
         {
             ResetForm();
+            Expander.IsExpanded = true;
         }
 
         private void WindowEventsOnWindowActivated(Window gotFocus, Window lostFocus)
