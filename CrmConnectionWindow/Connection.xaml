@@ -14,7 +14,7 @@
         <TextBox x:Name="ConnString" Margin="10,215,10,0" TextWrapping="Wrap" IsEnabled="False"
                  Text="Url=https://orgname.crm.dynamics.com; Username=administrator@orgname.onmicrosoft.com; Password=********;" VerticalAlignment="Top" Height="76" />
         <Label Content="Name" Margin="10,44,332,0" VerticalAlignment="Top" Height="23" Foreground="Red" />
-        <TextBox x:Name="Name" Height="23" Margin="75,44,10,0" TextWrapping="Wrap" VerticalAlignment="Top" />
+        <TextBox x:Name="Name" Height="23" Margin="75,44,10,0" TextWrapping="Wrap" VerticalAlignment="Top" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <ComboBox x:Name="ConnectionType" Margin="75,72,10,0" VerticalAlignment="Top" SelectionChanged="ConnectionType_SelectionChanged">
             <ComboBoxItem Content="Online using Office 365" />
             <ComboBoxItem Content="On-premises with provided user credentials"/>
@@ -26,14 +26,14 @@
         </Grid>
         <Label x:Name="UrlLabel" Content="Url" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Height="23" Foreground="Red"/>
         <TextBox x:Name="Url" Height="23" Margin="75,99,10,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Url_TextChanged" Text="https://orgname.crm.dynamics.com" 
-                 ToolTip="CRM Url and Organization" />
+                 ToolTip="CRM Url and Organization" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <Label x:Name="DomainLabel" Content="Domain" HorizontalAlignment="Left" Margin="10,127,0,0" VerticalAlignment="Top" Height="23"/>
-        <TextBox x:Name="Domain" Height="23" Margin="75,127,10,0" TextWrapping="Wrap" VerticalAlignment="Top" IsEnabled="False" TextChanged="Domain_TextChanged"/>
+        <TextBox x:Name="Domain" Height="23" Margin="75,127,10,0" TextWrapping="Wrap" VerticalAlignment="Top" IsEnabled="False" TextChanged="Domain_TextChanged" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <Label x:Name="UsernameLabel" Content="Username" HorizontalAlignment="Left" Margin="10,155,0,0" VerticalAlignment="Top" Height="23" Foreground="Red"/>
         <TextBox x:Name="Username" Height="23" Margin="75,155,10,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Username_TextChanged" 
-                 Text="administrator@orgname.onmicrosoft.com" ToolTip="For best results user should be a System Administrator in CRM"/>
+                 Text="administrator@orgname.onmicrosoft.com" ToolTip="For best results user should be a System Administrator in CRM" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <Label x:Name="PasswordLabel" Content="Password" HorizontalAlignment="Left" Margin="10,183,0,0" VerticalAlignment="Top" Height="23" Foreground="Red"/>
-        <PasswordBox x:Name="Password" Margin="75,183,10,0" VerticalAlignment="Top" Height="23"  PasswordChar="*" PasswordChanged="Password_PasswordChanged" Password="password" />
+        <PasswordBox x:Name="Password" Margin="75,183,10,0" VerticalAlignment="Top" Height="23"  PasswordChar="*" PasswordChanged="Password_PasswordChanged" Password="password" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
     </Grid>
     <Window.Resources>
         <SolidColorBrush x:Key="OverlayColor" Color="White" Opacity="0.5" />
