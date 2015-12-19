@@ -3,7 +3,7 @@
   <Metadata>
     <Identity Id="CRMDeveloperExtensions..697f2464-985a-4218-b671-08d51a2e113b" Version="1.2.1.0" Language="en-US" Publisher="Jason Lattimer" />
     <DisplayName>Dynamics CRM Developer Extensions</DisplayName>
-    <Description xml:space="preserve">Dynamics CRM 2011/2013/2015 Developer Extensions</Description>
+    <Description xml:space="preserve">Dynamics CRM 2011/2013/2015/2016 Developer Extensions</Description>
     <MoreInfo>https://github.com/jlattimer/CRMDeveloperExtensions</MoreInfo>
     <License>License.txt</License>
     <GettingStartedGuide>https://github.com/jlattimer/CRMDeveloperExtensions/wiki</GettingStartedGuide>
