@@ -2,16 +2,17 @@
 <CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
   <CodeSnippet Format="1.0.0">
     <Header>
-      <Title>Set Search Query (7.1+)</Title>
-      <Shortcut>CRMSetSearchQuery</Shortcut>
-      <Description>Use this method to set the text used as the search criteria for the knowledge base management control.</Description>
-      <HelpUrl>https://msdn.microsoft.com/en-us/library/dn932131.aspx#BKMK_setSearchQuery</HelpUrl>
+      <Title>Remove OnSelection (7.1+)</Title>
+      <Shortcut>CRMRemoveOnSelection</Shortcut>
+      <Description>Use this method to remove an event handler from the OnSelection event.</Description>
+      <HelpUrl>https://msdn.microsoft.com/en-us/library/dn932131.aspx#BKMK_removeOnSelection</HelpUrl>
       <Author>Jason Lattimer</Author>
       <Keywords>
         <Keyword>Dynamics CRM</Keyword>
         <Keyword>CRM</Keyword>
-        <Keyword>Parature KB</Keyword>
+        <Keyword>KB</Keyword>
         <Keyword>2015</Keyword>
+        <Keyword>2016</Keyword>
       </Keywords>
       <SnippetTypes>
         <SnippetType>Expansion</SnippetType>
@@ -19,7 +20,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[Xrm.Page.getControl("controlname").setSearchQuery("value")$end$]]>
+        <![CDATA[Xrm.Page.getControl("controlname").removeOnSelection(functionName)$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>
