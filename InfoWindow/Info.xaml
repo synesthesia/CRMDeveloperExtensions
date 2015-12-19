@@ -7,6 +7,13 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="300" />
         </Grid.RowDefinitions>
+        <DataGrid>
+            <DataGrid.Columns>
+                <DataGridTextColumn></DataGridTextColumn>
+                <DataGridTextColumn></DataGridTextColumn>
+            </DataGrid.Columns>
+
+        </DataGrid>
         <StackPanel Orientation="Vertical">
             <TextBlock Margin="10,10,10,0" VerticalAlignment="Top" TextDecorations="Underline" FontWeight="Bold"> 
                 Information
@@ -16,18 +23,30 @@
                 <Hyperlink NavigateUri="https://github.com/jlattimer/CRMDeveloperExtensions" infoWindow:HyperlinkExtensions.IsExternal="true">github.com/jlattimer/CRMDeveloperExtensions</Hyperlink>
             </TextBlock>
             <Label Margin="5,5,5,0">Thanks To:</Label>
-            <TextBlock Margin="10,5,10,0">
-                <Hyperlink NavigateUri="http://sidewaffle.com/" infoWindow:HyperlinkExtensions.IsExternal="true">SideWaffle Project</Hyperlink>
-            </TextBlock>
-            <TextBlock Margin="10,5,10,0">
-                <Hyperlink NavigateUri="https://twitter.com/lucas_is" infoWindow:HyperlinkExtensions.IsExternal="true">Lucas Alexander</Hyperlink>
-            </TextBlock>
-            <TextBlock Margin="10,5,10,0">
-                <Hyperlink NavigateUri="https://twitter.com/crmentropy" infoWindow:HyperlinkExtensions.IsExternal="true">Dave Berry</Hyperlink>
-            </TextBlock>
-            <TextBlock Margin="10,5,10,0">
-                <Hyperlink NavigateUri=" https://icons8.com" infoWindow:HyperlinkExtensions.IsExternal="true">Icons8</Hyperlink>
-            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri="http://sidewaffle.com/" infoWindow:HyperlinkExtensions.IsExternal="true">SideWaffle Project</Hyperlink>
+                    </TextBlock>
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri="https://twitter.com/lucas_is" infoWindow:HyperlinkExtensions.IsExternal="true">Lucas Alexander</Hyperlink>
+                    </TextBlock>
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri="https://twitter.com/crmentropy" infoWindow:HyperlinkExtensions.IsExternal="true">Dave Berry</Hyperlink>
+                    </TextBlock>
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri=" https://icons8.com" infoWindow:HyperlinkExtensions.IsExternal="true">Icons8</Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri="https://github.com/mike9182" infoWindow:HyperlinkExtensions.IsExternal="true">Michael Sollenberger</Hyperlink>
+                    </TextBlock>
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri="https://github.com/aledkov" infoWindow:HyperlinkExtensions.IsExternal="true">Andrey Ledkov</Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
             <Label Margin="5,5,5,0">Donate with PayPal:</Label>
             <Button x:Name="Donate" HorizontalAlignment="Left" Margin="10,5,10,0" Background="Transparent" BorderThickness="0" Click="Donate_OnClick" ToolTip="Buy me a beer!">
                 <Button.Template>
@@ -41,7 +60,6 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-
         </StackPanel>
     </Grid>
 </Window>
