@@ -8,6 +8,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CrmConnectionWindow
@@ -286,6 +287,19 @@ namespace CrmConnectionWindow
         private void Password_PasswordChanged(object sender, RoutedEventArgs e)
         {
             SetConnectionString();
+        }
+
+        private void Textbox_OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (sender is TextBox)
+            {
+                ((TextBox) sender).SelectAll();
+                return;
+            }
+            if (sender is PasswordBox)
+            {
+                ((PasswordBox) sender).SelectAll();
+            }
         }
     }
 }
