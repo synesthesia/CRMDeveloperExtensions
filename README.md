@@ -22,6 +22,8 @@ Install in Visual Studio under Tools -> Extensions and Updates -> Search Online 
 * 1 click download and extraction of CRM solution to a Visual Studio project
 * Re-package solution files from project
 
+Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Solution-Packager) for additional documentation. 
+
 **Plug-in Deployer**
 
 * 1 click deploy plug-ins and custom workflow assemblies from Visual Studio without having to click through the SDK plug-in registration tool
@@ -41,6 +43,8 @@ Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Repor
 * 1 click deploy of web resources from Visual Studio without having to go through CRM
 * Download web resources from CRM to Visual Studio project
 * Diff local files with CRM server versions
+
+Review the [Wiki](https://github.com/jlattimer/CRMDeveloperExtensions/wiki/Web-Resource-Deployer) for additional documentation. 
 
 **Templates**
 
