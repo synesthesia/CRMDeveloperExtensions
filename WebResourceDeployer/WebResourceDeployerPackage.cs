@@ -264,7 +264,7 @@ namespace WebResourceDeployer
                 if (!File.Exists(projectItem.FileNames[1])) return Guid.Empty;
 
                 var path = Path.GetDirectoryName(project.FullName);
-                if (!ConfigFileExists(project))
+                if (!SharedConfigFile.ConfigFileExists(project))
                 {
                     _logger.WriteToOutputWindow("Error Getting Mapping: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return Guid.Empty;
@@ -321,12 +321,6 @@ namespace WebResourceDeployer
         private string EncodeString(string value)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
-        }
-
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
     }
 }

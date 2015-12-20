@@ -149,7 +149,7 @@ namespace ReportDeployer
                 if (!File.Exists(projectItem.FileNames[1])) return Guid.Empty;
 
                 var path = Path.GetDirectoryName(project.FullName);
-                if (!ConfigFileExists(project))
+                if (!SharedConfigFile.ConfigFileExists(project))
                 {
                     _logger.WriteToOutputWindow("Error Getting Mapping: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return Guid.Empty;
@@ -201,12 +201,6 @@ namespace ReportDeployer
                 _logger.WriteToOutputWindow("Error Getting Mapping: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
                 return Guid.Empty;
             }
-        }
-
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
     }
 }

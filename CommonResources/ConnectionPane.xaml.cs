@@ -246,7 +246,7 @@ namespace CommonResources
             var path = Path.GetDirectoryName(SelectedProject.FullName);
             XmlDocument doc = new XmlDocument();
 
-            if (!ConfigFileExists(SelectedProject))
+            if (!SharedConfigFile.ConfigFileExists(SelectedProject))
             {
                 _logger.WriteToOutputWindow("Error Retrieving Connections From Config File: Missing CRMDeveloperExtensions.config file", Logger.MessageType.Error);
                 return;
@@ -289,12 +289,6 @@ namespace CommonResources
             return Encoding.UTF8.GetString(data);
         }
 
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
-        }
-
         private void Connections_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedConnection = (CrmConn)Connections.SelectedItem;
@@ -330,7 +324,7 @@ namespace CommonResources
 
             if (!result.HasValue || !result.Value) return;
 
-            var configExists = ConfigFileExists(SelectedProject);
+            var configExists = SharedConfigFile.ConfigFileExists(SelectedProject);
             if (!configExists)
                 CreateConfigFile(SelectedProject);
 
@@ -360,7 +354,7 @@ namespace CommonResources
             try
             {
                 var path = Path.GetDirectoryName(vsProject.FullName);
-                if (!ConfigFileExists(vsProject))
+                if (!SharedConfigFile.ConfigFileExists(vsProject))
                 {
                     _logger.WriteToOutputWindow("Error Adding Or Updating Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;
@@ -517,7 +511,7 @@ namespace CommonResources
 
             if (!result.HasValue || !result.Value) return;
 
-            var configExists = ConfigFileExists(SelectedProject);
+            var configExists = SharedConfigFile.ConfigFileExists(SelectedProject);
             if (!configExists)
                 CreateConfigFile(SelectedProject);
 
@@ -549,7 +543,7 @@ namespace CommonResources
                 if (string.IsNullOrEmpty(SelectedConnection.ConnectionString)) return;
 
                 var path = Path.GetDirectoryName(SelectedProject.FullName);
-                if (!ConfigFileExists(SelectedProject))
+                if (!SharedConfigFile.ConfigFileExists(SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Deleting Connection: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;
@@ -559,7 +553,7 @@ namespace CommonResources
                     "This will delete the connection information and all associated mappings.", "Delete Connection", MessageBoxButton.YesNo);
                 if (result != MessageBoxResult.Yes) return;
 
-                if (!ConfigFileExists(SelectedProject)) return;
+                if (!SharedConfigFile.ConfigFileExists(SelectedProject)) return;
 
                 //Delete Connection
                 XmlDocument doc = new XmlDocument();

@@ -286,12 +286,6 @@ namespace ReportDeployer
             Reports.IsEnabled = true;
         }
 
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
-        }
-
         private Project GetProjectByName(string projectName)
         {
             foreach (Project project in ConnPane.Projects)
@@ -477,7 +471,7 @@ namespace ReportDeployer
                     return new List<ReportItem>();
 
                 var path = Path.GetDirectoryName(project.FullName);
-                if (!ConfigFileExists(project))
+                if (!SharedConfigFile.ConfigFileExists(project))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return rItems;
@@ -618,7 +612,7 @@ namespace ReportDeployer
             try
             {
                 var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
-                if (!ConfigFileExists(ConnPane.SelectedProject))
+                if (!SharedConfigFile.ConfigFileExists(ConnPane.SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;

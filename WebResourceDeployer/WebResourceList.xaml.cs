@@ -412,12 +412,6 @@ namespace WebResourceDeployer
             SolutionList.IsEnabled = true;
         }
 
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
-        }
-
         private Project GetProjectByName(string projectName)
         {
             foreach (Project project in ConnPane.Projects)
@@ -848,7 +842,7 @@ namespace WebResourceDeployer
                     return new List<WebResourceItem>();
 
                 var path = Path.GetDirectoryName(project.FullName);
-                if (!ConfigFileExists(project))
+                if (!SharedConfigFile.ConfigFileExists(project))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return wrItems;
@@ -1015,7 +1009,7 @@ namespace WebResourceDeployer
             try
             {
                 var projectPath = Path.GetDirectoryName(ConnPane.SelectedProject.FullName);
-                if (!ConfigFileExists(ConnPane.SelectedProject))
+                if (!SharedConfigFile.ConfigFileExists(ConnPane.SelectedProject))
                 {
                     _logger.WriteToOutputWindow("Error Updating Mappings In Config File: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return;
