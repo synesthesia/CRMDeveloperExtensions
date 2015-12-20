@@ -16,6 +16,7 @@ Install in Visual Studio under Tools -> Extensions and Updates -> Search Online 
 * Added Support for CRM 2016 (8.0) NuGet assemblies
 * Added CRM 2016 JavaScript code snippets
 * Various bug fixes & enhancements
+* Enhancements to user options, may require re-entering previously saved settings!
 
 **Solution Packager**
 
