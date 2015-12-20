@@ -448,7 +448,7 @@ namespace WebResourceDeployer
             }
 
             if (projectFiles.Count > 0)
-                projectFiles.Insert(0, new ComboBoxItem() { Content = String.Empty });
+                projectFiles.Insert(0, new ComboBoxItem { Content = String.Empty });
 
             return projectFiles;
         }
@@ -464,7 +464,7 @@ namespace WebResourceDeployer
 
                 //Don't add file extensions that act as folders
                 if (!_folderExtensions.Contains(ex.Replace(".", String.Empty).ToUpper()))
-                    projectFiles.Add(new ComboBoxItem() { Content = path + "/" + projectItem.Name, Tag = projectItem });
+                    projectFiles.Add(new ComboBoxItem { Content = path + "/" + projectItem.Name, Tag = projectItem });
 
                 if (projectItem.ProjectItems.Count <= 0)
                     return projectFiles;

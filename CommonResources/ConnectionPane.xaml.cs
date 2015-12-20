@@ -198,7 +198,7 @@ namespace CommonResources
 
             if (addProject)
             {
-                ComboBoxItem item = new ComboBoxItem() { Content = project.Name, Tag = project };
+                ComboBoxItem item = new ComboBoxItem { Content = project.Name, Tag = project };
                 ProjectsDdl.Items.Add(item);
             }
 

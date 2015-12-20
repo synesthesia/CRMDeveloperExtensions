@@ -334,7 +334,7 @@ namespace ReportDeployer
             {
                 string ex = Path.GetExtension(projectItem.Name);
                 if (ex != null && ex.ToUpper() == ".RDL")
-                    projectFiles.Add(new ComboBoxItem() { Content = path + "/" + projectItem.Name, Tag = projectItem });
+                    projectFiles.Add(new ComboBoxItem { Content = path + "/" + projectItem.Name, Tag = projectItem });
             }
             else
             {
