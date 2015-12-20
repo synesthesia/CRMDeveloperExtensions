@@ -330,7 +330,7 @@ namespace ReportDeployer
         private ObservableCollection<ComboBoxItem> GetFiles(ProjectItem projectItem, string path)
         {
             ObservableCollection<ComboBoxItem> projectFiles = new ObservableCollection<ComboBoxItem>();
-            if (projectItem.Kind != "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") // VS Folder 
+            if (projectItem.Kind.ToUpper() != "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") // VS Folder 
             {
                 string ex = Path.GetExtension(projectItem.Name);
                 if (ex != null && ex.ToUpper() == ".RDL")
