@@ -57,7 +57,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Vertical">
                     <CheckBox x:Name="DownloadManaged" Margin="5,5,0,0" Content="Download Managed Solution?" Width="200" HorizontalAlignment="Left" 
-                              Checked="DownloadManaged_Checked" Unchecked="DownloadManaged_Checked" IsEnabled="False"></CheckBox>
+                              Checked="DownloadManaged_Checked" Unchecked="DownloadManaged_Checked" IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"></CheckBox>
                 </StackPanel>
             </StackPanel>
             <Grid x:Name="LockOverlay" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" ZIndex="10" Background="{DynamicResource OverlayColor}" Visibility="Hidden">
