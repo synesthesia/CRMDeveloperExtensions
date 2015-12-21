@@ -1067,8 +1067,8 @@ namespace WebResourceDeployer
                                         item.AllowCompare = true;
 
                                     changed = true;
-                                    item.AllowPublish = allowPublish || !item.IsManaged;
                                 }
+                                item.AllowPublish = allowPublish || !item.IsManaged;
                             }
                         }
 
