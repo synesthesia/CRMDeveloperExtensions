@@ -196,7 +196,6 @@
     <Compile Include="Guids.cs" />
     <Compile Include="Models\SelectedAssemblyItem.cs" />
     <Compile Include="Models\AssemblyItem.cs" />
-    <Compile Include="Models\CrmConn.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="PluginDeployerPackage.cs" />
     <Compile Include="PluginList.xaml.cs">
@@ -236,15 +235,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\registrationtool_24.jpg" />
-    <Resource Include="Resources\solutions_24.png" />
-    <Resource Include="Resources\customizations_24.png" />
-    <Resource Include="Resources\settings-24.png" />
-    <Resource Include="Resources\plus-24.png" />
     <Resource Include="Resources\sw-file-icon_16.png" />
-    <Resource Include="Resources\publish-24.png" />
-    <Resource Include="Resources\info-24.png" />
-    <Resource Include="Resources\minus-24.png" />
-    <Resource Include="Resources\connected-24.png" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="PluginList.xaml">
@@ -253,6 +244,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonResources\CommonResources.csproj">
+      <Project>{4F82019C-685B-4349-ACE2-091AD63004B9}</Project>
+      <Name>CommonResources</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </ProjectReference>
     <ProjectReference Include="..\CrmConnectionWindow\CrmConnectionWindow.csproj">
       <Project>{ccbcccd5-4ade-4b52-b77b-6c453dc30e1d}</Project>
       <Name>CrmConnectionWindow</Name>

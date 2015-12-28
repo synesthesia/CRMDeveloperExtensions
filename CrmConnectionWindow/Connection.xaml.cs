@@ -5,8 +5,10 @@ using Microsoft.Xrm.Sdk;
 using OutputLogger;
 using System;
 using System.ServiceModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CrmConnectionWindow
@@ -29,24 +31,35 @@ namespace CrmConnectionWindow
             if (!string.IsNullOrEmpty(name))
             {
                 Name.Text = name;
+                Name.IsEnabled = false;
                 Url.IsEnabled = false;
-                ConnectionType.Visibility = Visibility.Hidden;
+                ConnectionType.IsEnabled = false;
             }
 
             if (!string.IsNullOrEmpty(connectionString))
             {
                 ConnectionString = connectionString;
-
                 ParseConnection(connectionString);
-
                 SetConnectionString();
+
+                return;
             }
 
-            ConnectionType.SelectedIndex = 0;
+            if (string.IsNullOrEmpty(connectionString))
+                ConnectionType.SelectedIndex = 0;
         }
 
         private void ParseConnection(string connectionString)
         {
+            if (connectionString.ToUpper().Contains("DYNAMICS.COM"))
+                ConnectionType.SelectedIndex = 0;
+            else if (!connectionString.ToUpper().Contains("USERNAME"))
+                ConnectionType.SelectedIndex = 2;
+            else if (Url.Text.Contains("."))
+                ConnectionType.SelectedIndex = 3;
+            else
+                ConnectionType.SelectedIndex = 1;
+
             string[] parts = connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string part in parts)
             {
@@ -58,7 +71,15 @@ namespace CrmConnectionWindow
                 if (s[0] == "Username")
                     Username.Text = s[1];
                 if (s[0] == "Password")
-                    Password.Password = s[1];
+                {
+                    string password = s[1];
+                    if (password.StartsWith("'"))
+                        password = password.Substring(1, password.Length - 1);
+                    if (password.EndsWith("'"))
+                        password = password.Substring(0, password.Length - 1);
+
+                    Password.Password = password;
+                }
             }
         }
 
@@ -88,30 +109,7 @@ namespace CrmConnectionWindow
                 }
             }
 
-            string value = "Url=" + Url.Text.Trim() + ";";
-            switch (item.Content.ToString())
-            {
-                case "Online using Office 365":
-                    value += "Username=" + Username.Text.Trim() + ";";
-                    value += "Password=" + Password.Password.Trim() + ";";
-                    break;
-                case "On-premises with provided user credentials":
-                    if (!string.IsNullOrEmpty(Domain.Text))
-                        value += "Domain=" + Domain.Text.Trim() + ";";
-                    value += "Username=" + Username.Text.Trim() + ";";
-                    value += "Password=" + Password.Password.Trim() + ";";
-                    break;
-                case "On-premises using Windows integrated security":
-                    break;
-                case "On-premises (IFD) with claims":
-                    if (!string.IsNullOrEmpty(Domain.Text))
-                        value += "Domain=" + Domain.Text.Trim() + ";";
-                    value += "Username=" + Username.Text.Trim() + ";";
-                    value += "Password=" + Password.Password.Trim() + ";";
-                    break;
-            }
-
-            ConnectionString = value;
+            ConnectionString = CreateConnectionString(item);
 
             LockOverlay.Visibility = Visibility.Visible;
 
@@ -130,6 +128,30 @@ namespace CrmConnectionWindow
 
             DialogResult = true;
             Close();
+        }
+
+        private string CreateConnectionString(ComboBoxItem item)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendFormat("Url={0};", Url.Text.Trim());
+
+            switch (item.Content.ToString())
+            {
+                case "Online using Office 365":
+                    sb.AppendFormat("Username={0};Password='{1}';", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
+                    break;
+                case "On-premises with provided user credentials":
+                case "On-premises (IFD) with claims":
+                    if (!string.IsNullOrEmpty(Domain.Text))
+                        sb.AppendFormat("Domain={0};", Domain.Text.Trim());
+                    sb.AppendFormat("Username={0};Password='{1}';", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
+                    break;
+                case "On-premises using Windows integrated security":
+                    break;
+            }
+
+            return sb.ToString();
         }
 
         private RetrieveVersionResponse ConnectToCrm(string connectionString)
@@ -265,6 +287,19 @@ namespace CrmConnectionWindow
         private void Password_PasswordChanged(object sender, RoutedEventArgs e)
         {
             SetConnectionString();
+        }
+
+        private void Textbox_OnGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (sender is TextBox)
+            {
+                ((TextBox) sender).SelectAll();
+                return;
+            }
+            if (sender is PasswordBox)
+            {
+                ((PasswordBox) sender).SelectAll();
+            }
         }
     }
 }

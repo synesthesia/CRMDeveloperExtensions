@@ -1,4 +1,6 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using CommonResources.Models;
+using EnvDTE;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Xrm.Client;
@@ -14,7 +16,6 @@ using System.ServiceModel;
 using System.Text;
 using System.Windows;
 using System.Xml;
-using WebResourceDeployer.Models;
 using Window = EnvDTE.Window;
 
 namespace WebResourceDeployer
@@ -84,7 +85,7 @@ namespace WebResourceDeployer
             SelectedItem item = _dte.SelectedItems.Item(1);
             ProjectItem projectItem = item.ProjectItem;
 
-            CrmConn selectedConnection = GetSelectedConnection(projectItem);
+            CrmConn selectedConnection = (CrmConn)SharedGlobals.GetGlobal("SelectedConnection", _dte);
             if (selectedConnection == null)
             {
                 menuCommand.Visible = false;
@@ -119,7 +120,7 @@ namespace WebResourceDeployer
                 solutionBuild.BuildProject(_dte.Solution.SolutionBuild.ActiveConfiguration.Name, projectItem.ContainingProject.UniqueName, true);
             }
 
-            CrmConn selectedConnection = GetSelectedConnection(projectItem);
+            CrmConn selectedConnection = (CrmConn)SharedGlobals.GetGlobal("SelectedConnection", _dte);
             if (selectedConnection == null) return;
 
             Guid webResourceId = GetMapping(projectItem, selectedConnection);
@@ -251,54 +252,6 @@ namespace WebResourceDeployer
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
         }
 
-        private CrmConn GetSelectedConnection(ProjectItem projectItem)
-        {
-            CrmConn selectedConnection = new CrmConn();
-            Project project = projectItem.ContainingProject;
-            var projectPath = Path.GetDirectoryName(project.FullName);
-            if (projectPath == null) return selectedConnection;
-
-            var path = Path.GetDirectoryName(project.FullName);
-            if (!ConfigFileExists(project)) return null;
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-            XmlNodeList connections = doc.GetElementsByTagName("Connection");
-            if (connections.Count == 0) return selectedConnection;
-
-            //Get the selected Connection info
-            foreach (XmlNode node in connections)
-            {
-                XmlNode selectedNode = node["Selected"];
-                if (selectedNode == null) continue;
-
-                bool selected;
-                bool isBool = Boolean.TryParse(selectedNode.InnerText, out selected);
-                if (!isBool) continue;
-                if (!selected) continue;
-
-                XmlNode connectionStringNode = node["ConnectionString"];
-                if (connectionStringNode == null) continue;
-
-                selectedConnection.ConnectionString = DecodeString(connectionStringNode.InnerText);
-
-                XmlNode orgIdNode = node["OrgId"];
-                if (orgIdNode == null) continue;
-
-                selectedConnection.OrgId = orgIdNode.InnerText;
-
-                XmlNode vesionNode = node["Version"];
-                if (vesionNode == null) continue;
-
-                selectedConnection.Version = vesionNode.InnerText;
-
-                break;
-            }
-
-            return selectedConnection;
-        }
-
         private Guid GetMapping(ProjectItem projectItem, CrmConn selectedConnection)
         {
             try
@@ -311,7 +264,7 @@ namespace WebResourceDeployer
                 if (!File.Exists(projectItem.FileNames[1])) return Guid.Empty;
 
                 var path = Path.GetDirectoryName(project.FullName);
-                if (!ConfigFileExists(project))
+                if (!SharedConfigFile.ConfigFileExists(project))
                 {
                     _logger.WriteToOutputWindow("Error Getting Mapping: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return Guid.Empty;
@@ -323,7 +276,7 @@ namespace WebResourceDeployer
                 if (string.IsNullOrEmpty(selectedConnection.ConnectionString)) return Guid.Empty;
                 if (string.IsNullOrEmpty(selectedConnection.OrgId)) return Guid.Empty;
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "Web Resource Deployer"];
                 bool allowPublish = (bool)props.Item("AllowPublishManagedWebResources").Value;
 
                 //Get the mapped file info
@@ -365,21 +318,9 @@ namespace WebResourceDeployer
             }
         }
 
-        private string DecodeString(string value)
-        {
-            byte[] data = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(data);
-        }
-
         private string EncodeString(string value)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
-        }
-
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
     }
 }

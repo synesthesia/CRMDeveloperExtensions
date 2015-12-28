@@ -42,7 +42,7 @@ namespace SdkSearch
             if (menuCommand == null) return;
 
             //Check SDK Search is enabled
-            var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+            var props = _dte.Properties["CRM Developer Extensions", "General"];
             bool enableCrmSdkSearch = (bool)props.Item("EnableCrmSdkSearch").Value;
 
             if (!enableCrmSdkSearch)
@@ -70,7 +70,7 @@ namespace SdkSearch
 
             if (string.IsNullOrEmpty(searchText)) return;
 
-            var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+            var props = _dte.Properties["CRM Developer Extensions", "General"];
             bool useDefaultWebBrowser = (bool)props.Item("UseDefaultWebBrowser").Value;
 
             string url =

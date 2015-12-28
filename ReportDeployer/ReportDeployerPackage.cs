@@ -1,17 +1,17 @@
-﻿using EnvDTE;
+﻿using CommonResources;
+using CommonResources.Models;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Xrm.Client;
 using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using OutputLogger;
-using ReportDeployer.Models;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
-using System.Text;
 using System.Xml;
 using Window = EnvDTE.Window;
 
@@ -76,7 +76,7 @@ namespace ReportDeployer
             SelectedItem item = _dte.SelectedItems.Item(1);
             ProjectItem projectItem = item.ProjectItem;
 
-            CrmConn selectedConnection = GetSelectedConnection(projectItem);
+            CrmConn selectedConnection = (CrmConn)SharedGlobals.GetGlobal("SelectedConnection", _dte);
             if (selectedConnection == null)
             {
                 menuCommand.Visible = false;
@@ -94,9 +94,7 @@ namespace ReportDeployer
             SelectedItem item = _dte.SelectedItems.Item(1);
             ProjectItem projectItem = item.ProjectItem;
 
-            //projectItem.IsDirty throws a not implemented exception for a .rdl file
-
-            CrmConn selectedConnection = GetSelectedConnection(projectItem);
+            CrmConn selectedConnection = (CrmConn)SharedGlobals.GetGlobal("SelectedConnection", _dte);
             if (selectedConnection == null) return;
 
             Guid reportId = GetMapping(projectItem, selectedConnection);
@@ -139,54 +137,6 @@ namespace ReportDeployer
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
         }
 
-        private CrmConn GetSelectedConnection(ProjectItem projectItem)
-        {
-            CrmConn selectedConnection = new CrmConn();
-            Project project = projectItem.ContainingProject;
-            var projectPath = Path.GetDirectoryName(project.FullName);
-            if (projectPath == null) return selectedConnection;
-
-            var path = Path.GetDirectoryName(project.FullName);
-            if (!ConfigFileExists(project)) return null;
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path + "\\CRMDeveloperExtensions.config");
-
-            XmlNodeList connections = doc.GetElementsByTagName("Connection");
-            if (connections.Count == 0) return selectedConnection;
-
-            //Get the selected Connection info
-            foreach (XmlNode node in connections)
-            {
-                XmlNode selectedNode = node["Selected"];
-                if (selectedNode == null) continue;
-
-                bool selected;
-                bool isBool = Boolean.TryParse(selectedNode.InnerText, out selected);
-                if (!isBool) continue;
-                if (!selected) continue;
-
-                XmlNode connectionStringNode = node["ConnectionString"];
-                if (connectionStringNode == null) continue;
-
-                selectedConnection.ConnectionString = DecodeString(connectionStringNode.InnerText);
-
-                XmlNode orgIdNode = node["OrgId"];
-                if (orgIdNode == null) continue;
-
-                selectedConnection.OrgId = orgIdNode.InnerText;
-
-                XmlNode vesionNode = node["Version"];
-                if (vesionNode == null) continue;
-
-                selectedConnection.Version = vesionNode.InnerText;
-
-                break;
-            }
-
-            return selectedConnection;
-        }
-
         private Guid GetMapping(ProjectItem projectItem, CrmConn selectedConnection)
         {
             try
@@ -199,7 +149,7 @@ namespace ReportDeployer
                 if (!File.Exists(projectItem.FileNames[1])) return Guid.Empty;
 
                 var path = Path.GetDirectoryName(project.FullName);
-                if (!ConfigFileExists(project))
+                if (!SharedConfigFile.ConfigFileExists(project))
                 {
                     _logger.WriteToOutputWindow("Error Getting Mapping: Missing CRMDeveloperExtensions.config File", Logger.MessageType.Error);
                     return Guid.Empty;
@@ -211,7 +161,7 @@ namespace ReportDeployer
                 if (string.IsNullOrEmpty(selectedConnection.ConnectionString)) return Guid.Empty;
                 if (string.IsNullOrEmpty(selectedConnection.OrgId)) return Guid.Empty;
 
-                var props = _dte.Properties["CRM Developer Extensions", "Settings"];
+                var props = _dte.Properties["CRM Developer Extensions", "Report Deployer"];
                 bool allowPublish = (bool)props.Item("AllowPublishManagedReports").Value;
 
                 //Get the mapped file info
@@ -251,18 +201,6 @@ namespace ReportDeployer
                 _logger.WriteToOutputWindow("Error Getting Mapping: " + ex.Message + Environment.NewLine + ex.StackTrace, Logger.MessageType.Error);
                 return Guid.Empty;
             }
-        }
-
-        private string DecodeString(string value)
-        {
-            byte[] data = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(data);
-        }
-
-        private bool ConfigFileExists(Project project)
-        {
-            var path = Path.GetDirectoryName(project.FullName);
-            return File.Exists(path + "/CRMDeveloperExtensions.config");
         }
     }
 }

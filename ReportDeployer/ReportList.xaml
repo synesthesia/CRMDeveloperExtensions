@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="ReportDeployer.ReportList"     
              xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.11.0"
+             xmlns:commonResources="clr-namespace:CommonResources;assembly=CommonResources"
              mc:Ignorable="d" 
              d:DesignHeight="350" d:DesignWidth="1100"
              x:Name="ReportWindow">
@@ -13,57 +14,31 @@
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Expander x:Name="Expander" Grid.Column="0"  HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" ExpandDirection="Right" IsExpanded="True" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">
-            <Expander.Header>
-                <TextBlock Text="Connections">
-                    <TextBlock.LayoutTransform>
-                        <RotateTransform Angle="-90"/>
-                    </TextBlock.LayoutTransform>
-                </TextBlock>
-            </Expander.Header>
-            <StackPanel>
-                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="170" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Project</Label>
-                <ComboBox x:Name="Projects" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="170" SelectionChanged="Projects_SelectionChanged"></ComboBox>
-                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="170" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">CRM Organization</Label>
-                <ComboBox x:Name="Connections" DisplayMemberPath="Name" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="170" 
-                          SelectionChanged="Connections_SelectionChanged"/>
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="AddConnection" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" Click="AddConnection_Click" Background="White">
-                        <Image Source="Resources/plus-24.png" Width="24" Height="24" ToolTip="Add Connection"></Image>
-                    </Button>
-                    <Button x:Name="ModifyConnection" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" Click="ModifyConnection_Click" IsEnabled="False" Background="White">
-                        <Image Source="Resources/settings-24.png" Width="24" Height="24" ToolTip="Modify Connection"></Image>
-                    </Button>
-                    <Button x:Name="Delete" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" Click="Delete_Click" IsEnabled="False" Background="White">
-                        <Image Source="Resources/minus-24.png" Width="24" Height="24" ToolTip="Delete Connection"></Image>
-                    </Button>
-                    <Button x:Name="Connect" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" Click="Connect_Click" IsEnabled="False" Background="White">
-                        <Image Source="Resources/connected-24.png" Width="24" Height="24" ToolTip="Connect To CRM"></Image>
-                    </Button>
-                </StackPanel>
-            </StackPanel>
-        </Expander>
+        <commonResources:ConnectionPane Grid.Column="0" Name="ConnPane" ConnectionAdded="ConnPane_OnConnectionAdded"
+                                        Connected="ConnPane_OnConnected" ConnectionSelected="ConnPane_OnConnectionSelected"
+                                        ProjectChanged="ConnPane_OnProjectChanged" ConnectionModified="ConnPane_OnConnectionModified"
+                                        ConnectionDeleted="ConnPane_OnConnectionDeleted" SourceWindow="ReportDeployer" />
         <Grid Column="1" HorizontalAlignment="Stretch">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                 <Button x:Name="Info" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Info_OnClick" Background="White">
-                    <Image Source="Resources/info-24.png" Width="24" Height="24" ToolTip="Information"></Image>
+                    <Image Source="/CommonResources;component/Resources/info-24.png" Width="24" Height="24" ToolTip="Information"></Image>
                 </Button>
                 <CheckBox x:Name="ShowManaged" Content="Show Managed" Margin="5,5,0,0" VerticalAlignment="Top" Checked="ShowManaged_Checked" Unchecked="ShowManaged_Checked" 
                           IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
                 <Button x:Name="Publish" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Publish_Click" IsEnabled="False" Background="White">
-                    <Image Source="Resources/publish-24.png" Width="24" Height="24" ToolTip="Deploy To CRM (Remember to Save First)"></Image>
+                    <Image Source="/CommonResources;component/Resources/publish-24.png" Width="24" Height="24" ToolTip="Deploy To CRM (Remember to Save First)"></Image>
                 </Button>
                 <Button x:Name="AddReport" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="AddReport_Click" IsEnabled="False" Background="White">
-                    <Image Source="Resources/plus-24.png" Width="24" Height="24" ToolTip="New Report From File"></Image>
+                    <Image Source="/CommonResources;component/Resources/plus-24.png" Width="24" Height="24" ToolTip="New Report From File"></Image>
                 </Button>
                 <Button x:Name="DeleteCache" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="DeleteCache_OnClick" Background="White">
                     <Image Source="Resources/deletecache-24.png" Width="24" Height="24" ToolTip="Delete Dataset Cache Files"></Image>
                 </Button>
                 <Button x:Name="Customizations" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Customizations_OnClick" IsEnabled="False" Background="White">
-                    <Image Source="Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
+                    <Image Source="/CommonResources;component/Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
                 </Button>
                 <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
-                    <Image Source="Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
+                    <Image Source="/CommonResources;component/Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
                 </Button>
                 <Button x:Name="Reports" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Reports_OnClick" IsEnabled="False" Background="White">
                     <Image Source="Resources/reports_24.png" Width="24" Height="24" ToolTip="Open CRM Reports Page"></Image>

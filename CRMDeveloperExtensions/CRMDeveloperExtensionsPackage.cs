@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using PluginDeployer;
 using ReportDeployer;
+using SolutionPackager;
 using System;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
@@ -12,11 +13,12 @@ using WebResourceDeployer;
 namespace CRMDeveloperExtensions
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.2.1.0", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "1.3.0.0", IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(WrdWindow))]
     [ProvideToolWindow(typeof(ReportWindow))]
     [ProvideToolWindow(typeof(PluginWindow))]
+    [ProvideToolWindow(typeof(SPWindow))]
     [Guid(GuidList.GuidCrmDeveloperExtensionsPkgString)]
     [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
     public sealed class CRMDeveloperExtensionsPackage : Package
@@ -68,6 +70,11 @@ namespace CRMDeveloperExtensions
             CommandID pluginWindowCommandId = new CommandID(GuidList.GuidCrmDevExCmdSet, (int)PkgCmdIdList.CmdidPluginDeployerWindow);
             OleMenuCommand pluginWindowItem = new OleMenuCommand(ShowPluginToolWindow, pluginWindowCommandId);
             mcs.AddCommand(pluginWindowItem);
+
+            //Solution Packager
+            CommandID packagerWindowCommandId = new CommandID(GuidList.GuidCrmDevExCmdSet, (int)PkgCmdIdList.CmdidSolutionPackagerWindow);
+            OleMenuCommand packageWindowItem = new OleMenuCommand(ShowSolutionPackagerToolWindow, packagerWindowCommandId);
+            mcs.AddCommand(packageWindowItem);
         }
 
         private void ShowWrdToolWindow(object sender, EventArgs e)
@@ -95,6 +102,17 @@ namespace CRMDeveloperExtensions
         private void ShowPluginToolWindow(object sender, EventArgs e)
         {
             ToolWindowPane window = FindToolWindow(typeof(PluginWindow), 0, true);
+            if ((null == window) || (null == window.Frame))
+            {
+                throw new NotSupportedException("Cannot create tool window.");
+            }
+            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+            ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        }
+
+        private void ShowSolutionPackagerToolWindow(object sender, EventArgs e)
+        {
+            ToolWindowPane window = FindToolWindow(typeof(SPWindow), 0, true);
             if ((null == window) || (null == window.Frame))
             {
                 throw new NotSupportedException("Cannot create tool window.");

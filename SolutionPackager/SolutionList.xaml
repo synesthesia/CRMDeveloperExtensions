@@ -1,0 +1,72 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:Class="SolutionPackager.SolutionList"
+             xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.11.0"
+             xmlns:commonResources="clr-namespace:CommonResources;assembly=CommonResources"
+             mc:Ignorable="d" 
+             d:DesignHeight="350" d:DesignWidth="1100"
+             Name="SPWindow">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <commonResources:ConnectionPane Name="ConnPane" Grid.Column="0" ConnectionSelected="ConnPane_OnConnectionChanged"
+                                        ConnectionAdded="ConnPane_OnConnectionAdded" ConnectionDeleted="ConnPane_OnConnectionDeleted"
+                                        Connected="ConnPane_OnConnected" ProjectChanged="ConnPane_OnProjectChanged"
+                                        ConnectionModified="ConnPane_OnConnectionModified" SourceWindow="SolutionPackager" />
+        <Grid Column="1" HorizontalAlignment="Stretch">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <Button x:Name="Info" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Info_OnClick" Background="White">
+                        <Image Source="/CommonResources;component/Resources/info-24.png" Width="24" Height="24" ToolTip="Information"></Image>
+                    </Button>
+                    <Button x:Name="Unpackage" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Unpackage_OnClick" IsEnabled="False" Background="White">
+                        <Image Source="Resources/unpackage_24.png" Width="24" Height="24" ToolTip="Unpackage Solution"></Image>
+                    </Button>
+                    <Button x:Name="Package" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Package_OnClick" IsEnabled="False" Background="White">
+                        <Image Source="Resources/package_24.png" Width="24" Height="24" ToolTip="Package Solution"></Image>
+                    </Button>
+                    <Button x:Name="Customizations" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Customizations_OnClick" IsEnabled="False" Background="White">
+                        <Image Source="/CommonResources;component/Resources/customizations_24.png" Width="24" Height="24" ToolTip="Open CRM Default Solution"></Image>
+                    </Button>
+                    <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
+                        <Image Source="/CommonResources;component/Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                    <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Solutions</Label>
+                    <ComboBox x:Name="SolutionToPackage" Margin="5,5,0,0" VerticalAlignment="Top" ToolTip="Solution To Package" SelectionChanged="SolutionToPackage_OnSelectionChanged" 
+                              IsEnabled="False" MinWidth="200">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} {1}">
+                                            <Binding Path="Name"/>
+                                            <Binding Path="Version"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <CheckBox x:Name="DownloadManaged" Margin="5,5,0,0" Content="Download Managed Solution?" Width="200" HorizontalAlignment="Left" 
+                              Checked="DownloadManaged_Checked" Unchecked="DownloadManaged_Checked" IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"></CheckBox>
+                </StackPanel>
+            </StackPanel>
+            <Grid x:Name="LockOverlay" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" ZIndex="10" Background="{DynamicResource OverlayColor}" Visibility="Hidden">
+                <Label x:Name="LockMessage" Content="Working..." VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="36"></Label>
+            </Grid>
+        </Grid>
+    </Grid>
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="OverlayColor" Color="White" Opacity="0.5" />
+    </UserControl.Resources>
+</UserControl>
+    

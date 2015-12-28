@@ -123,6 +123,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Guids.cs" />
+    <Compile Include="RdOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="RdOptionsControl.Designer.cs">
+      <DependentUpon>RdOptionsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WrdOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WrdOptionsControl.Designer.cs">
+      <DependentUpon>WrdOptionsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PdOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdOptionsControl.Designer.cs">
+      <DependentUpon>PdOptionsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RdUserOptionsPackage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WrdUserOptionsPackage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SpOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SpOptionsControl.Designer.cs">
+      <DependentUpon>SpOptionsControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="OptionsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -135,12 +165,30 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="PdUserOptionsPackage.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SpUserOptionsPackage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="UserOptionsPackage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="RdOptionsControl.resx">
+      <DependentUpon>RdOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WrdOptionsControl.resx">
+      <DependentUpon>WrdOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdOptionsControl.resx">
+      <DependentUpon>PdOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpOptionsControl.resx">
+      <DependentUpon>SpOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="OptionsControl.resx">
       <DependentUpon>OptionsControl.cs</DependentUpon>
     </EmbeddedResource>

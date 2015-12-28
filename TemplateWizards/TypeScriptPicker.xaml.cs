@@ -25,7 +25,7 @@ namespace TemplateWizards
             {
                 case "CRM 2011 (5.0.X)":
                 case "CRM 2013 (6.X.X)":
-                case "CRM 2013 SP1 (6.1.X)":
+                case "CRM 2013 (6.1.X)":
                     SdkVersion.SelectedValue = "CRM 2013 (6.X.X)";
                     break;
                 case "CRM 2015 (7.0.X)":

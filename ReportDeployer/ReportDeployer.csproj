@@ -189,7 +189,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Guids.cs" />
-    <Compile Include="Models\CrmConn.cs" />
     <Compile Include="Models\CrmSolution.cs" />
     <Compile Include="Models\ReportItem.cs" />
     <Compile Include="NewReport.xaml.cs">
@@ -223,7 +222,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
@@ -238,14 +236,7 @@
   <ItemGroup>
     <Resource Include="Resources\report-16.png" />
     <Resource Include="Resources\sw-file-icon_16.png" />
-    <Resource Include="Resources\settings-24.png" />
-    <Resource Include="Resources\publish-24.png" />
-    <Resource Include="Resources\plus-24.png" />
-    <Resource Include="Resources\connected-24.png" />
-    <Resource Include="Resources\info-24.png" />
-    <Resource Include="Resources\minus-24.png" />
     <Resource Include="Resources\download-16.png" />
-    <Resource Include="Resources\open-16.png" />
     <Resource Include="Resources\deletecache-24.png" />
   </ItemGroup>
   <ItemGroup>
@@ -259,6 +250,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonResources\CommonResources.csproj">
+      <Project>{4f82019c-685b-4349-ace2-091ad63004b9}</Project>
+      <Name>CommonResources</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CrmConnectionWindow\CrmConnectionWindow.csproj">
       <Project>{ccbcccd5-4ade-4b52-b77b-6c453dc30e1d}</Project>
       <Name>CrmConnectionWindow</Name>
@@ -274,17 +269,14 @@
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="ReportDeployer.vsct">
-	  <ResourceName>Menus.ctmenu</ResourceName>
+      <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\customizations_24.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\solutions_24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\reports_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\open-16.png" />
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
