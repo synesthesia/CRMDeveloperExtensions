@@ -519,8 +519,7 @@ namespace SolutionPackager
 
             Project project = ConnPane.SelectedProject;
             var path1 = path;
-            bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
-
+            
             if (downloadManaged == true)
             {
                 _dte.StatusBar.Text = "Connecting to CRM and getting managed solution...";
@@ -539,6 +538,11 @@ namespace SolutionPackager
                 }
 
                 _logger.WriteToOutputWindow("Retrieved Managed Solution From CRM", Logger.MessageType.Info);
+            }
+
+            bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
+            if (downloadManaged == true)
+            {
                 StoreSolutionFile(path, project, solutionChange);
             }
 
@@ -587,10 +591,25 @@ namespace SolutionPackager
                 command += " /folder: " + "\"" + extractedFolder.FullName + "\"";
                 command += " /clobber";
 
+                // Add a mapping file which should be in the root folder of the project and be named mapping.xml
+                if (File.Exists(Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml"))
+                {
+                    command += " /map:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml\"";
+                }
+
+                // Write Solution Package output to a log file named SolutionPackager.log in the root folder of the project
+                command += " /log:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\SolutionPackager.log\"";
+
+                // Unpack managed solution as well.
+                if (downloadManaged == true)
+                {
+                    command += " /packagetype:Both";
+                }
+
                 cw.SendInput("shell " + command, true);
 
-                //Need this
-                System.Threading.Thread.Sleep(1000);
+                //Need this. Extend to allow bigger solutions to unpack
+                System.Threading.Thread.Sleep(10000);
 
                 bool solutionFileDelete = RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
                 bool solutionFileAddChange = ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
@@ -602,19 +621,6 @@ namespace SolutionPackager
                 bool solutionChange = solutionFileDelete || solutionFileAddChange;
                 StoreSolutionFile(path, project, solutionChange);
 
-                //Download Managed
-                if (downloadManaged != true)
-                    return false;
-
-                path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, true));
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    _dte.StatusBar.Clear();
-                    LockOverlay.Visibility = Visibility.Hidden;
-                    MessageBox.Show("Error Retrieving Solution. See the Output Window for additional details.");
-                    return false;
-                }
 
                 return solutionChange;
             }
@@ -702,6 +708,9 @@ namespace SolutionPackager
                 {
                     case "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}":
                         name = Path.GetFileName(name);
+                        // Do not delete the mapping file
+                        if (name == "mapping.xml")
+                            continue;
                         if (File.Exists(extractedFolder + "\\" + name))
                             continue;
 
@@ -889,6 +898,8 @@ namespace SolutionPackager
             try
             {
                 CrmConnection connection = CrmConnection.Parse(connString);
+                // Hardcode connection timeout to one-hour to support large solutions.
+                connection.Timeout = new TimeSpan(1, 0, 0);
 
                 using (_orgService = new OrganizationService(connection))
                 {
