@@ -505,6 +505,8 @@ namespace SolutionPackager
             CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
             bool? downloadManaged = DownloadManaged.IsChecked;
 
+            // Export the unmanaged solution archive from CRM
+            _logger.WriteToOutputWindow("Started Download of Unmanaged Solution From CRM", Logger.MessageType.Info);
             string path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, false));
             if (string.IsNullOrEmpty(path))
             {
@@ -519,10 +521,12 @@ namespace SolutionPackager
 
             Project project = ConnPane.SelectedProject;
             var path1 = path;
-            
+
+            // If the managed flag was set, export the managed solution archive from CRM
             if (downloadManaged == true)
             {
                 _dte.StatusBar.Text = "Connecting to CRM and getting managed solution...";
+                _logger.WriteToOutputWindow("Started Download of Managed Solution From CRM", Logger.MessageType.Info);
                 path =
                     await
                         Task.Run(
@@ -540,12 +544,9 @@ namespace SolutionPackager
                 _logger.WriteToOutputWindow("Retrieved Managed Solution From CRM", Logger.MessageType.Info);
             }
 
+            // Upack the solution(s) using the Solution Packager
             bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
-            if (downloadManaged == true)
-            {
-                StoreSolutionFile(path, project, solutionChange);
-            }
-
+            
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
@@ -618,10 +619,9 @@ namespace SolutionPackager
                 Directory.Delete(extractedFolder.FullName, true);
 
                 //Solution change or file not present
-                bool solutionChange = solutionFileDelete || solutionFileAddChange;
+                bool solutionChange = solutionFileDelete || solutionFileAddChange;           
                 StoreSolutionFile(path, project, solutionChange);
-
-
+                
                 return solutionChange;
             }
             catch (Exception ex)
@@ -868,6 +868,12 @@ namespace SolutionPackager
                 string command = toolPath + " /action: Pack";
                 command += " /zipfile:" + "\"" + savePath + "\\" + filename + "\"";
                 command += " /folder: " + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\"";
+                
+                // Use a mapping file if one exists in the root folder of the project and be named mapping.xml
+                if (File.Exists(Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml"))
+                {
+                    command += " /map:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml\"";
+                }
 
                 cw.SendInput("shell " + command, true);
 
