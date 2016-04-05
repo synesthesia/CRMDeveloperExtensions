@@ -10,13 +10,9 @@ Supported versions of Visual Studio include 2012, 2013, & 2015 and will be distr
 
 Install in Visual Studio under Tools -> Extensions and Updates -> Search Online for "Dynamics CRM Developer Extensions" or install directly from the [Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/0f9ab063-acec-4c55-bd6c-5eb7c6cffec4).
 
-####New in v1.3.0.0####
+####New in v1.3.1.0####
 
-* Added Solution Packager
-* Added Support for CRM 2016 (8.0) NuGet assemblies
-* Added CRM 2016 JavaScript code snippets
-* Various bug fixes & enhancements
-* !Enhancements to user options, may require re-entering previously saved settings!
+* Fixed outdated NuGet paths surfaced in VS 2015 Update 2
 
 **Solution Packager**
 
