@@ -384,12 +384,11 @@ namespace TemplateWizards
         {
             try
             {
-                string nuGetSource = "https://www.nuget.org/api/v2/";
                 _dte.StatusBar.Text = @"Installing " + package + "...";
                 if (!string.IsNullOrEmpty(version))
-                    installer.InstallPackage(nuGetSource, project, package, version, false);
+                    installer.InstallPackage("http://packages.nuget.org", project, package, version, false);
                 else
-                    installer.InstallPackage(nuGetSource, project, package, (Version)null, false);
+                    installer.InstallPackage("http://packages.nuget.org", project, package, (Version)null, false);
             }
             catch (Exception ex)
             {
