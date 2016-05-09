@@ -299,9 +299,19 @@ namespace TemplateWizards
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "7.1.1");
                         if (_needsClient == "True")
-                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0");
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0.1");
                         break;
                     case "CRM 2016 (8.0.X)":
+                        project.DTE.SuppressUI = true;
+                        project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
+                        project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "8.0.2.1");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "8.0.2.1");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0.1");
+                        break;
+                    case "CRM 2016 (8.1.X)":
                         project.DTE.SuppressUI = true;
                         project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
                         project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
@@ -639,6 +649,9 @@ namespace TemplateWizards
                                         break;
                                     case "8.0.0":
                                         sdkVersion = "CRM 2016 (8.0.X)";
+                                        break;
+                                    case "8.1.0":
+                                        sdkVersion = "CRM 2016 (8.1.X)";
                                         break;
                                 }
                             }
