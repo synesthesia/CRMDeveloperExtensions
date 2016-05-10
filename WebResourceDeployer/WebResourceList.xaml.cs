@@ -1715,7 +1715,10 @@ namespace WebResourceDeployer
 
         private void AddWebResource_Click(object sender, RoutedEventArgs e)
         {
-            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection, ConnPane.SelectedProject, GetProjectFiles(ConnPane.SelectedProject.Name));
+            Guid solutionId = (SolutionList.SelectedItem != null)
+                ? ((CrmSolution) SolutionList.SelectedItem).SolutionId
+                : Guid.Empty;
+            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection, ConnPane.SelectedProject, GetProjectFiles(ConnPane.SelectedProject.Name), solutionId);
             bool? result = newWebResource.ShowDialog();
 
             if (result != true) return;

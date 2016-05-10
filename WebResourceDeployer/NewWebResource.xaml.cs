@@ -36,7 +36,7 @@ namespace WebResourceDeployer
         public string NewBoundFile;
         public Guid NewSolutionId;
 
-        public NewWebResource(CrmConn connection, Project project, ObservableCollection<ComboBoxItem> projectFiles)
+        public NewWebResource(CrmConn connection, Project project, ObservableCollection<ComboBoxItem> projectFiles, Guid selectedSolutionId)
         {
             InitializeComponent();
 
@@ -45,7 +45,7 @@ namespace WebResourceDeployer
             _connection = connection;
             _project = project;
 
-            bool result = GetSolutions();
+            bool result = GetSolutions(selectedSolutionId);
 
             if (!result)
             {
@@ -57,7 +57,7 @@ namespace WebResourceDeployer
             Files.ItemsSource = projectFiles;
         }
 
-        private bool GetSolutions()
+        private bool GetSolutions(Guid selectedSolutionId)
         {
             try
             {
@@ -132,6 +132,13 @@ namespace WebResourceDeployer
                 var item = solutions[i];
                 solutions.RemoveAt(i);
                 solutions.Insert(0, item);
+
+                if (selectedSolutionId != Guid.Empty)
+                {
+                    var sel = solutions.FindIndex(s => s.SolutionId == selectedSolutionId);
+                    if (sel != -1)
+                        Solutions.SelectedIndex = sel;
+                }
 
                 Solutions.ItemsSource = solutions;
 
