@@ -147,6 +147,10 @@
     <None Include="Snippets\JavaScript\Dynamics CRM\Control\HideAutoComplete.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Control\AddOnKeyPress.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Control\ShowAutoComplete.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\KB\GetTotalResultCount.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\KB\OpenSearchResult.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\KB\RemoveOnPostSearch.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\KB\AddOnPostSearch.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\KB\SetLabel.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\KB\GetLabel.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Navigation\SetVisible.snippet" />
