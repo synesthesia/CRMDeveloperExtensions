@@ -1922,49 +1922,7 @@ namespace WebResourceDeployer
                                 LinkToAttributeName = "publisherid",
                                 Columns = new ColumnSet("customizationprefix"),
                                 EntityAlias = "publisher"
-                            },
-                            new LinkEntity
-						    {
-							    LinkFromEntityName = "solution",
-							    LinkFromAttributeName = "solutionid",
-							    LinkToEntityName = "solutioncomponent",
-							    LinkToAttributeName = "solutionid",
-							    JoinOperator = JoinOperator.Natural,
-							    LinkCriteria =
-							    {
-								    Conditions =
-								    {
-									    new ConditionExpression
-									    {
-										    AttributeName = "componenttype",
-										    Operator = ConditionOperator.Equal,
-										    Values = { 61 }
-									    }
-								    }
-							    },
-                                LinkEntities =
-                                {
-                                    new LinkEntity
-                                    {
-                                        LinkFromEntityName = "solutioncomponent",
-                                        LinkFromAttributeName = "objectid",
-                                        LinkToEntityName = "webresource",
-                                        LinkToAttributeName = "webresourceid",
-                                        LinkCriteria =
-                                        {
-                                            Conditions =
-                                            {
-                                                new ConditionExpression
-									            {
-										            AttributeName = "iscustomizable",
-										            Operator = ConditionOperator.Equal,
-										            Values = { true }
-									            }
-                                            }
-                                        }
-                                    }
-                                }
-						    }
+                            }
                         },
                         Distinct = true,
                         Orders =
