@@ -505,6 +505,8 @@ namespace SolutionPackager
             CrmSolution selectedSolution = (CrmSolution)SolutionToPackage.SelectedItem;
             bool? downloadManaged = DownloadManaged.IsChecked;
 
+            // Export the unmanaged solution archive from CRM
+            _logger.WriteToOutputWindow("Started Download of Unmanaged Solution From CRM", Logger.MessageType.Info);
             string path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, false));
             if (string.IsNullOrEmpty(path))
             {
@@ -519,11 +521,12 @@ namespace SolutionPackager
 
             Project project = ConnPane.SelectedProject;
             var path1 = path;
-            bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
 
+            // If the managed flag was set, export the managed solution archive from CRM
             if (downloadManaged == true)
             {
                 _dte.StatusBar.Text = "Connecting to CRM and getting managed solution...";
+                _logger.WriteToOutputWindow("Started Download of Managed Solution From CRM", Logger.MessageType.Info);
                 path =
                     await
                         Task.Run(
@@ -539,9 +542,11 @@ namespace SolutionPackager
                 }
 
                 _logger.WriteToOutputWindow("Retrieved Managed Solution From CRM", Logger.MessageType.Info);
-                StoreSolutionFile(path, project, solutionChange);
             }
 
+            // Upack the solution(s) using the Solution Packager
+            bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
+            
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
@@ -587,10 +592,25 @@ namespace SolutionPackager
                 command += " /folder: " + "\"" + extractedFolder.FullName + "\"";
                 command += " /clobber";
 
+                // Add a mapping file which should be in the root folder of the project and be named mapping.xml
+                if (File.Exists(Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml"))
+                {
+                    command += " /map:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml\"";
+                }
+
+                // Write Solution Package output to a log file named SolutionPackager.log in the root folder of the project
+                command += " /log:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\SolutionPackager.log\"";
+
+                // Unpack managed solution as well.
+                if (downloadManaged == true)
+                {
+                    command += " /packagetype:Both";
+                }
+
                 cw.SendInput("shell " + command, true);
 
-                //Need this
-                System.Threading.Thread.Sleep(1000);
+                //Need this. Extend to allow bigger solutions to unpack
+                System.Threading.Thread.Sleep(10000);
 
                 bool solutionFileDelete = RemoveDeletedItems(extractedFolder.FullName, ConnPane.SelectedProject.ProjectItems);
                 bool solutionFileAddChange = ProcessDownloadedSolution(extractedFolder, Path.GetDirectoryName(ConnPane.SelectedProject.FullName),
@@ -599,23 +619,9 @@ namespace SolutionPackager
                 Directory.Delete(extractedFolder.FullName, true);
 
                 //Solution change or file not present
-                bool solutionChange = solutionFileDelete || solutionFileAddChange;
+                bool solutionChange = solutionFileDelete || solutionFileAddChange;           
                 StoreSolutionFile(path, project, solutionChange);
-
-                //Download Managed
-                if (downloadManaged != true)
-                    return false;
-
-                path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, true));
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    _dte.StatusBar.Clear();
-                    LockOverlay.Visibility = Visibility.Hidden;
-                    MessageBox.Show("Error Retrieving Solution. See the Output Window for additional details.");
-                    return false;
-                }
-
+                
                 return solutionChange;
             }
             catch (Exception ex)
@@ -702,6 +708,9 @@ namespace SolutionPackager
                 {
                     case "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}":
                         name = Path.GetFileName(name);
+                        // Do not delete the mapping file
+                        if (name == "mapping.xml")
+                            continue;
                         if (File.Exists(extractedFolder + "\\" + name))
                             continue;
 
@@ -859,6 +868,12 @@ namespace SolutionPackager
                 string command = toolPath + " /action: Pack";
                 command += " /zipfile:" + "\"" + savePath + "\\" + filename + "\"";
                 command += " /folder: " + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\"";
+                
+                // Use a mapping file if one exists in the root folder of the project and be named mapping.xml
+                if (File.Exists(Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml"))
+                {
+                    command += " /map:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml\"";
+                }
 
                 cw.SendInput("shell " + command, true);
 
@@ -889,6 +904,8 @@ namespace SolutionPackager
             try
             {
                 CrmConnection connection = CrmConnection.Parse(connString);
+                // Hardcode connection timeout to one-hour to support large solutions.
+                connection.Timeout = new TimeSpan(1, 0, 0);
 
                 using (_orgService = new OrganizationService(connection))
                 {
