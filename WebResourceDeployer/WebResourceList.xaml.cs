@@ -196,7 +196,7 @@ namespace WebResourceDeployer
                 }
             }
 
-            ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject.Name);
+            ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject);
         }
 
         public void ProjectItemRemoved(ProjectItem projectItem, uint itemid)
@@ -318,7 +318,7 @@ namespace WebResourceDeployer
                     _movedItemid = 0;
                 }
 
-                ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject.Name);
+                ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject);
             }
             else if (projectItem.Kind.ToUpper() == "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}") //Folder
             {
@@ -414,7 +414,8 @@ namespace WebResourceDeployer
 
         private Project GetProjectByName(string projectName)
         {
-            foreach (Project project in ConnPane.Projects)
+            IList<Project> projects = GetProjects();
+            foreach (Project project in projects)
             {
                 if (project.Name != projectName) continue;
 
@@ -424,10 +425,44 @@ namespace WebResourceDeployer
             return null;
         }
 
-        private ObservableCollection<ComboBoxItem> GetProjectFiles(string projectName)
+        private IList<Project> GetProjects()
+        {
+            Projects projects = _dte.Solution.Projects;
+            List<Project> list = new List<Project>();
+            var item = projects.GetEnumerator();
+            while (item.MoveNext())
+            {
+                var project = item.Current as Project;
+                if (project == null) continue;
+
+                if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
+                    list.AddRange(GetSolutionFolderProjects(project));
+                else
+                    list.Add(project);
+            }
+
+            return list;
+        }
+
+        private IEnumerable<Project> GetSolutionFolderProjects(Project solutionFolder)
+        {
+            List<Project> list = new List<Project>();
+            for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
+            {
+                var subProject = solutionFolder.ProjectItems.Item(i).SubProject;
+                if (subProject == null) continue;
+
+                if (subProject.Kind == ProjectKinds.vsProjectKindSolutionFolder)
+                    list.AddRange(GetSolutionFolderProjects(subProject));
+                else
+                    list.Add(subProject);
+            }
+            return list;
+        }
+
+        private ObservableCollection<ComboBoxItem> GetProjectFiles(Project project)
         {
             ObservableCollection<ComboBoxItem> projectFiles = new ObservableCollection<ComboBoxItem>();
-            Project project = GetProjectByName(projectName);
             if (project == null)
                 return projectFiles;
 
@@ -1559,7 +1594,7 @@ namespace WebResourceDeployer
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
 
-            ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject.Name);
+            ProjectFileList.ItemsSource = GetProjectFiles(ConnPane.SelectedProject);
         }
 
         private void ConnPane_OnConnectionDeleted(object sender, EventArgs e)
@@ -1716,9 +1751,9 @@ namespace WebResourceDeployer
         private void AddWebResource_Click(object sender, RoutedEventArgs e)
         {
             Guid solutionId = (SolutionList.SelectedItem != null)
-                ? ((CrmSolution) SolutionList.SelectedItem).SolutionId
+                ? ((CrmSolution)SolutionList.SelectedItem).SolutionId
                 : Guid.Empty;
-            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection, ConnPane.SelectedProject, GetProjectFiles(ConnPane.SelectedProject.Name), solutionId);
+            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection, ConnPane.SelectedProject, GetProjectFiles(ConnPane.SelectedProject), solutionId);
             bool? result = newWebResource.ShowDialog();
 
             if (result != true) return;
