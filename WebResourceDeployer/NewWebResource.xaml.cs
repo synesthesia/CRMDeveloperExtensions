@@ -162,8 +162,9 @@ namespace WebResourceDeployer
                 string.IsNullOrEmpty(Name.Text) || Type.SelectedItem == null)
                 return;
 
+            ProjectItem projectItem = (ProjectItem)((ComboBoxItem)Files.SelectedItem).Tag;
             string relativePath = ((ComboBoxItem)Files.SelectedItem).Content.ToString();
-            string filePath = Path.GetDirectoryName(_project.FullName) + relativePath.Replace("/", "\\");
+            string filePath = projectItem.Properties.Item("FullPath").Value.ToString();
             if (!File.Exists(filePath))
             {
                 _logger.WriteToOutputWindow("Missing File: " + filePath, Logger.MessageType.Error);
