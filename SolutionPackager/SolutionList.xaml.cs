@@ -507,8 +507,8 @@ namespace SolutionPackager
 
             // Export the unmanaged solution archive from CRM
             _logger.WriteToOutputWindow("Started Download of Unmanaged Solution From CRM", Logger.MessageType.Info);
-            string path = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, false));
-            if (string.IsNullOrEmpty(path))
+            string unmanagedPath = await Task.Run(() => GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, false));
+            if (string.IsNullOrEmpty(unmanagedPath))
             {
                 _dte.StatusBar.Clear();
                 LockOverlay.Visibility = Visibility.Hidden;
@@ -520,20 +520,20 @@ namespace SolutionPackager
             _dte.StatusBar.Text = "Extracting solution...";
 
             Project project = ConnPane.SelectedProject;
-            var path1 = path;
 
             // If the managed flag was set, export the managed solution archive from CRM
+            string managedPath = null;
             if (downloadManaged == true)
             {
                 _dte.StatusBar.Text = "Connecting to CRM and getting managed solution...";
                 _logger.WriteToOutputWindow("Started Download of Managed Solution From CRM", Logger.MessageType.Info);
-                path =
+                managedPath =
                     await
                         Task.Run(
                             () =>
                                 GetSolutionFromCrm(ConnPane.SelectedConnection.ConnectionString, selectedSolution, true));
 
-                if (string.IsNullOrEmpty(path))
+                if (string.IsNullOrEmpty(managedPath))
                 {
                     _dte.StatusBar.Clear();
                     LockOverlay.Visibility = Visibility.Hidden;
@@ -545,8 +545,8 @@ namespace SolutionPackager
             }
 
             // Upack the solution(s) using the Solution Packager
-            bool solutionChange = await Task.Run(() => ExtractPackage(path1, selectedSolution, project, downloadManaged));
-            
+            bool solutionChange = await Task.Run(() => ExtractPackage(unmanagedPath, managedPath, selectedSolution, project, downloadManaged));
+
             _dte.StatusBar.Clear();
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
             LockOverlay.Visibility = Visibility.Hidden;
@@ -554,7 +554,7 @@ namespace SolutionPackager
             Package.IsEnabled = true;
         }
 
-        private async Task<bool> ExtractPackage(string path, CrmSolution selectedSolution, Project project, bool? downloadManaged)
+        private async Task<bool> ExtractPackage(string unmanagedPath, string managedPath, CrmSolution selectedSolution, Project project, bool? downloadManaged)
         {
             //https://msdn.microsoft.com/en-us/library/jj602987.aspx#arguments
             try
@@ -566,7 +566,7 @@ namespace SolutionPackager
 
                 if (string.IsNullOrEmpty(spPath))
                 {
-                    MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
+                    MessageBox.Show("Set SDK bin folder unmanagedPath under Tools -> Options -> CRM Developer Extensions");
                     return false;
                 }
 
@@ -581,31 +581,27 @@ namespace SolutionPackager
                     return false;
                 }
 
-                string tempDirectory = Path.GetDirectoryName(path);
-                if (Directory.Exists(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path)))
-                    Directory.Delete(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path), true);
+                string tempDirectory = Path.GetDirectoryName(unmanagedPath);
+                if (Directory.Exists(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(unmanagedPath)))
+                    Directory.Delete(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(unmanagedPath), true);
                 DirectoryInfo extractedFolder =
-                    Directory.CreateDirectory(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(path));
+                    Directory.CreateDirectory(tempDirectory + "\\" + Path.GetFileNameWithoutExtension(unmanagedPath));
 
                 string command = toolPath + " /action: Extract";
-                command += " /zipfile:" + "\"" + path + "\"";
+                command += " /zipfile:" + "\"" + unmanagedPath + "\"";
                 command += " /folder: " + "\"" + extractedFolder.FullName + "\"";
                 command += " /clobber";
 
                 // Add a mapping file which should be in the root folder of the project and be named mapping.xml
                 if (File.Exists(Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml"))
-                {
                     command += " /map:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml\"";
-                }
 
                 // Write Solution Package output to a log file named SolutionPackager.log in the root folder of the project
                 command += " /log:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\SolutionPackager.log\"";
 
                 // Unpack managed solution as well.
                 if (downloadManaged == true)
-                {
                     command += " /packagetype:Both";
-                }
 
                 cw.SendInput("shell " + command, true);
 
@@ -619,9 +615,11 @@ namespace SolutionPackager
                 Directory.Delete(extractedFolder.FullName, true);
 
                 //Solution change or file not present
-                bool solutionChange = solutionFileDelete || solutionFileAddChange;           
-                StoreSolutionFile(path, project, solutionChange);
-                
+                bool solutionChange = solutionFileDelete || solutionFileAddChange;
+                StoreSolutionFile(unmanagedPath, project, solutionChange);
+                if (downloadManaged == true && !string.IsNullOrEmpty(managedPath))
+                    StoreSolutionFile(managedPath, project, solutionChange);
+
                 return solutionChange;
             }
             catch (Exception ex)
@@ -808,6 +806,8 @@ namespace SolutionPackager
             var selectedProject = ConnPane.SelectedProject;
             if (selectedProject == null) return;
 
+            bool? downloadManaged = DownloadManaged.IsChecked;
+
             string savePath;
             var props = _dte.Properties["CRM Developer Extensions", "Solution Packager"];
             bool saveSolutionFiles = (bool)props.Item("SaveSolutionFiles").Value;
@@ -823,18 +823,29 @@ namespace SolutionPackager
                     return;
             }
 
+            string overwriteMessage = null;
             if (File.Exists(savePath + "\\" + selectedSolution.UniqueName + "_" +
-                            FormatVersionString(version) + ".zip"))
+                           FormatVersionString(version) + ".zip"))
+                overwriteMessage = "Overwrite unmanaged solution version: " + version + "?";
+
+            if (downloadManaged == true)
             {
-                MessageBoxResult result = MessageBox.Show("Overwrite solution version: " + version + "?", "Overwrite?", MessageBoxButton.YesNo);
+                if (File.Exists(savePath + "\\" + selectedSolution.UniqueName + "_" +
+                                FormatVersionString(version) + "_managed.zip"))
+                    overwriteMessage += Environment.NewLine + "and/or" + Environment.NewLine + "Overwrite managed solution version: " + version + "?";
+            }
+
+            if (!string.IsNullOrEmpty(overwriteMessage))
+            {
+                MessageBoxResult result = MessageBox.Show(overwriteMessage, "Overwrite?", MessageBoxButton.YesNo);
                 if (result != MessageBoxResult.Yes)
                     return;
             }
 
-            await Task.Run(() => CreatePackage(selectedSolution, version, savePath, selectedProject));
+            await Task.Run(() => CreatePackage(selectedSolution, version, savePath, selectedProject, downloadManaged));
         }
 
-        private void CreatePackage(CrmSolution selectedSolution, Version version, string savePath, Project project)
+        private void CreatePackage(CrmSolution selectedSolution, Version version, string savePath, Project project, bool? downloadManaged)
         {
             try
             {
@@ -847,7 +858,7 @@ namespace SolutionPackager
 
                 if (string.IsNullOrEmpty(spPath))
                 {
-                    MessageBox.Show("Set SDK bin folder path under Tools -> Options -> CRM Developer Extensions");
+                    MessageBox.Show("Set SDK bin folder unmanagedPath under Tools -> Options -> CRM Developer Extensions");
                     return;
                 }
 
@@ -868,16 +879,19 @@ namespace SolutionPackager
                 string command = toolPath + " /action: Pack";
                 command += " /zipfile:" + "\"" + savePath + "\\" + filename + "\"";
                 command += " /folder: " + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\"";
-                
+
+                if (downloadManaged == true)
+                    command += " /packagetype:Both";
+
                 // Use a mapping file if one exists in the root folder of the project and be named mapping.xml
                 if (File.Exists(Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml"))
-                {
                     command += " /map:" + "\"" + Path.GetDirectoryName(ConnPane.SelectedProject.FullName) + "\\mapping.xml\"";
-                }
 
                 cw.SendInput("shell " + command, true);
 
                 AddNewSolutionToProject(savePath, project, filename);
+                if (downloadManaged == true)
+                    AddNewSolutionToProject(savePath, project, filename.Replace(".zip", "_managed.zip"));
             }
             catch (Exception ex)
             {
