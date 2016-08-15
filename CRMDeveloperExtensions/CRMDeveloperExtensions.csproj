@@ -105,6 +105,18 @@
     <None Include="Snippets\CSharp\Dynamics CRM\CRMPluginUnitTest.snippet" />
     <None Include="Snippets\CSharp\Dynamics CRM\CRMWorkflowOutputParameter.snippet" />
     <None Include="Snippets\CSharp\Dynamics CRM\CRMWorkflowInputParameter.snippet" />
+    <None Include="Snippets\XML\Dynamics CRM\CRMConnStringOnPremIfd.snippet">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Snippets\XML\Dynamics CRM\CRMConnStringOnPremWin.snippet">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Snippets\XML\Dynamics CRM\CRMConnStringOnPremCreds.snippet">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Snippets\XML\Dynamics CRM\CRMConnStringOl.snippet">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Snippets\JavaScript\Dynamics CRM\Attribute\FireOnChange.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Attribute\GetIsPartyList.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Attribute\GetSubmitMode.snippet" />

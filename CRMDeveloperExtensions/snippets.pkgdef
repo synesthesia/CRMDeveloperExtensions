@@ -5,3 +5,7 @@
 // JavaScript
 [$RootKey$\Languages\CodeExpansions\JavaScript\Paths]
 "Dynamics CRM"="$PackageFolder$\Snippets\JavaScript\Dynamics CRM"
+
+// XML
+[$RootKey$\Languages\CodeExpansions\XML\Paths]
+"Dynamics CRM"="$PackageFolder$\Snippets\XML\Dynamics CRM"
