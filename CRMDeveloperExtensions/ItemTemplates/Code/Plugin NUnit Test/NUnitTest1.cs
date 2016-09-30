@@ -44,8 +44,8 @@ namespace $rootnamespace$
 
             #region Optional Images/Configs
             //Optional Pre/Post Images - configure as needed
-            Entity preImage = null; //new Entity { LogicalName = "name", Id = new Guid("1278AC1A-D915-E411-80C5-72511BA23789") };
-            Entity postImage = null; //new Entity { LogicalName = "name", Id = new Guid("1278AC1A-D915-E411-80C5-72511BA23789") };
+            Entity preImage = null; //new Entity { LogicalName = "name", Id = targetEntity.Id };
+            Entity postImage = null; //new Entity { LogicalName = "name", Id = targetEntity.Id };
 
             //Optional Secure/Unsecure Configurations - configure as needed
              string unsecureConfig = String.Empty;

@@ -48,8 +48,8 @@ namespace $rootnamespace$
 
             #region Optional Images/Configs
             //Optional Pre/Post Images - pass to InvokePlugin
-            Entity preImage = null; //new Entity { LogicalName = "name", Id = Guid.NewGuid() };
-            Entity postImage = null; //new Entity { LogicalName = "name", Id = Guid.NewGuid() };
+            Entity preImage = null; //new Entity { LogicalName = "name", Id = targetEntity.Id };
+            Entity postImage = null; //new Entity { LogicalName = "name", Id = targetEntity.Id };
 
             //Optional Secure/Unsecure Configurations - pass to InvokePlugin
              string unsecureConfig = String.Empty;
