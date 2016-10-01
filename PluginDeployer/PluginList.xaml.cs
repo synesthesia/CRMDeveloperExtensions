@@ -34,6 +34,8 @@ namespace PluginDeployer
         private readonly Logger _logger;
         private bool _isIlMergeInstalled;
 
+        const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+
         public PluginList()
         {
             InitializeComponent();
@@ -571,12 +573,42 @@ namespace PluginDeployer
         {
             foreach (Project project in ConnPane.Projects)
             {
-                if (project.Name != projectName) continue;
+                if (project.Kind.ToUpper() == SolutionFolder)
+                {
+                    List<Project> list = new List<Project>();
+                    list.AddRange(GetFolderProjects(project));
+                    foreach (Project subProject in list)
+                    {
+                        if (subProject.Name != projectName)
+                            return subProject;
+                    }
+                }
+                else
+                    if (project.Name != projectName) continue;
 
                 return project;
             }
 
             return null;
+        }
+
+        private static IEnumerable<Project> GetFolderProjects(Project folder)
+        {
+            var list = new List<Project>();
+
+            foreach (ProjectItem item in folder.ProjectItems)
+            {
+                var subProject = item.SubProject;
+
+                if (subProject == null) continue;
+
+                if (subProject.Kind.ToUpper() == SolutionFolder)
+                    list.AddRange(GetFolderProjects(subProject));
+                else
+                    list.Add(subProject);
+            }
+
+            return list;
         }
 
         private void Assemblies_SelectionChanged(object sender, SelectionChangedEventArgs e)
