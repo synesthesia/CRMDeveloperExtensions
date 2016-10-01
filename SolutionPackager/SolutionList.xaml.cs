@@ -709,6 +709,9 @@ namespace SolutionPackager
                         // Do not delete the mapping file
                         if (name == "mapping.xml")
                             continue;
+                        // Do not delete the config file
+                        if (name == "CRMDeveloperExtensions.config")
+                            continue;
                         if (File.Exists(extractedFolder + "\\" + name))
                             continue;
 
