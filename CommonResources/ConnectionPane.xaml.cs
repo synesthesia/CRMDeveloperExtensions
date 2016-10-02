@@ -148,6 +148,8 @@ namespace CommonResources
 
                 if (project == null) continue;
 
+                if (IsUnitTestProject(project)) continue;
+
                 if (project.Kind.ToUpper() == SolutionFolder)
                     list.AddRange(GetFolderProjects(project));
                 else
@@ -155,6 +157,39 @@ namespace CommonResources
             }
 
             return list;
+        }
+
+        private static bool IsUnitTestProject(Project project)
+        {
+            bool isUnitTestProject = false;
+
+            if (string.IsNullOrEmpty(project.FullName)) return true;
+
+            var settingsPath = Path.GetDirectoryName(project.FullName);
+            if (File.Exists(settingsPath + "\\Properties\\settings.settings"))
+            {
+                XmlDocument settingsDoc = new XmlDocument();
+                settingsDoc.Load(settingsPath + "\\Properties\\settings.settings");
+
+                XmlNodeList settings = settingsDoc.GetElementsByTagName("Settings");
+                if (settings.Count > 0)
+                {
+                    XmlNodeList appSettings = settings[0].ChildNodes;
+                    foreach (XmlNode node in appSettings)
+                    {
+                        if (node.Attributes == null || node.Attributes["Name"] == null) continue;
+                        if (node.Attributes["Name"].Value != "CRMTestType") continue;
+
+                        XmlNode value = node.FirstChild;
+                        if (string.IsNullOrEmpty(value.InnerText)) continue;
+
+                        isUnitTestProject = true;
+                        break;
+                    }
+                }
+            }
+
+            return isUnitTestProject;
         }
 
         private static IEnumerable<Project> GetFolderProjects(Project folder)
