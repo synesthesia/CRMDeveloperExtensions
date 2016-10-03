@@ -33,6 +33,7 @@
             this.PrtName = new System.Windows.Forms.TextBox();
             this.OpenFolder = new System.Windows.Forms.Button();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.EnablePdContextTemplates = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -74,10 +75,22 @@
             this.OpenFolder.UseVisualStyleBackColor = true;
             this.OpenFolder.Click += new System.EventHandler(this.OpenFolder_Click);
             // 
+            // EnablePdContextTemplates
+            // 
+            this.EnablePdContextTemplates.AutoSize = true;
+            this.EnablePdContextTemplates.Location = new System.Drawing.Point(20, 52);
+            this.EnablePdContextTemplates.Name = "EnablePdContextTemplates";
+            this.EnablePdContextTemplates.Size = new System.Drawing.Size(262, 17);
+            this.EnablePdContextTemplates.TabIndex = 15;
+            this.EnablePdContextTemplates.Text = "Enable Context Menu Add -> New Item Templates";
+            this.EnablePdContextTemplates.UseVisualStyleBackColor = true;
+            this.EnablePdContextTemplates.CheckedChanged += new System.EventHandler(this.EnablePdContextTemplates_CheckedChanged);
+            // 
             // PdOptionsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.EnablePdContextTemplates);
             this.Controls.Add(this.OpenFolder);
             this.Controls.Add(this.PrtName);
             this.Controls.Add(this.label2);
@@ -96,6 +109,7 @@
         private System.Windows.Forms.TextBox PrtName;
         private System.Windows.Forms.Button OpenFolder;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+        private System.Windows.Forms.CheckBox EnablePdContextTemplates;
 
 
     }

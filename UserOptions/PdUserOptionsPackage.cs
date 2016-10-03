@@ -17,6 +17,7 @@ namespace UserOptions
     public class PdOptionPageCustom : DialogPage
     {
         public string RegistrationToolPath { get; set; }
+        public bool EnableCrmPdContextTemplates { get; set; }
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -26,7 +27,8 @@ namespace UserOptions
             {
                 PdOptionsControl page = new PdOptionsControl
                 {
-                    RegistraionToolPath = this
+                    RegistraionToolPath = this,
+                    EnableCrmPdContextTemplates = this
                 };
                 page.Initialize();
                 return page;

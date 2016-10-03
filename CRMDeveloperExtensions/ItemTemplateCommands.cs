@@ -13,16 +13,30 @@ namespace CRMDeveloperExtensions
         private readonly DTE _dte;
         private string _projectType;
         private string _testType;
+        private readonly bool _showWrMenuItems;
+        private readonly bool _showPdMenuItems;
 
         public ItemTemplateCommands(DTE dte)
         {
             _dte = dte;
+
+            var props = _dte.Properties["CRM Developer Extensions", "Web Resource Deployer"];
+            _showWrMenuItems = (bool)props.Item("EnableCrmWrContextTemplates").Value;
+            props = _dte.Properties["CRM Developer Extensions", "Plug-in Deployer"];
+            _showPdMenuItems = (bool)props.Item("EnableCrmPdContextTemplates").Value;
         }
 
         public void MenuItem1_BeforeQueryStatus(object sender, EventArgs e)
         {
             OleMenuCommand menuCommand = sender as OleMenuCommand;
             if (menuCommand == null) return;
+
+            //Hide menu item if option is disabled
+            if (!_showPdMenuItems)
+            {
+                menuCommand.Visible = false;
+                return;
+            }
 
             //Determine if the Project -> Add Item should be displayed and with what text
             GetCrmProject();
@@ -71,6 +85,13 @@ namespace CRMDeveloperExtensions
             OleMenuCommand menuCommand = sender as OleMenuCommand;
             if (menuCommand == null) return;
 
+            //Hide menu item if option is disabled
+            if (!_showWrMenuItems)
+            {
+                menuCommand.Visible = false;
+                return;
+            }
+
             //Determine if the Project -> Add Item should be displayed and with what text
             GetCrmProject();
 
@@ -81,6 +102,13 @@ namespace CRMDeveloperExtensions
         {
             OleMenuCommand menuCommand = sender as OleMenuCommand;
             if (menuCommand == null) return;
+
+            //Hide menu item if option is disabled
+            if (!_showWrMenuItems)
+            {
+                menuCommand.Visible = false;
+                return;
+            }
 
             //Determine if the Project -> Add Item should be displayed and with what text
             if (string.IsNullOrEmpty(_projectType))

@@ -17,6 +17,7 @@ namespace UserOptions
     public class WrdOptionPageCustom : DialogPage
     {
         public bool AllowPublishManagedWebResources { get; set; }
+        public bool EnableCrmWrContextTemplates { get; set; }
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -26,7 +27,8 @@ namespace UserOptions
             {
                 WrdOptionsControl page = new WrdOptionsControl
                 {
-                    AllowPublishManagedWebResources = this
+                    AllowPublishManagedWebResources = this,
+                    EnableCrmWrContextTemplates = this
                 };
                 page.Initialize();
                 return page;

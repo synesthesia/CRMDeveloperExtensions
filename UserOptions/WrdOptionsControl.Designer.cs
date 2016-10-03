@@ -30,6 +30,7 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.AllowPublishManaged = new System.Windows.Forms.CheckBox();
+            this.EnableWrContextTemplates = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -53,10 +54,22 @@
             this.AllowPublishManaged.UseVisualStyleBackColor = true;
             this.AllowPublishManaged.CheckedChanged += new System.EventHandler(this.AllowPublishManaged_CheckedChanged);
             // 
+            // EnableWrContextTemplates
+            // 
+            this.EnableWrContextTemplates.AutoSize = true;
+            this.EnableWrContextTemplates.Location = new System.Drawing.Point(17, 53);
+            this.EnableWrContextTemplates.Name = "EnableWrContextTemplates";
+            this.EnableWrContextTemplates.Size = new System.Drawing.Size(262, 17);
+            this.EnableWrContextTemplates.TabIndex = 14;
+            this.EnableWrContextTemplates.Text = "Enable Context Menu Add -> New Item Templates";
+            this.EnableWrContextTemplates.UseVisualStyleBackColor = true;
+            this.EnableWrContextTemplates.CheckedChanged += new System.EventHandler(this.EnableWrContextTemplates_CheckedChanged);
+            // 
             // WrdOptionsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.EnableWrContextTemplates);
             this.Controls.Add(this.AllowPublishManaged);
             this.Controls.Add(this.label1);
             this.Name = "WrdOptionsControl";
@@ -70,6 +83,7 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox AllowPublishManaged;
+        private System.Windows.Forms.CheckBox EnableWrContextTemplates;
 
 
     }

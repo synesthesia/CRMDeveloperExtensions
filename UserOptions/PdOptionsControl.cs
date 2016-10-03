@@ -11,10 +11,12 @@ namespace UserOptions
         }
 
         internal PdOptionPageCustom RegistraionToolPath;
+        internal PdOptionPageCustom EnableCrmPdContextTemplates;
 
         public void Initialize()
         {
             PrtName.Text = RegistraionToolPath.RegistrationToolPath;
+            EnablePdContextTemplates.Checked = EnableCrmPdContextTemplates.EnableCrmPdContextTemplates;
         }
 
         private void OpenFolder_Click(object sender, EventArgs e)
@@ -37,6 +39,11 @@ namespace UserOptions
 
             RegistraionToolPath.RegistrationToolPath = path;
             PrtName.Text = path;
+        }
+
+        private void EnablePdContextTemplates_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableCrmPdContextTemplates.EnableCrmPdContextTemplates = EnablePdContextTemplates.Checked;
         }
     }
 }
