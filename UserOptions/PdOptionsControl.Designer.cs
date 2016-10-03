@@ -31,6 +31,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.PrtName = new System.Windows.Forms.TextBox();
+            this.OpenFolder = new System.Windows.Forms.Button();
+            this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.SuspendLayout();
             // 
             // label1
@@ -54,16 +56,29 @@
             // 
             // PrtName
             // 
+            this.PrtName.CausesValidation = false;
             this.PrtName.Location = new System.Drawing.Point(151, 26);
             this.PrtName.Name = "PrtName";
-            this.PrtName.Size = new System.Drawing.Size(165, 20);
+            this.PrtName.ReadOnly = true;
+            this.PrtName.Size = new System.Drawing.Size(140, 20);
             this.PrtName.TabIndex = 2;
-            this.PrtName.TextChanged += new System.EventHandler(this.PrtName_TextChanged);
+            this.PrtName.TabStop = false;
+            // 
+            // OpenFolder
+            // 
+            this.OpenFolder.Location = new System.Drawing.Point(291, 25);
+            this.OpenFolder.Name = "OpenFolder";
+            this.OpenFolder.Size = new System.Drawing.Size(24, 22);
+            this.OpenFolder.TabIndex = 6;
+            this.OpenFolder.Text = "...";
+            this.OpenFolder.UseVisualStyleBackColor = true;
+            this.OpenFolder.Click += new System.EventHandler(this.OpenFolder_Click);
             // 
             // PdOptionsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.OpenFolder);
             this.Controls.Add(this.PrtName);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -79,6 +94,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox PrtName;
+        private System.Windows.Forms.Button OpenFolder;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
 
 
     }

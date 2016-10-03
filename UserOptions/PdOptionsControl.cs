@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Windows.Forms;
 
 namespace UserOptions
@@ -18,23 +17,26 @@ namespace UserOptions
             PrtName.Text = RegistraionToolPath.RegistrationToolPath;
         }
 
-        private void PrtName_TextChanged(object sender, EventArgs e)
+        private void OpenFolder_Click(object sender, EventArgs e)
         {
-            string path = PrtName.Text.Trim();
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result != DialogResult.OK)
+                return;
+
+            string path = folderBrowserDialog.SelectedPath;
 
             if (string.IsNullOrEmpty(path))
             {
                 RegistraionToolPath.RegistrationToolPath = null;
+                PrtName.Text = null;
                 return;
             }
 
-            if (path.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase))
-                path = Path.GetDirectoryName(path);
-
-            if (path != null && !path.EndsWith("\\"))
+            if (!path.EndsWith("\\"))
                 path += "\\";
 
             RegistraionToolPath.RegistrationToolPath = path;
+            PrtName.Text = path;
         }
     }
 }

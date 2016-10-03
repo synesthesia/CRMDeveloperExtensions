@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Windows.Forms;
 
 namespace UserOptions
@@ -21,28 +20,31 @@ namespace UserOptions
             SaveSolution.Checked = SaveSolutionFiles.SaveSolutionFiles;
         }
 
-        private void SpName_TextChanged(object sender, EventArgs e)
+        private void SaveSolution_CheckedChanged(object sender, EventArgs e)
         {
-            string path = SpName.Text.Trim();
+            SaveSolutionFiles.SaveSolutionFiles = SaveSolution.Checked;
+        }
+
+        private void OpenFolder_Click(object sender, EventArgs e)
+        {
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result != DialogResult.OK) 
+                return;
+
+            string path = folderBrowserDialog.SelectedPath;
 
             if (string.IsNullOrEmpty(path))
             {
                 SolutionPackagerPath.SolutionPackagerPath = null;
+                SpName.Text = null;
                 return;
             }
 
-            if (path.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase))
-                path = Path.GetDirectoryName(path);
-
-            if (path != null && !path.EndsWith("\\"))
+            if (!path.EndsWith("\\"))
                 path += "\\";
 
             SolutionPackagerPath.SolutionPackagerPath = path;
-        }
-
-        private void SaveSolution_CheckedChanged(object sender, EventArgs e)
-        {
-            SaveSolutionFiles.SaveSolutionFiles = SaveSolution.Checked;
+            SpName.Text = path;
         }
     }
 }

@@ -32,6 +32,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.SpName = new System.Windows.Forms.TextBox();
             this.SaveSolution = new System.Windows.Forms.CheckBox();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.OpenFolder = new System.Windows.Forms.Button();
+            this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.SuspendLayout();
             // 
             // label1
@@ -55,11 +58,13 @@
             // 
             // SpName
             // 
+            this.SpName.CausesValidation = false;
             this.SpName.Location = new System.Drawing.Point(151, 26);
             this.SpName.Name = "SpName";
-            this.SpName.Size = new System.Drawing.Size(165, 20);
+            this.SpName.ReadOnly = true;
+            this.SpName.Size = new System.Drawing.Size(140, 20);
             this.SpName.TabIndex = 2;
-            this.SpName.TextChanged += new System.EventHandler(this.SpName_TextChanged);
+            this.SpName.TabStop = false;
             // 
             // SaveSolution
             // 
@@ -72,10 +77,25 @@
             this.SaveSolution.UseVisualStyleBackColor = true;
             this.SaveSolution.CheckedChanged += new System.EventHandler(this.SaveSolution_CheckedChanged);
             // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // OpenFolder
+            // 
+            this.OpenFolder.Location = new System.Drawing.Point(291, 25);
+            this.OpenFolder.Name = "OpenFolder";
+            this.OpenFolder.Size = new System.Drawing.Size(24, 22);
+            this.OpenFolder.TabIndex = 5;
+            this.OpenFolder.Text = "...";
+            this.OpenFolder.UseVisualStyleBackColor = true;
+            this.OpenFolder.Click += new System.EventHandler(this.OpenFolder_Click);
+            // 
             // SpOptionsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.OpenFolder);
             this.Controls.Add(this.SaveSolution);
             this.Controls.Add(this.SpName);
             this.Controls.Add(this.label2);
@@ -93,6 +113,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox SpName;
         private System.Windows.Forms.CheckBox SaveSolution;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Button OpenFolder;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
 
 
     }
