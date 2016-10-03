@@ -34,6 +34,10 @@ namespace TemplateWizards
                 case "CRM 2015 (7.1.X)":
                     SdkVersion.SelectedValue = "CRM 2015 (7.1.X)";
                     break;
+                case "CRM 2016 (8.0.X)":
+                case "CRM 2016 (8.1.X)":
+                    SdkVersion.SelectedValue = "CRM 2016 (8.0.X)";
+                    break;
             }
         }
 

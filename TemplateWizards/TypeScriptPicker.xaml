@@ -11,7 +11,8 @@
         <ComboBox Grid.Row="0" x:Name="SdkVersion" HorizontalAlignment="Left" Margin="50,52,0,0" VerticalAlignment="Top" Width="200" SelectedIndex="3" SelectedValuePath="Content">
             <ComboBoxItem Content="CRM 2013 (6.X.X)"/>
             <ComboBoxItem Content="CRM 2015 (7.0.X)"/>
-            <ComboBoxItem Content="CRM 2015 (7.1.X)" IsSelected="True"/>
+            <ComboBoxItem Content="CRM 2015 (7.1.X)"/>
+            <ComboBoxItem Content="CRM 2016 (8.0.X)" IsSelected="True"/>
         </ComboBox>
         <Label Grid.Row="0" Content="Choose The Target SDK Version" HorizontalAlignment="Left" Margin="50,17,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="200"/>
         <Button x:Name="CreateTemplate" Content="Create Project" HorizontalAlignment="Left" Margin="50,150,0,0" VerticalAlignment="Top" Width="200" Click="CreateTemplate_Click"

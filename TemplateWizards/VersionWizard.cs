@@ -19,7 +19,7 @@ namespace TemplateWizards
     public class VersionWizard : IWizard
     {
         [DllImport("mscoree.dll")]
-        internal extern static int StrongNameFreeBuffer(IntPtr pbMemory);
+        internal static extern int StrongNameFreeBuffer(IntPtr pbMemory);
         [DllImport("mscoree.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
         internal static extern int StrongNameKeyGen(IntPtr wszKeyContainer, uint dwFlags, out IntPtr keyBlob, out uint keyBlobSize);
         [DllImport("mscoree.dll", CharSet = CharSet.Unicode)]
@@ -204,7 +204,8 @@ namespace TemplateWizards
 
                 ProjectItem xrm6 = xrm.ProjectItems.Item("xrm-6.d.ts");
                 ProjectItem xrm70 = xrm.ProjectItems.Item("xrm-7.0.d.ts");
-                ProjectItem xrm71 = xrm.ProjectItems.Item("xrm.d.ts");
+                ProjectItem xrm71 = xrm.ProjectItems.Item("xrm-7.1.d.ts");
+                ProjectItem xrm80 = xrm.ProjectItems.Item("xrm.d.ts");
                 ProjectItem para = xrm.ProjectItems.Item("parature.d.ts");
                 string filename;
 
@@ -243,6 +244,24 @@ namespace TemplateWizards
 
                         filename = xrm70.FileNames[0];
                         xrm70.Remove();
+                        File.Delete(filename);
+
+                        filename = xrm80.FileNames[0];
+                        xrm80.Remove();
+                        File.Delete(filename);
+
+                        break;
+                    case "CRM 2016 (8.0.X)":
+                        filename = xrm6.FileNames[0];
+                        xrm6.Remove();
+                        File.Delete(filename);
+
+                        filename = xrm70.FileNames[0];
+                        xrm70.Remove();
+                        File.Delete(filename);
+
+                        filename = xrm71.FileNames[0];
+                        xrm71.Remove();
                         File.Delete(filename);
                         break;
                 }
