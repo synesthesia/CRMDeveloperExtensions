@@ -1606,6 +1606,7 @@ namespace WebResourceDeployer
             Customizations.IsEnabled = false;
             Solutions.IsEnabled = false;
             SolutionList.IsEnabled = false;
+            SolutionList.ItemsSource = null;
             AddWebResource.IsEnabled = false;
             WebResourceGrid.IsEnabled = false;
         }
