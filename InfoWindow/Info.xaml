@@ -45,6 +45,9 @@
                     <TextBlock Margin="10,5,10,0">
                         <Hyperlink NavigateUri="https://github.com/aledkov" infoWindow:HyperlinkExtensions.IsExternal="true">Andrey Ledkov</Hyperlink>
                     </TextBlock>
+                    <TextBlock Margin="10,5,10,0">
+                        <Hyperlink NavigateUri="https://github.com/ikurtev" infoWindow:HyperlinkExtensions.IsExternal="true">Ivan Kurtev</Hyperlink>
+                    </TextBlock>
                 </StackPanel>
             </StackPanel>
             <Label Margin="5,5,5,0">Donate with PayPal:</Label>

@@ -7,7 +7,7 @@
     <MoreInfo>https://github.com/jlattimer/CRMDeveloperExtensions</MoreInfo>
     <License>License.txt</License>
     <GettingStartedGuide>https://github.com/jlattimer/CRMDeveloperExtensions/wiki</GettingStartedGuide>
-    <Icon>sw-file-icon.png</Icon>
+    <Icon>Resources\icon.ico</Icon>
     <PreviewImage>preview.png</PreviewImage>
   </Metadata>
   <Installation>

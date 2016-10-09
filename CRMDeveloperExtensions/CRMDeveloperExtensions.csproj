@@ -458,7 +458,10 @@
     </Content>
     <Resource Include="Resources\menu.png" />
     <Resource Include="Resources\sw-file-icon.png" />
-    <Content Include="Resources\icon.ico" />
+    <Content Include="Resources\icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Resources\Plugin_16.png" />
     <Content Include="Resources\Report_16.png" />
     <Content Include="Resources\Solution_16.png" />
