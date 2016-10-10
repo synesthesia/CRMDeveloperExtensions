@@ -660,16 +660,16 @@ namespace TemplateWizards
                                     case "6.1.1":
                                         sdkVersion = "CRM 2013 (6.1.X)";
                                         break;
-                                    case "7.0.0.1":
+                                    case "7.0.1":
                                         sdkVersion = "CRM 2015 (7.0.X)";
                                         break;
-                                    case "7.1.0":
+                                    case "7.1.1":
                                         sdkVersion = "CRM 2015 (7.1.X)";
                                         break;
-                                    case "8.0.0":
+                                    case "8.0.2.1":
                                         sdkVersion = "CRM 2016 (8.0.X)";
                                         break;
-                                    case "8.1.0":
+                                    default:
                                         sdkVersion = "CRM 2016 (8.1.X)";
                                         break;
                                 }
