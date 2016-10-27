@@ -1,7 +1,5 @@
 ﻿using EnvDTE;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using OutputLogger;
@@ -15,12 +13,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using CommonResources.Models;
+using Microsoft.Xrm.Tooling.Connector;
 
 namespace ReportDeployer
 {
     public partial class NewReport
     {
-        private static OrganizationService _orgService;
         private readonly CrmConn _connection;
         private readonly Project _project;
         private readonly Logger _logger;
@@ -56,16 +54,14 @@ namespace ReportDeployer
             {
                 List<CrmSolution> solutions = new List<CrmSolution>();
 
-                CrmConnection connection = CrmConnection.Parse(_connection.ConnectionString);
-                using (_orgService = new OrganizationService(connection))
+                var client = new CrmServiceClient(_connection.ConnectionString);
+                QueryExpression query = new QueryExpression
                 {
-                    QueryExpression query = new QueryExpression
+                    EntityName = "solution",
+                    ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename"),
+                    Criteria = new FilterExpression
                     {
-                        EntityName = "solution",
-                        ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename"),
-                        Criteria = new FilterExpression
-                        {
-                            Conditions =
+                        Conditions =
                             {
                                 new ConditionExpression
                                 {
@@ -80,8 +76,8 @@ namespace ReportDeployer
                                     Values = {true}
                                 }
                             }
-                        },
-                        Orders =
+                    },
+                    Orders =
                         {
                             new OrderExpression
                             {
@@ -89,22 +85,20 @@ namespace ReportDeployer
                                 OrderType = OrderType.Ascending
                             }
                         }
+                };
+
+                EntityCollection results = client.OrganizationServiceProxy.RetrieveMultiple(query);
+
+                foreach (Entity entity in results.Entities)
+                {
+                    CrmSolution solution = new CrmSolution
+                    {
+                        SolutionId = entity.Id,
+                        Name = entity.GetAttributeValue<string>("friendlyname"),
+                        UniqueName = entity.GetAttributeValue<string>("uniquename")
                     };
 
-                    EntityCollection results = _orgService.RetrieveMultiple(query);
-
-
-                    foreach (Entity entity in results.Entities)
-                    {
-                        CrmSolution solution = new CrmSolution
-                        {
-                            SolutionId = entity.Id,
-                            Name = entity.GetAttributeValue<string>("friendlyname"),
-                            UniqueName = entity.GetAttributeValue<string>("uniquename")
-                        };
-
-                        solutions.Add(solution);
-                    }
+                    solutions.Add(solution);
                 }
 
                 //Default on top
@@ -167,43 +161,39 @@ namespace ReportDeployer
         {
             try
             {
-                CrmConnection connection = CrmConnection.Parse(_connection.ConnectionString);
+                var client = new CrmServiceClient(_connection.ConnectionString);
+                Entity report = new Entity("report");
+                report["name"] = name;
+                report["bodytext"] = File.ReadAllText(filePath);
+                report["reporttypecode"] = new OptionSetValue(1); //ReportingServicesReport
+                report["filename"] = Path.GetFileName(filePath);
+                report["languagecode"] = 1033; //TODO: handle multiple 
+                report["ispersonal"] = (viewableIndex == 0);
 
-                using (_orgService = new OrganizationService(connection))
+                Guid id = client.OrganizationServiceProxy.Create(report);
+
+                _logger.WriteToOutputWindow("Report Created: " + id, Logger.MessageType.Info);
+
+                //Add to the choosen solution (not default)
+                if (solutionId != new Guid("FD140AAF-4DF4-11DD-BD17-0019B9312238"))
                 {
-                    Entity report = new Entity("report");
-                    report["name"] = name;
-                    report["bodytext"] = File.ReadAllText(filePath);
-                    report["reporttypecode"] = new OptionSetValue(1); //ReportingServicesReport
-                    report["filename"] = Path.GetFileName(filePath);
-                    report["languagecode"] = 1033; //TODO: handle multiple 
-                    report["ispersonal"] = (viewableIndex == 0);
-
-                    Guid id = _orgService.Create(report);
-
-                    _logger.WriteToOutputWindow("Report Created: " + id, Logger.MessageType.Info);
-
-                    //Add to the choosen solution (not default)
-                    if (solutionId != new Guid("FD140AAF-4DF4-11DD-BD17-0019B9312238"))
+                    AddSolutionComponentRequest scRequest = new AddSolutionComponentRequest
                     {
-                        AddSolutionComponentRequest scRequest = new AddSolutionComponentRequest
-                        {
-                            ComponentType = 31,
-                            SolutionUniqueName = uniqueName,
-                            ComponentId = id
-                        };
-                        AddSolutionComponentResponse response =
-                            (AddSolutionComponentResponse)_orgService.Execute(scRequest);
+                        ComponentType = 31,
+                        SolutionUniqueName = uniqueName,
+                        ComponentId = id
+                    };
+                    AddSolutionComponentResponse response =
+                        (AddSolutionComponentResponse)client.OrganizationServiceProxy.Execute(scRequest);
 
-                        _logger.WriteToOutputWindow("New Report Added To Solution: " + response.id, Logger.MessageType.Info);
-                    }
-
-                    NewId = id;
-                    NewName = name;
-                    NewBoudndFile = relativePath;
-
-                    return true;
+                    _logger.WriteToOutputWindow("New Report Added To Solution: " + response.id, Logger.MessageType.Info);
                 }
+
+                NewId = id;
+                NewName = name;
+                NewBoudndFile = relativePath;
+
+                return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

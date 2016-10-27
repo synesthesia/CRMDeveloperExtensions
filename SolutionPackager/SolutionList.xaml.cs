@@ -3,10 +3,9 @@ using EnvDTE;
 using EnvDTE80;
 using InfoWindow;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using SolutionPackager.Models;
 using System;
@@ -31,7 +30,7 @@ namespace SolutionPackager
         private readonly DTE _dte;
         private readonly DTE2 _dte2;
         private readonly Logger _logger;
-        private static OrganizationService _orgService;
+        private static IOrganizationService _orgService;
 
         public SolutionList()
         {
@@ -387,17 +386,14 @@ namespace SolutionPackager
         {
             try
             {
-                CrmConnection connection = CrmConnection.Parse(connString);
-
-                using (_orgService = new OrganizationService(connection))
+                var client = new CrmServiceClient(connString);
+                QueryExpression query = new QueryExpression
                 {
-                    QueryExpression query = new QueryExpression
+                    EntityName = "solution",
+                    ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename", "version"),
+                    Criteria = new FilterExpression
                     {
-                        EntityName = "solution",
-                        ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename", "version"),
-                        Criteria = new FilterExpression
-                        {
-                            Conditions =
+                        Conditions =
                             {
                                 new ConditionExpression
                                 {
@@ -412,8 +408,8 @@ namespace SolutionPackager
                                     Values = {true}
                                 }
                             }
-                        },
-                        LinkEntities =
+                    },
+                    LinkEntities =
                         {
                             new LinkEntity
                             {
@@ -425,7 +421,7 @@ namespace SolutionPackager
                                 EntityAlias = "publisher"
                             }
                         },
-                        Orders =
+                    Orders =
                         {
                             new OrderExpression
                             {
@@ -433,10 +429,9 @@ namespace SolutionPackager
                                 OrderType = OrderType.Ascending
                             }
                         }
-                    };
+                };
 
-                    return _orgService.RetrieveMultiple(query);
-                }
+                return client.OrganizationServiceProxy.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -920,30 +915,27 @@ namespace SolutionPackager
         {
             try
             {
-                CrmConnection connection = CrmConnection.Parse(connString);
+                var client = new CrmServiceClient(connString);
                 // Hardcode connection timeout to one-hour to support large solutions.
-                connection.Timeout = new TimeSpan(1, 0, 0);
+                client.OrganizationServiceProxy.Timeout = new TimeSpan(1, 0, 0);
 
-                using (_orgService = new OrganizationService(connection))
+                ExportSolutionRequest request = new ExportSolutionRequest
                 {
-                    ExportSolutionRequest request = new ExportSolutionRequest
-                    {
-                        Managed = managed,
-                        SolutionName = selectedSolution.UniqueName
-                    };
+                    Managed = managed,
+                    SolutionName = selectedSolution.UniqueName
+                };
 
-                    ExportSolutionResponse response = (ExportSolutionResponse)_orgService.Execute(request);
+                ExportSolutionResponse response = (ExportSolutionResponse)client.OrganizationServiceProxy.Execute(request);
 
-                    var tempFolder = Path.GetTempPath();
-                    string fileName = Path.GetFileName(selectedSolution.UniqueName + "_" +
-                        FormatVersionString(selectedSolution.Version) + ((managed) ? "_managed" : String.Empty) + ".zip");
-                    var tempFile = Path.Combine(tempFolder, fileName);
-                    if (File.Exists(tempFile))
-                        File.Delete(tempFile);
-                    File.WriteAllBytes(tempFile, response.ExportSolutionFile);
+                var tempFolder = Path.GetTempPath();
+                string fileName = Path.GetFileName(selectedSolution.UniqueName + "_" +
+                    FormatVersionString(selectedSolution.Version) + ((managed) ? "_managed" : String.Empty) + ".zip");
+                var tempFile = Path.Combine(tempFolder, fileName);
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+                File.WriteAllBytes(tempFile, response.ExportSolutionFile);
 
-                    return tempFile;
-                }
+                return tempFile;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

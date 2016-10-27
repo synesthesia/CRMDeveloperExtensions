@@ -1,7 +1,5 @@
 ﻿using EnvDTE;
 using Microsoft.Crm.Sdk.Messages;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using OutputLogger;
@@ -19,12 +17,13 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using CommonResources.Models;
 using WebResourceDeployer.Models;
+using Microsoft.Xrm.Tooling.Connector;
 
 namespace WebResourceDeployer
 {
     public partial class NewWebResource
     {
-        private static OrganizationService _orgService;
+        private static IOrganizationService _orgService;
         private readonly CrmConn _connection;
         private readonly Project _project;
         private readonly Logger _logger;
@@ -63,16 +62,14 @@ namespace WebResourceDeployer
             {
                 List<CrmSolution> solutions = new List<CrmSolution>();
 
-                CrmConnection connection = CrmConnection.Parse(_connection.ConnectionString);
-                using (_orgService = new OrganizationService(connection))
+                var client = new CrmServiceClient(_connection.ConnectionString);
+                QueryExpression query = new QueryExpression
                 {
-                    QueryExpression query = new QueryExpression
+                    EntityName = "solution",
+                    ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename"),
+                    Criteria = new FilterExpression
                     {
-                        EntityName = "solution",
-                        ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename"),
-                        Criteria = new FilterExpression
-                        {
-                            Conditions =
+                        Conditions =
                             {
                                 new ConditionExpression
                                 {
@@ -87,8 +84,8 @@ namespace WebResourceDeployer
                                     Values = {true}
                                 }
                             }
-                        },
-                        LinkEntities =
+                    },
+                    LinkEntities =
                         {
                             new LinkEntity
                             {
@@ -100,7 +97,7 @@ namespace WebResourceDeployer
                                 EntityAlias = "publisher"
                             }
                         },
-                        Orders =
+                    Orders =
                         {
                             new OrderExpression
                             {
@@ -108,23 +105,22 @@ namespace WebResourceDeployer
                                 OrderType = OrderType.Ascending
                             }
                         }
+                };
+
+                EntityCollection results = client.OrganizationServiceProxy.RetrieveMultiple(query);
+
+
+                foreach (Entity entity in results.Entities)
+                {
+                    CrmSolution solution = new CrmSolution
+                    {
+                        SolutionId = entity.Id,
+                        Name = entity.GetAttributeValue<string>("friendlyname"),
+                        Prefix = entity.GetAttributeValue<AliasedValue>("publisher.customizationprefix").Value.ToString(),
+                        UniqueName = entity.GetAttributeValue<string>("uniquename")
                     };
 
-                    EntityCollection results = _orgService.RetrieveMultiple(query);
-
-
-                    foreach (Entity entity in results.Entities)
-                    {
-                        CrmSolution solution = new CrmSolution
-                        {
-                            SolutionId = entity.Id,
-                            Name = entity.GetAttributeValue<string>("friendlyname"),
-                            Prefix = entity.GetAttributeValue<AliasedValue>("publisher.customizationprefix").Value.ToString(),
-                            UniqueName = entity.GetAttributeValue<string>("uniquename")
-                        };
-
-                        solutions.Add(solution);
-                    }
+                    solutions.Add(solution);
                 }
 
                 //Default on top
@@ -203,71 +199,67 @@ namespace WebResourceDeployer
         {
             try
             {
-                CrmConnection connection = CrmConnection.Parse(_connection.ConnectionString);
+                var client = new CrmServiceClient(_connection.ConnectionString);
+                Entity webResource = new Entity("webresource");
+                webResource["name"] = prefix + name;
+                webResource["webresourcetype"] = new OptionSetValue(type);
+                if (!string.IsNullOrEmpty(displayName))
+                    webResource["displayname"] = displayName;
 
-                using (_orgService = new OrganizationService(connection))
+                if (type == 8)
+                    webResource["silverlightversion"] = "4.0";
+
+                string extension = Path.GetExtension(filePath);
+
+                List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
+                string content;
+                //TypeScript
+                if (extension != null && (extension.ToUpper() == ".TS"))
                 {
-                    Entity webResource = new Entity("webresource");
-                    webResource["name"] = prefix + name;
-                    webResource["webresourcetype"] = new OptionSetValue(type);
-                    if (!string.IsNullOrEmpty(displayName))
-                        webResource["displayname"] = displayName;
-
-                    if (type == 8)
-                        webResource["silverlightversion"] = "4.0";
-
-                    string extension = Path.GetExtension(filePath);
-
-                    List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
-                    string content;
-                    //TypeScript
-                    if (extension != null && (extension.ToUpper() == ".TS"))
-                    {
-                        content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
-                        webResource["content"] = EncodeString(content);
-                    }
-                    //Images
-                    else if (extension != null && imageExs.Any(s => extension.ToUpper().EndsWith(s)))
-                    {
-                        content = EncodedImage(filePath, extension);
-                        webResource["content"] = content;
-                    }
-                    //Everything else
-                    else
-                    {
-                        content = File.ReadAllText(filePath);
-                        webResource["content"] = EncodeString(content);
-                    }
-
-                    Guid id = _orgService.Create(webResource);
-
-                    _logger.WriteToOutputWindow("New Web Resource Created: " + id, Logger.MessageType.Info);
-
-                    //Add to the choosen solution (not default)
-                    if (solutionId != new Guid("FD140AAF-4DF4-11DD-BD17-0019B9312238"))
-                    {
-                        AddSolutionComponentRequest scRequest = new AddSolutionComponentRequest
-                        {
-                            ComponentType = 61,
-                            SolutionUniqueName = uniqueName,
-                            ComponentId = id
-                        };
-                        AddSolutionComponentResponse response =
-                            (AddSolutionComponentResponse)_orgService.Execute(scRequest);
-
-                        _logger.WriteToOutputWindow("New Web Resource Added To Solution: " + response.id, Logger.MessageType.Info);
-                    }
-
-                    NewId = id;
-                    NewType = type;
-                    NewName = prefix + name;
-                    if (!string.IsNullOrEmpty(displayName))
-                        NewDisplayName = displayName;
-                    NewBoundFile = relativePath;
-                    NewSolutionId = solutionId;
-
-                    return true;
+                    content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
+                    webResource["content"] = EncodeString(content);
                 }
+                //Images
+                else if (extension != null && imageExs.Any(s => extension.ToUpper().EndsWith(s)))
+                {
+                    content = EncodedImage(filePath, extension);
+                    webResource["content"] = content;
+                }
+                //Everything else
+                else
+                {
+                    content = File.ReadAllText(filePath);
+                    webResource["content"] = EncodeString(content);
+                }
+
+                Guid id = client.OrganizationServiceProxy.Create(webResource);
+
+                _logger.WriteToOutputWindow("New Web Resource Created: " + id, Logger.MessageType.Info);
+
+                //Add to the choosen solution (not default)
+                if (solutionId != new Guid("FD140AAF-4DF4-11DD-BD17-0019B9312238"))
+                {
+                    AddSolutionComponentRequest scRequest = new AddSolutionComponentRequest
+                    {
+                        ComponentType = 61,
+                        SolutionUniqueName = uniqueName,
+                        ComponentId = id
+                    };
+                    AddSolutionComponentResponse response =
+                        (AddSolutionComponentResponse)client.OrganizationServiceProxy.Execute(scRequest);
+
+                    _logger.WriteToOutputWindow("New Web Resource Added To Solution: " + response.id, Logger.MessageType.Info);
+                }
+
+                NewId = id;
+                NewType = type;
+                NewName = prefix + name;
+                if (!string.IsNullOrEmpty(displayName))
+                    NewDisplayName = displayName;
+                NewBoundFile = relativePath;
+                NewSolutionId = solutionId;
+
+                return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

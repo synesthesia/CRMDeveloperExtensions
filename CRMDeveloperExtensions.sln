@@ -41,7 +41,20 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionPackager", "SolutionPackager\SolutionPackager.csproj", "{DBDADFC0-2C7D-49CA-B538-5A71BA1BD871}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMSolutionPackage", "Project Templates\CRMSolutionPackage\CRMSolutionPackage.csproj", "{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonResources", "CommonResources\CommonResources.csproj", "{4F82019C-685B-4349-ACE2-091AD63004B9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "References", "References", "{EA407396-1C90-46D9-AD3F-D2289379C311}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Crm2016", "Crm2016", "{2B659611-4C6D-4DE0-90F7-7A2AD442E1DF}"
+	ProjectSection(SolutionItems) = preProject
+		References\Crm2016\Microsoft.Crm.Sdk.Proxy.dll = References\Crm2016\Microsoft.Crm.Sdk.Proxy.dll
+		References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.dll = References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+		References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll = References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll
+		References\Crm2016\Microsoft.Xrm.Sdk.Deployment.dll = References\Crm2016\Microsoft.Xrm.Sdk.Deployment.dll
+		References\Crm2016\Microsoft.Xrm.Sdk.dll = References\Crm2016\Microsoft.Xrm.Sdk.dll
+		References\Crm2016\Microsoft.Xrm.Tooling.Connector.dll = References\Crm2016\Microsoft.Xrm.Tooling.Connector.dll
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,5 +139,6 @@ Global
 		{BEB2646D-B31B-4E4E-802D-C66FBB5A92C9} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
 		{EBC4B023-F605-41F0-AA56-7844BCA0B3CE} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
 		{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
+		{2B659611-4C6D-4DE0-90F7-7A2AD442E1DF} = {EA407396-1C90-46D9-AD3F-D2289379C311}
 	EndGlobalSection
 EndGlobal

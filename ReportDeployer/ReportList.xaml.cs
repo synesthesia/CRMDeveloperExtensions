@@ -4,11 +4,10 @@ using InfoWindow;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using ReportDeployer.Models;
 using System;
@@ -364,7 +363,7 @@ namespace ReportDeployer
         private async Task<bool> GetReports(string connString)
         {
             string projectName = ConnPane.SelectedProject.Name;
-            CrmConnection connection = CrmConnection.Parse(connString);
+            var connection = new CrmServiceClient(connString);
 
             _dte.StatusBar.Text = "Connecting to CRM and getting reports...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
@@ -414,19 +413,17 @@ namespace ReportDeployer
             return true;
         }
 
-        private EntityCollection RetrieveReportsFromCrm(CrmConnection connection)
+        private EntityCollection RetrieveReportsFromCrm(CrmServiceClient client)
         {
             try
             {
-                using (OrganizationService orgService = new OrganizationService(connection))
+                QueryExpression query = new QueryExpression
                 {
-                    QueryExpression query = new QueryExpression
+                    EntityName = "report",
+                    ColumnSet = new ColumnSet("name", "ismanaged"),
+                    Criteria = new FilterExpression
                     {
-                        EntityName = "report",
-                        ColumnSet = new ColumnSet("name", "ismanaged"),
-                        Criteria = new FilterExpression
-                        {
-                            Conditions =
+                        Conditions =
                             {
                                 new ConditionExpression
                                 {
@@ -435,8 +432,8 @@ namespace ReportDeployer
                                     Values = { true }
                                 }
                             }
-                        },
-                        Orders =
+                    },
+                    Orders =
                         {
                             new OrderExpression
                             {
@@ -444,10 +441,9 @@ namespace ReportDeployer
                                 OrderType = OrderType.Ascending
                             }
                         }
-                    };
+                };
 
-                    return orgService.RetrieveMultiple(query);
-                }
+                return client.OrganizationServiceProxy.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -747,64 +743,61 @@ namespace ReportDeployer
 
             try
             {
-                CrmConnection connection = CrmConnection.Parse(connString);
-                using (OrganizationService orgService = new OrganizationService(connection))
+                var client = new CrmServiceClient(connString);
+                Entity report = client.OrganizationServiceProxy.Retrieve("report", reportId,
+                    new ColumnSet("bodytext", "filename"));
+
+                _logger.WriteToOutputWindow("Downloaded Report: " + report.Id, Logger.MessageType.Info);
+
+                Project project = GetProjectByName(projectName);
+                string[] name = report.GetAttributeValue<string>("filename").Split('/');
+                folder = folder.Replace("/", "\\");
+                var path = Path.GetDirectoryName(project.FullName) +
+                           ((folder != "\\") ? folder : String.Empty) +
+                           "\\" + name[name.Length - 1];
+
+                if (File.Exists(path))
                 {
-                    Entity report = orgService.Retrieve("report", reportId,
-                        new ColumnSet("bodytext", "filename"));
-
-                    _logger.WriteToOutputWindow("Downloaded Report: " + report.Id, Logger.MessageType.Info);
-
-                    Project project = GetProjectByName(projectName);
-                    string[] name = report.GetAttributeValue<string>("filename").Split('/');
-                    folder = folder.Replace("/", "\\");
-                    var path = Path.GetDirectoryName(project.FullName) +
-                               ((folder != "\\") ? folder : String.Empty) +
-                               "\\" + name[name.Length - 1];
-
-                    if (File.Exists(path))
+                    MessageBoxResult result = MessageBox.Show("OK to overwrite?", "Report Download",
+                        MessageBoxButton.YesNo);
+                    if (result != MessageBoxResult.Yes)
                     {
-                        MessageBoxResult result = MessageBox.Show("OK to overwrite?", "Report Download",
-                            MessageBoxButton.YesNo);
-                        if (result != MessageBoxResult.Yes)
-                        {
-                            _dte.StatusBar.Clear();
-                            return;
-                        }
+                        _dte.StatusBar.Clear();
+                        return;
                     }
+                }
 
-                    File.WriteAllText(path, report.GetAttributeValue<string>("bodytext"));
+                File.WriteAllText(path, report.GetAttributeValue<string>("bodytext"));
 
-                    ProjectItem projectItem = project.ProjectItems.AddFromFile(path);
+                ProjectItem projectItem = project.ProjectItems.AddFromFile(path);
 
-                    IVsHierarchy projectHierarchy;
-                    if (_vsSolution.GetProjectOfUniqueName(project.UniqueName, out projectHierarchy) == VSConstants.S_OK)
-                    {
-                        uint itemId;
-                        if (projectHierarchy.ParseCanonicalName(path, out itemId) == VSConstants.S_OK)
-                            ProjectItemAdded(projectItem, itemId);
-                    }
+                IVsHierarchy projectHierarchy;
+                if (_vsSolution.GetProjectOfUniqueName(project.UniqueName, out projectHierarchy) == VSConstants.S_OK)
+                {
+                    uint itemId;
+                    if (projectHierarchy.ParseCanonicalName(path, out itemId) == VSConstants.S_OK)
+                        ProjectItemAdded(projectItem, itemId);
+                }
 
-                    var fullname = projectItem.FileNames[1];
-                    var projectPath = Path.GetDirectoryName(projectItem.ContainingProject.FullName);
-                    if (projectPath == null) return;
+                var fullname = projectItem.FileNames[1];
+                var projectPath = Path.GetDirectoryName(projectItem.ContainingProject.FullName);
+                if (projectPath == null) return;
 
-                    var boundName = fullname.Replace(projectPath, String.Empty).Replace("\\", "/");
+                var boundName = fullname.Replace(projectPath, String.Empty).Replace("\\", "/");
 
-                    List<ReportItem> items = (List<ReportItem>)ReportGrid.ItemsSource;
-                    ReportItem item = items.FirstOrDefault(w => w.ReportId == reportId);
-                    if (item != null)
-                    {
-                        item.BoundFile = boundName;
+                List<ReportItem> items = (List<ReportItem>)ReportGrid.ItemsSource;
+                ReportItem item = items.FirstOrDefault(w => w.ReportId == reportId);
+                if (item != null)
+                {
+                    item.BoundFile = boundName;
 
-                        CheckBox publishAll =
-                            FindVisualChildren<CheckBox>(ReportGrid)
-                                .FirstOrDefault(t => t.Name == "PublishSelectAll");
-                        if (publishAll == null) return;
+                    CheckBox publishAll =
+                        FindVisualChildren<CheckBox>(ReportGrid)
+                            .FirstOrDefault(t => t.Name == "PublishSelectAll");
+                    if (publishAll == null) return;
 
-                        if (publishAll.IsChecked == true)
-                            item.Publish = true;
-                    }
+                    if (publishAll.IsChecked == true)
+                        item.Publish = true;
                 }
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
@@ -842,7 +835,7 @@ namespace ReportDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            CrmConnection connection = CrmConnection.Parse(connString);
+            var connection = new CrmServiceClient(connString);
 
             LockMessage.Content = "Deploying...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -863,7 +856,7 @@ namespace ReportDeployer
             _dte.StatusBar.Clear();
         }
 
-        private bool UpdateAndPublishMultiple(List<ReportItem> items, Project project, CrmConnection connection)
+        private bool UpdateAndPublishMultiple(List<ReportItem> items, Project project, CrmServiceClient client)
         {
             //CRM 2011 UR12+
             try
@@ -897,30 +890,27 @@ namespace ReportDeployer
                 emRequest.Requests = requests;
 
                 bool wasError = false;
-                using (OrganizationService orgService = new OrganizationService(connection))
+                _dte.StatusBar.Text = "Updating report(s)...";
+                _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+
+                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)client.OrganizationServiceProxy.Execute(emRequest);
+
+                foreach (var responseItem in emResponse.Responses)
                 {
-                    _dte.StatusBar.Text = "Updating report(s)...";
-                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                    if (responseItem.Fault == null) continue;
 
-                    ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)orgService.Execute(emRequest);
+                    _logger.WriteToOutputWindow(
+                        "Error Updating Report(s) To CRM: " + responseItem.Fault.Message +
+                        Environment.NewLine + responseItem.Fault.TraceText, Logger.MessageType.Error);
+                    wasError = true;
+                }
 
-                    foreach (var responseItem in emResponse.Responses)
-                    {
-                        if (responseItem.Fault == null) continue;
-
-                        _logger.WriteToOutputWindow(
-                            "Error Updating Report(s) To CRM: " + responseItem.Fault.Message +
-                            Environment.NewLine + responseItem.Fault.TraceText, Logger.MessageType.Error);
-                        wasError = true;
-                    }
-
-                    if (wasError)
-                    {
-                        MessageBox.Show(
-                            "Error Updating Report(s) To CRM. See the Output Window for additional details.");
-                        _dte.StatusBar.Clear();
-                        return false;
-                    }
+                if (wasError)
+                {
+                    MessageBox.Show(
+                        "Error Updating Report(s) To CRM. See the Output Window for additional details.");
+                    _dte.StatusBar.Clear();
+                    return false;
                 }
 
                 _logger.WriteToOutputWindow("Updated Report(s)", Logger.MessageType.Info);
@@ -946,7 +936,7 @@ namespace ReportDeployer
             }
         }
 
-        private bool UpdateAndPublishSingle(List<ReportItem> items, Project project, CrmConnection connection)
+        private bool UpdateAndPublishSingle(List<ReportItem> items, Project project, CrmServiceClient client)
         {
             //CRM 2011 < UR12
             _dte.StatusBar.Text = "Updating report(s)...";
@@ -954,24 +944,20 @@ namespace ReportDeployer
 
             try
             {
-                using (OrganizationService orgService = new OrganizationService(connection))
+                foreach (var reportItem in items)
                 {
-                    foreach (var reportItem in items)
-                    {
-                        Entity report = new Entity("report") { Id = reportItem.ReportId };
+                    Entity report = new Entity("report") { Id = reportItem.ReportId };
 
-                        string filePath = Path.GetDirectoryName(project.FullName) +
-                                          reportItem.BoundFile.Replace("/", "\\");
-                        if (!File.Exists(filePath)) continue;
+                    string filePath = Path.GetDirectoryName(project.FullName) +
+                                      reportItem.BoundFile.Replace("/", "\\");
+                    if (!File.Exists(filePath)) continue;
 
-                        report["bodytext"] = File.ReadAllText(filePath);
+                    report["bodytext"] = File.ReadAllText(filePath);
 
-                        UpdateRequest request = new UpdateRequest { Target = report };
-                        orgService.Execute(request);
-                        _logger.WriteToOutputWindow("Uploaded Report", Logger.MessageType.Info);
-                    }
+                    UpdateRequest request = new UpdateRequest { Target = report };
+                    client.OrganizationServiceProxy.Execute(request);
+                    _logger.WriteToOutputWindow("Uploaded Report", Logger.MessageType.Info);
                 }
-
                 return true;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)

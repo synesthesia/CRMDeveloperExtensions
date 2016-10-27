@@ -354,7 +354,8 @@ namespace CommonResources
 
         private void AddConnection_Click(object sender, RoutedEventArgs e)
         {
-            Connection connection = new Connection(null, null);
+            var connection = new Connection(null, null);
+
             bool? result = connection.ShowDialog();
 
             if (!result.HasValue || !result.Value) return;

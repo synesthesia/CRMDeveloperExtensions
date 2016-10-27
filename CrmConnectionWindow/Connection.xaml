@@ -25,7 +25,7 @@
             <Label x:Name="LockMessage" Content="Connecting..." VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="36"></Label>
         </Grid>
         <Label x:Name="UrlLabel" Content="Url" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Height="23" Foreground="Red"/>
-        <TextBox x:Name="Url" Height="23" Margin="75,99,10,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Url_TextChanged" Text="https://orgname.crm.dynamics.com" 
+        <TextBox x:Name="Url" Height="23" Margin="75,99,10,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Url_TextChanged" Text="https://orgname.crm.dynamics.com/orgname" 
                  ToolTip="CRM Url and Organization" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <Label x:Name="DomainLabel" Content="Domain" HorizontalAlignment="Left" Margin="10,127,0,0" VerticalAlignment="Top" Height="23"/>
         <TextBox x:Name="Domain" Height="23" Margin="75,127,10,0" TextWrapping="Wrap" VerticalAlignment="Top" IsEnabled="False" TextChanged="Domain_TextChanged" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
