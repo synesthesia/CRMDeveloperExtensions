@@ -1,4 +1,4 @@
-﻿Dynamics CRM Developer Extensions - https://github.com/jlattimer/CRMDeveloperExtensions
+﻿Dynamics CRM/365 Developer Extensions - https://github.com/jlattimer/CRMDeveloperExtensions
 
 Not produced, endorsed, or affiliated with Microsoft in any way. 
 
