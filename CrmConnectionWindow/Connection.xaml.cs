@@ -3,7 +3,6 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using System;
-using System.Net;
 using System.ServiceModel;
 using System.Text;
 using System.Windows;
@@ -100,6 +99,12 @@ namespace CrmConnectionWindow
             ComboBoxItem item = (ComboBoxItem)ConnectionType.SelectedItem;
             if (item == null) return;
 
+            if (Domain.IsEnabled && string.IsNullOrEmpty(Domain.Text))
+            {
+                MessageBox.Show("Enter The Domain");
+                return;
+            }
+
             if (item.Content.ToString() != "On-premises using Windows integrated security")
             {
                 if (string.IsNullOrEmpty(Username.Text) || string.IsNullOrEmpty(Password.Password))
@@ -144,8 +149,7 @@ namespace CrmConnectionWindow
                     break;
                 case "On-premises with provided user credentials":
                 case "On-premises (IFD) with claims":
-                    if (!string.IsNullOrEmpty(Domain.Text))
-                        sb.AppendFormat("Domain={0};", Domain.Text.Trim());
+                    sb.AppendFormat("Domain={0};", Domain.Text.Trim());
                     sb.AppendFormat("Username={0};Password='{1}';", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
                     sb.Append("AuthType=IFD;");
                     break;
@@ -205,7 +209,8 @@ namespace CrmConnectionWindow
                     break;
                 case "On-premises with provided user credentials":
                     Url.Text = "http://servername/orgname";
-                    DomainLabel.Foreground = Brushes.Black;
+                    Username.Text = "domain\\username";
+                    DomainLabel.Foreground = Brushes.Red;
                     UsernameLabel.Foreground = Brushes.Red;
                     PasswordLabel.Foreground = Brushes.Red;
                     Domain.IsEnabled = true;
@@ -225,8 +230,9 @@ namespace CrmConnectionWindow
                     Password.Password = null;
                     break;
                 case "On-premises (IFD) with claims":
-                    Url.Text = "https://orgname.domain.com";
-                    DomainLabel.Foreground = Brushes.Black;
+                    Url.Text = "https://host.domain.com/orgname";
+                    Username.Text = "domain\\username";
+                    DomainLabel.Foreground = Brushes.Red;
                     UsernameLabel.Foreground = Brushes.Red;
                     PasswordLabel.Foreground = Brushes.Red;
                     Domain.IsEnabled = true;
@@ -250,20 +256,22 @@ namespace CrmConnectionWindow
                 case "Online using Office 365":
                     value += "Username=" + Username.Text.Trim() + ";";
                     value += "Password=" + new String('*', Password.Password.Trim().Length) + ";";
+                    value += "AuthType=Office365;";
                     break;
                 case "On-premises with provided user credentials":
-                    if (!string.IsNullOrEmpty(Domain.Text))
-                        value += "Domain=" + Domain.Text.Trim() + ";";
+                     value += "Domain=" + Domain.Text.Trim() + ";";
                     value += "Username=" + Username.Text.Trim() + ";";
                     value += "Password=" + new String('*', Password.Password.Trim().Length) + ";";
+                    value += "AuthType=AD;";
                     break;
                 case "On-premises using Windows integrated security":
+                    value += "AuthType=AD;";
                     break;
                 case "On-premises (IFD) with claims":
-                    if (!string.IsNullOrEmpty(Domain.Text))
-                        value += "Domain=" + Domain.Text.Trim() + ";";
+                    value += "Domain=" + Domain.Text.Trim() + ";";
                     value += "Username=" + Username.Text.Trim() + ";";
                     value += "Password=" + new String('*', Password.Password.Trim().Length) + ";";
+                    value += "AuthType=IFD;";
                     break;
             }
 
