@@ -334,6 +334,16 @@ namespace TemplateWizards
                         project.DTE.SuppressUI = true;
                         project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
                         project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
+                        InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", "8.1.0.2");
+                        if (_crmProjectType == "Workflow")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "8.1.0.2");
+                        if (_needsClient == "True")
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0.1");
+                        break;
+                    case "CRM 2016 (8.2.X)":
+                        project.DTE.SuppressUI = true;
+                        project.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.2";
+                        project = (Project)((Array)(_dte.ActiveSolutionProjects)).GetValue(0);
                         InstallPackage(installer, project, "Microsoft.CrmSdk.CoreAssemblies", null);
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", null);
@@ -669,8 +679,11 @@ namespace TemplateWizards
                                     case "8.0.2.1":
                                         sdkVersion = "CRM 2016 (8.0.X)";
                                         break;
-                                    default:
+                                    case "8.1.0.2":
                                         sdkVersion = "CRM 2016 (8.1.X)";
+                                        break;
+                                    default:
+                                        sdkVersion = "CRM 2016 (8.2.X)";
                                         break;
                                 }
                             }

@@ -20,7 +20,7 @@ namespace UserOptions
         {
             DefaultSdkVersion.SelectedIndex = DefaultSdkVersion.FindStringExact(!string.IsNullOrEmpty(DefaultCrmSdkVersion.DefaultCrmSdkVersion)
                                                   ? DefaultCrmSdkVersion.DefaultCrmSdkVersion
-                                                  : "CRM 2016 (8.0.X)");
+                                                  : "CRM 2016 (8.2.X)");
             DefaultKeyFileName.Text = DefaultProjectKeyFileName.DefaultProjectKeyFileName;
             DefaultWebBrowser.Checked = UseDefaultWebBrowser.UseDefaultWebBrowser;
             EnableSdkSearch.Checked = EnableCrmSdkSearch.EnableCrmSdkSearch;

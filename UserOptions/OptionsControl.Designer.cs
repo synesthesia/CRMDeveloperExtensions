@@ -50,7 +50,9 @@
             "CRM 2013 (6.1.X)",
             "CRM 2015 (7.0.X)",
             "CRM 2015 (7.1.X)",
-            "CRM 2016 (8.0.X)"});
+            "CRM 2016 (8.0.X)",
+            "CRM 2016 (8.1.X)",
+            "CRM 2016 (8.2.X)"});
             this.DefaultSdkVersion.Location = new System.Drawing.Point(151, 26);
             this.DefaultSdkVersion.Name = "DefaultSdkVersion";
             this.DefaultSdkVersion.Size = new System.Drawing.Size(163, 21);
