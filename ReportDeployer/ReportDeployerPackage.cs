@@ -2,10 +2,9 @@
 using CommonResources.Models;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using System;
 using System.ComponentModel.Design;
@@ -100,29 +99,26 @@ namespace ReportDeployer
             Guid reportId = GetMapping(projectItem, selectedConnection);
             if (reportId == Guid.Empty) return;
 
-            CrmConnection connection = CrmConnection.Parse(selectedConnection.ConnectionString);
+            var connection = new CrmServiceClient(selectedConnection.ConnectionString);
 
             UpdateAndPublishSingle(connection, projectItem, reportId);
         }
 
-        private void UpdateAndPublishSingle(CrmConnection connection, ProjectItem projectItem, Guid reportId)
+        private void UpdateAndPublishSingle(CrmServiceClient client, ProjectItem projectItem, Guid reportId)
         {
             try
             {
                 _dte.StatusBar.Text = "Deploying report...";
                 _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
-                    Entity report = new Entity("report") { Id = reportId };
-                    if (!File.Exists(projectItem.FileNames[1])) return;
+                Entity report = new Entity("report") { Id = reportId };
+                if (!File.Exists(projectItem.FileNames[1])) return;
 
-                    report["bodytext"] = File.ReadAllText(projectItem.FileNames[1]);
+                report["bodytext"] = File.ReadAllText(projectItem.FileNames[1]);
 
-                    UpdateRequest request = new UpdateRequest { Target = report };
-                    orgService.Execute(request);
-                    _logger.WriteToOutputWindow("Deployed Report", Logger.MessageType.Info);
-                }
+                UpdateRequest request = new UpdateRequest { Target = report };
+                client.OrganizationServiceProxy.Execute(request);
+                _logger.WriteToOutputWindow("Deployed Report", Logger.MessageType.Info);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

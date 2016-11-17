@@ -6,11 +6,10 @@ using Microsoft.Crm.Sdk.Messages;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using System;
 using System.Collections.Generic;
@@ -682,14 +681,14 @@ namespace WebResourceDeployer
         private async Task<bool> GetWebResources(string connString)
         {
             string projectName = ConnPane.SelectedProject.Name;
-            CrmConnection connection = CrmConnection.Parse(connString);
+            var client = new CrmServiceClient(connString);
 
             _dte.StatusBar.Text = "Connecting to CRM and getting web resources...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveWebResourcesFromCrm(connection));
+            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveWebResourcesFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -744,26 +743,24 @@ namespace WebResourceDeployer
             return true;
         }
 
-        private EntityCollection RetrieveWebResourcesFromCrm(CrmConnection connection)
+        private EntityCollection RetrieveWebResourcesFromCrm(CrmServiceClient client)
         {
             EntityCollection results = null;
             try
             {
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
-                    int pageNumber = 1;
-                    string pagingCookie = null;
-                    bool moreRecords = true;
+                int pageNumber = 1;
+                string pagingCookie = null;
+                bool moreRecords = true;
 
-                    while (moreRecords)
+                while (moreRecords)
+                {
+                    QueryExpression query = new QueryExpression
                     {
-                        QueryExpression query = new QueryExpression
+                        EntityName = "solutioncomponent",
+                        ColumnSet = new ColumnSet("solutionid"),
+                        Criteria = new FilterExpression
                         {
-                            EntityName = "solutioncomponent",
-                            ColumnSet = new ColumnSet("solutionid"),
-                            Criteria = new FilterExpression
-                            {
-                                Conditions =
+                            Conditions =
                                 {
                                     new ConditionExpression
                                     {
@@ -772,8 +769,8 @@ namespace WebResourceDeployer
                                         Values = { 61 }
                                     }
                                 }
-                            },
-                            LinkEntities =
+                        },
+                        LinkEntities =
                             {
                                 new LinkEntity
                                 {
@@ -799,32 +796,31 @@ namespace WebResourceDeployer
                                     }
                                 }
                             },
-                            PageInfo = new PagingInfo
-                            {
-                                PageNumber = pageNumber,
-                                PagingCookie = pagingCookie
-                            }
-                        };
-
-                        EntityCollection partialResults = orgService.RetrieveMultiple(query);
-
-                        if (partialResults.MoreRecords)
+                        PageInfo = new PagingInfo
                         {
-                            pageNumber++;
-                            pagingCookie = partialResults.PagingCookie;
+                            PageNumber = pageNumber,
+                            PagingCookie = pagingCookie
                         }
+                    };
 
-                        moreRecords = partialResults.MoreRecords;
+                    EntityCollection partialResults = client.OrganizationServiceProxy.RetrieveMultiple(query);
 
-                        if (partialResults.Entities == null) continue;
-
-                        if (results == null)
-                            results = new EntityCollection();
-                        results.Entities.AddRange(partialResults.Entities);
+                    if (partialResults.MoreRecords)
+                    {
+                        pageNumber++;
+                        pagingCookie = partialResults.PagingCookie;
                     }
 
-                    return results;
+                    moreRecords = partialResults.MoreRecords;
+
+                    if (partialResults.Entities == null) continue;
+
+                    if (results == null)
+                        results = new EntityCollection();
+                    results.Entities.AddRange(partialResults.Entities);
                 }
+
+                return results;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -1203,65 +1199,62 @@ namespace WebResourceDeployer
 
             try
             {
-                CrmConnection connection = CrmConnection.Parse(connString);
-                using (OrganizationService orgService = new OrganizationService(connection))
+                var client = new CrmServiceClient(connString);
+                Entity webResource = client.OrganizationServiceProxy.Retrieve("webresource", webResourceId,
+                    new ColumnSet("content", "name", "webresourcetype"));
+
+                _logger.WriteToOutputWindow("Downloaded Web Resource: " + webResource.Id, Logger.MessageType.Info);
+
+                Project project = GetProjectByName(projectName);
+                string[] name = webResource.GetAttributeValue<string>("name").Split('/');
+                folder = folder.Replace("/", "\\");
+                var path = Path.GetDirectoryName(project.FullName) +
+                           ((folder != "\\") ? folder : String.Empty) +
+                           "\\" + name[name.Length - 1];
+
+                //Add missing extension
+                if (string.IsNullOrEmpty(Path.GetExtension(path)))
                 {
-                    Entity webResource = orgService.Retrieve("webresource", webResourceId,
-                        new ColumnSet("content", "name", "webresourcetype"));
+                    string ext =
+                        GetWebResourceTypeNameByNumber(
+                            webResource.GetAttributeValue<OptionSetValue>("webresourcetype").Value.ToString())
+                            .ToLower();
+                    path += "." + ext;
+                }
 
-                    _logger.WriteToOutputWindow("Downloaded Web Resource: " + webResource.Id, Logger.MessageType.Info);
-
-                    Project project = GetProjectByName(projectName);
-                    string[] name = webResource.GetAttributeValue<string>("name").Split('/');
-                    folder = folder.Replace("/", "\\");
-                    var path = Path.GetDirectoryName(project.FullName) +
-                               ((folder != "\\") ? folder : String.Empty) +
-                               "\\" + name[name.Length - 1];
-
-                    //Add missing extension
-                    if (string.IsNullOrEmpty(Path.GetExtension(path)))
+                if (File.Exists(path))
+                {
+                    MessageBoxResult result = MessageBox.Show("OK to overwrite?", "Web Resource Download",
+                        MessageBoxButton.YesNo);
+                    if (result != MessageBoxResult.Yes)
                     {
-                        string ext =
-                            GetWebResourceTypeNameByNumber(
-                                webResource.GetAttributeValue<OptionSetValue>("webresourcetype").Value.ToString())
-                                .ToLower();
-                        path += "." + ext;
+                        _dte.StatusBar.Clear();
+                        return;
                     }
+                }
 
-                    if (File.Exists(path))
-                    {
-                        MessageBoxResult result = MessageBox.Show("OK to overwrite?", "Web Resource Download",
-                            MessageBoxButton.YesNo);
-                        if (result != MessageBoxResult.Yes)
-                        {
-                            _dte.StatusBar.Clear();
-                            return;
-                        }
-                    }
+                File.WriteAllBytes(path, DecodeWebResource(webResource.GetAttributeValue<string>("content")));
 
-                    File.WriteAllBytes(path, DecodeWebResource(webResource.GetAttributeValue<string>("content")));
+                ProjectItem projectItem = project.ProjectItems.AddFromFile(path);
 
-                    ProjectItem projectItem = project.ProjectItems.AddFromFile(path);
+                var fullname = projectItem.FileNames[1];
+                var projectPath = Path.GetDirectoryName(projectItem.ContainingProject.FullName);
+                if (projectPath == null) return;
 
-                    var fullname = projectItem.FileNames[1];
-                    var projectPath = Path.GetDirectoryName(projectItem.ContainingProject.FullName);
-                    if (projectPath == null) return;
+                var boundName = fullname.Replace(projectPath, String.Empty).Replace("\\", "/");
 
-                    var boundName = fullname.Replace(projectPath, String.Empty).Replace("\\", "/");
+                List<WebResourceItem> items = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
+                foreach (WebResourceItem item in items.Where(w => w.WebResourceId == webResourceId))
+                {
+                    item.BoundFile = boundName;
 
-                    List<WebResourceItem> items = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
-                    foreach (WebResourceItem item in items.Where(w => w.WebResourceId == webResourceId))
-                    {
-                        item.BoundFile = boundName;
+                    CheckBox publishAll =
+                        FindVisualChildren<CheckBox>(WebResourceGrid)
+                            .FirstOrDefault(t => t.Name == "PublishSelectAll");
+                    if (publishAll == null) return;
 
-                        CheckBox publishAll =
-                            FindVisualChildren<CheckBox>(WebResourceGrid)
-                                .FirstOrDefault(t => t.Name == "PublishSelectAll");
-                        if (publishAll == null) return;
-
-                        if (publishAll.IsChecked == true)
-                            item.Publish = true;
-                    }
+                    if (publishAll.IsChecked == true)
+                        item.Publish = true;
                 }
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
@@ -1334,7 +1327,7 @@ namespace WebResourceDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            CrmConnection connection = CrmConnection.Parse(connString);
+            var client = new CrmServiceClient(connString);
 
             LockMessage.Content = "Publishing...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -1343,9 +1336,9 @@ namespace WebResourceDeployer
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(ConnPane.SelectedConnection.Version);
             if (version.Major == 5 && version.Revision < 3200)
-                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(items, project, connection));
+                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(items, project, client));
             else
-                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishMultiple(items, project, connection));
+                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishMultiple(items, project, client));
 
             LockOverlay.Visibility = Visibility.Hidden;
 
@@ -1355,7 +1348,7 @@ namespace WebResourceDeployer
             _dte.StatusBar.Clear();
         }
 
-        private bool UpdateAndPublishMultiple(List<WebResourceItem> items, Project project, CrmConnection connection)
+        private bool UpdateAndPublishMultiple(List<WebResourceItem> items, Project project, CrmServiceClient client)
         {
             //CRM 2011 UR12+
             try
@@ -1416,8 +1409,9 @@ namespace WebResourceDeployer
                 emRequest.Requests = requests;
 
                 bool wasError = false;
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
+                var orgService = client.OrganizationServiceProxy;
+                //using (OrganizationService orgService = new OrganizationService(connection))
+                //{
                     _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
                     _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
@@ -1440,7 +1434,7 @@ namespace WebResourceDeployer
                         _dte.StatusBar.Clear();
                         return false;
                     }
-                }
+                //}
 
                 _logger.WriteToOutputWindow("Updated And Published Web Resource(s)", Logger.MessageType.Info);
 
@@ -1465,7 +1459,7 @@ namespace WebResourceDeployer
             }
         }
 
-        private bool UpdateAndPublishSingle(List<WebResourceItem> items, Project project, CrmConnection connection)
+        private bool UpdateAndPublishSingle(List<WebResourceItem> items, Project project, CrmServiceClient client)
         {
             //CRM 2011 < UR12
             _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
@@ -1474,8 +1468,9 @@ namespace WebResourceDeployer
             try
             {
                 string publishXml = "<importexportxml><webresources>";
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
+                var orgService = client.OrganizationServiceProxy;
+                //using (OrganizationService orgService = new OrganizationService(connection))
+                //{
                     foreach (var webResourceItem in items)
                     {
                         Entity webResource = new Entity("webresource") { Id = webResourceItem.WebResourceId };
@@ -1519,7 +1514,7 @@ namespace WebResourceDeployer
 
                     orgService.Execute(pubRequest);
                     _logger.WriteToOutputWindow("Published Web Resource(s)", Logger.MessageType.Info);
-                }
+                //}
 
                 return true;
             }
@@ -1681,48 +1676,45 @@ namespace WebResourceDeployer
                 string connString = ConnPane.SelectedConnection.ConnectionString;
                 if (string.IsNullOrEmpty(connString)) return;
 
-                CrmConnection connection = CrmConnection.Parse(connString);
-                using (OrganizationService orgService = new OrganizationService(connection))
+                var client = new CrmServiceClient(connString);
+                _dte.StatusBar.Text = "Downloading file for compare...";
+                _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
+
+                //Get the file from CRM and save in temp files
+                Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
+                Entity webResource = client.OrganizationServiceProxy.Retrieve("webresource", webResourceId,
+                    new ColumnSet("content", "name"));
+
+                _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Compare",
+                    Logger.MessageType.Info);
+
+                var tempFolder = Path.GetTempPath();
+                string fileName = Path.GetFileName(webResource.GetAttributeValue<string>("name"));
+                if (string.IsNullOrEmpty(fileName))
+                    fileName = Guid.NewGuid().ToString();
+                var tempFile = Path.Combine(tempFolder, fileName);
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+                File.WriteAllBytes(tempFile, DecodeWebResource(webResource.GetAttributeValue<string>("content")));
+
+                //Get the corresponding project item 
+                string projectName = ConnPane.SelectedProject.Name;
+                Project project = GetProjectByName(projectName);
+                var projectPath = Path.GetDirectoryName(project.FullName);
+                if (projectPath == null) return;
+
+                string boundFilePath = String.Empty;
+                List<WebResourceItem> webResources = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
+                foreach (WebResourceItem webResourceItem in webResources)
                 {
-                    _dte.StatusBar.Text = "Downloading file for compare...";
-                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
-
-                    //Get the file from CRM and save in temp files
-                    Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
-                    Entity webResource = orgService.Retrieve("webresource", webResourceId,
-                        new ColumnSet("content", "name"));
-
-                    _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Compare",
-                        Logger.MessageType.Info);
-
-                    var tempFolder = Path.GetTempPath();
-                    string fileName = Path.GetFileName(webResource.GetAttributeValue<string>("name"));
-                    if (string.IsNullOrEmpty(fileName))
-                        fileName = Guid.NewGuid().ToString();
-                    var tempFile = Path.Combine(tempFolder, fileName);
-                    if (File.Exists(tempFile))
-                        File.Delete(tempFile);
-                    File.WriteAllBytes(tempFile, DecodeWebResource(webResource.GetAttributeValue<string>("content")));
-
-                    //Get the corresponding project item 
-                    string projectName = ConnPane.SelectedProject.Name;
-                    Project project = GetProjectByName(projectName);
-                    var projectPath = Path.GetDirectoryName(project.FullName);
-                    if (projectPath == null) return;
-
-                    string boundFilePath = String.Empty;
-                    List<WebResourceItem> webResources = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
-                    foreach (WebResourceItem webResourceItem in webResources)
-                    {
-                        if (webResourceItem.WebResourceId == webResourceId)
-                            boundFilePath = webResourceItem.BoundFile;
-                    }
-
-                    _dte.ExecuteCommand("Tools.DiffFiles",
-                        string.Format("\"{0}\" \"{1}\" \"{2}\" \"{3}\"", tempFile,
-                            projectPath + boundFilePath.Replace("/", "\\"),
-                            webResource.GetAttributeValue<string>("name") + " - CRM", boundFilePath + " - Local"));
+                    if (webResourceItem.WebResourceId == webResourceId)
+                        boundFilePath = webResourceItem.BoundFile;
                 }
+
+                _dte.ExecuteCommand("Tools.DiffFiles",
+                    string.Format("\"{0}\" \"{1}\" \"{2}\" \"{3}\"", tempFile,
+                        projectPath + boundFilePath.Replace("/", "\\"),
+                        webResource.GetAttributeValue<string>("name") + " - CRM", boundFilePath + " - Local"));
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -1887,9 +1879,9 @@ namespace WebResourceDeployer
             LockOverlay.Visibility = Visibility.Visible;
 
             List<CrmSolution> solutions = new List<CrmSolution>();
-            CrmConnection connection = CrmConnection.Parse(ConnPane.SelectedConnection.ConnectionString);
+            var client = new CrmServiceClient(ConnPane.SelectedConnection.ConnectionString);
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveSolutionsFromCrm(connection));
+            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveSolutionsFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -1929,19 +1921,17 @@ namespace WebResourceDeployer
             return true;
         }
 
-        private EntityCollection RetrieveSolutionsFromCrm(CrmConnection connection)
+        private EntityCollection RetrieveSolutionsFromCrm(CrmServiceClient client)
         {
             try
             {
-                using (OrganizationService orgService = new OrganizationService(connection))
+                QueryExpression query = new QueryExpression
                 {
-                    QueryExpression query = new QueryExpression
+                    EntityName = "solution",
+                    ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename"),
+                    Criteria = new FilterExpression
                     {
-                        EntityName = "solution",
-                        ColumnSet = new ColumnSet("friendlyname", "solutionid", "uniquename"),
-                        Criteria = new FilterExpression
-                        {
-                            Conditions =
+                        Conditions =
                             {
                                 new ConditionExpression
                                 {
@@ -1950,8 +1940,8 @@ namespace WebResourceDeployer
                                     Values = {true}
                                 }
                             }
-                        },
-                        LinkEntities =
+                    },
+                    LinkEntities =
                         {
                             new LinkEntity
                             {
@@ -1963,8 +1953,8 @@ namespace WebResourceDeployer
                                 EntityAlias = "publisher"
                             }
                         },
-                        Distinct = true,
-                        Orders =
+                    Distinct = true,
+                    Orders =
                         {
                             new OrderExpression
                             {
@@ -1972,10 +1962,9 @@ namespace WebResourceDeployer
                                 OrderType = OrderType.Ascending
                             }
                         }
-                    };
+                };
 
-                    return orgService.RetrieveMultiple(query);
-                }
+                return client.OrganizationServiceProxy.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

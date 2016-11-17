@@ -3,10 +3,9 @@ using EnvDTE;
 using InfoWindow;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Xrm.Tooling.Connector;
 using NuGet.VisualStudio;
 using OutputLogger;
 using PluginDeployer.Models;
@@ -176,12 +175,12 @@ namespace PluginDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            CrmConnection connection = CrmConnection.Parse(connString);
+            var client = new CrmServiceClient(connString);
 
             LockMessage.Content = "Updating...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            bool success = await System.Threading.Tasks.Task.Run(() => UpdateCrmAssembly(assemblyItem, connection));
+            bool success = await System.Threading.Tasks.Task.Run(() => UpdateCrmAssembly(assemblyItem, client));
 
             LockOverlay.Visibility = Visibility.Hidden;
 
@@ -191,7 +190,7 @@ namespace PluginDeployer
             _dte.StatusBar.Clear();
         }
 
-        private bool UpdateCrmAssembly(AssemblyItem assemblyItem, CrmConnection connection)
+        private bool UpdateCrmAssembly(AssemblyItem assemblyItem, CrmServiceClient client)
         {
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
@@ -225,13 +224,11 @@ namespace PluginDeployer
                 }
 
                 //Update CRM
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
-                    Entity crmAssembly = new Entity("pluginassembly") { Id = assemblyItem.AssemblyId };
-                    crmAssembly["content"] = Convert.ToBase64String(File.ReadAllBytes(path));
 
-                    orgService.Update(crmAssembly);
-                }
+                Entity crmAssembly = new Entity("pluginassembly") { Id = assemblyItem.AssemblyId };
+                crmAssembly["content"] = Convert.ToBase64String(File.ReadAllBytes(path));
+
+                client.OrganizationServiceProxy.Update(crmAssembly);
 
                 //Update assembly name and version numbers
                 assemblyItem.Version = assemblyVersion;
@@ -352,14 +349,14 @@ namespace PluginDeployer
 
         private async Task<bool> GetPlugins(string connString)
         {
-            CrmConnection connection = CrmConnection.Parse(connString);
+            var client = new CrmServiceClient(connString);
 
             _dte.StatusBar.Text = "Connecting to CRM and getting assemblies...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveAssembliesFromCrm(connection));
+            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveAssembliesFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -416,12 +413,13 @@ namespace PluginDeployer
             return true;
         }
 
-        private EntityCollection RetrieveAssembliesFromCrm(CrmConnection connection)
+        private EntityCollection RetrieveAssembliesFromCrm(CrmServiceClient client)
         {
             try
             {
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
+                var orgService = client.OrganizationServiceProxy;
+                //using (OrganizationService orgService = new OrganizationService(connection))
+                //{
                     QueryExpression query = new QueryExpression
                     {
                         EntityName = "pluginassembly",
@@ -462,7 +460,7 @@ namespace PluginDeployer
                     };
 
                     return orgService.RetrieveMultiple(query);
-                }
+                //}
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

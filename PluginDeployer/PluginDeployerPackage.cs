@@ -2,9 +2,8 @@
 using CommonResources.Models;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using PluginDeployer.Models;
 using System;
@@ -102,12 +101,12 @@ namespace PluginDeployer
             Guid assemblyId = SelectedAssemblyItem.Item.AssemblyId;
             if (assemblyId == Guid.Empty) return;
 
-            CrmConnection connection = CrmConnection.Parse(selectedConnection.ConnectionString);
+            var client = new CrmServiceClient(selectedConnection.ConnectionString);
 
-            UpdateAndPublishSingle(connection, project);
+            UpdateAndPublishSingle(client, project);
         }
 
-        private void UpdateAndPublishSingle(CrmConnection connection, Project project)
+        private void UpdateAndPublishSingle(CrmServiceClient client, Project project)
         {
             try
             {
@@ -122,7 +121,7 @@ namespace PluginDeployer
                 solutionBuild.BuildProject(_dte.Solution.SolutionBuild.ActiveConfiguration.Name, project.UniqueName, true);
 
                 if (solutionBuild.LastBuildInfo > 0)
-                    return; 
+                    return;
 
                 //Make sure Major and Minor versions match
                 Version assemblyVersion = Version.Parse(project.Properties.Item("AssemblyVersion").Value.ToString());
@@ -142,13 +141,10 @@ namespace PluginDeployer
                 }
 
                 //Update CRM
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
-                    Entity crmAssembly = new Entity("pluginassembly") { Id = SelectedAssemblyItem.Item.AssemblyId };
-                    crmAssembly["content"] = Convert.ToBase64String(File.ReadAllBytes(path));
+                Entity crmAssembly = new Entity("pluginassembly") { Id = SelectedAssemblyItem.Item.AssemblyId };
+                crmAssembly["content"] = Convert.ToBase64String(File.ReadAllBytes(path));
 
-                    orgService.Update(crmAssembly);
-                }
+                client.OrganizationServiceProxy.Update(crmAssembly);
 
                 //Update assembly name and version numbers
                 SelectedAssemblyItem.Item.Version = assemblyVersion;

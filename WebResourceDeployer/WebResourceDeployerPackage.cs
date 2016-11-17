@@ -3,10 +3,9 @@ using CommonResources.Models;
 using EnvDTE;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using System;
 using System.ComponentModel.Design;
@@ -126,17 +125,17 @@ namespace WebResourceDeployer
             Guid webResourceId = GetMapping(projectItem, selectedConnection);
             if (webResourceId == Guid.Empty) return;
 
-            CrmConnection connection = CrmConnection.Parse(selectedConnection.ConnectionString);
+            var client = new CrmServiceClient(selectedConnection.ConnectionString);
 
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(selectedConnection.Version);
             if (version.Major == 5 && version.Revision < 3200)
-                UpdateAndPublishSingle(connection, projectItem, webResourceId);
+                UpdateAndPublishSingle(client, projectItem, webResourceId);
             else
-                UpdateAndPublishMultiple(connection, projectItem, webResourceId);
+                UpdateAndPublishMultiple(client, projectItem, webResourceId);
         }
 
-        private void UpdateAndPublishMultiple(CrmConnection connection, ProjectItem projectItem, Guid webResourceId)
+        private void UpdateAndPublishMultiple(CrmServiceClient client, ProjectItem projectItem, Guid webResourceId)
         {
             try
             {
@@ -171,29 +170,26 @@ namespace WebResourceDeployer
                 requests.Add(pubRequest);
                 emRequest.Requests = requests;
 
-                using (OrganizationService orgService = new OrganizationService(connection))
+                _dte.StatusBar.Text = "Updating & publishing web resource...";
+                _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+
+                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)client.OrganizationServiceProxy.Execute(emRequest);
+
+                bool wasError = false;
+                foreach (var responseItem in emResponse.Responses)
                 {
-                    _dte.StatusBar.Text = "Updating & publishing web resource...";
-                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                    if (responseItem.Fault == null) continue;
 
-                    ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)orgService.Execute(emRequest);
-
-                    bool wasError = false;
-                    foreach (var responseItem in emResponse.Responses)
-                    {
-                        if (responseItem.Fault == null) continue;
-
-                        _logger.WriteToOutputWindow(
-                            "Error Updating And Publishing Web Resources To CRM: " + responseItem.Fault.Message + Environment.NewLine + responseItem.Fault.TraceText,
-                            Logger.MessageType.Error);
-                        wasError = true;
-                    }
-
-                    if (wasError)
-                        MessageBox.Show("Error Updating And Publishing Web Resources To CRM. See the Output Window for additional details.");
-                    else
-                        _logger.WriteToOutputWindow("Updated And Published Web Resource", Logger.MessageType.Info);
+                    _logger.WriteToOutputWindow(
+                        "Error Updating And Publishing Web Resources To CRM: " + responseItem.Fault.Message + Environment.NewLine + responseItem.Fault.TraceText,
+                        Logger.MessageType.Error);
+                    wasError = true;
                 }
+
+                if (wasError)
+                    MessageBox.Show("Error Updating And Publishing Web Resources To CRM. See the Output Window for additional details.");
+                else
+                    _logger.WriteToOutputWindow("Updated And Published Web Resource", Logger.MessageType.Info);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -208,36 +204,32 @@ namespace WebResourceDeployer
             _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
         }
 
-        private void UpdateAndPublishSingle(CrmConnection connection, ProjectItem projectItem, Guid webResourceId)
+        private void UpdateAndPublishSingle(CrmServiceClient client, ProjectItem projectItem, Guid webResourceId)
         {
             try
             {
                 _dte.StatusBar.Text = "Updating & publishing web resource...";
                 _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                string publishXml = "<importexportxml><webresources>";
+                Entity webResource = new Entity("webresource") { Id = webResourceId };
 
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
-                    string publishXml = "<importexportxml><webresources>";
-                    Entity webResource = new Entity("webresource") { Id = webResourceId };
+                string extension = Path.GetExtension(projectItem.FileNames[1]);
+                string content = extension != null && (extension.ToUpper() != ".TS")
+                    ? File.ReadAllText(projectItem.FileNames[1])
+                    : File.ReadAllText(Path.ChangeExtension(projectItem.FileNames[1], ".js"));
+                webResource["content"] = EncodeString(content);
 
-                    string extension = Path.GetExtension(projectItem.FileNames[1]);
-                    string content = extension != null && (extension.ToUpper() != ".TS")
-                        ? File.ReadAllText(projectItem.FileNames[1])
-                        : File.ReadAllText(Path.ChangeExtension(projectItem.FileNames[1], ".js"));
-                    webResource["content"] = EncodeString(content);
+                UpdateRequest request = new UpdateRequest { Target = webResource };
+                client.OrganizationServiceProxy.Execute(request);
+                _logger.WriteToOutputWindow("Uploaded Web Resource", Logger.MessageType.Info);
 
-                    UpdateRequest request = new UpdateRequest { Target = webResource };
-                    orgService.Execute(request);
-                    _logger.WriteToOutputWindow("Uploaded Web Resource", Logger.MessageType.Info);
+                publishXml += "<webresource>{" + webResource.Id + "}</webresource>";
+                publishXml += "</webresources></importexportxml>";
 
-                    publishXml += "<webresource>{" + webResource.Id + "}</webresource>";
-                    publishXml += "</webresources></importexportxml>";
+                PublishXmlRequest pubRequest = new PublishXmlRequest { ParameterXml = publishXml };
 
-                    PublishXmlRequest pubRequest = new PublishXmlRequest { ParameterXml = publishXml };
-
-                    orgService.Execute(pubRequest);
-                    _logger.WriteToOutputWindow("Published Web Resource", Logger.MessageType.Info);
-                }
+                client.OrganizationServiceProxy.Execute(pubRequest);
+                _logger.WriteToOutputWindow("Published Web Resource", Logger.MessageType.Info);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

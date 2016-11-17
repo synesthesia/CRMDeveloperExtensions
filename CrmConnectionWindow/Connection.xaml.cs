@@ -1,9 +1,9 @@
 ﻿using Microsoft.Crm.Sdk.Messages;
-using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Tooling.Connector;
 using OutputLogger;
 using System;
+using System.Net;
 using System.ServiceModel;
 using System.Text;
 using System.Windows;
@@ -140,14 +140,17 @@ namespace CrmConnectionWindow
             {
                 case "Online using Office 365":
                     sb.AppendFormat("Username={0};Password='{1}';", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
+                    sb.Append("AuthType=Office365");
                     break;
                 case "On-premises with provided user credentials":
                 case "On-premises (IFD) with claims":
                     if (!string.IsNullOrEmpty(Domain.Text))
                         sb.AppendFormat("Domain={0};", Domain.Text.Trim());
                     sb.AppendFormat("Username={0};Password='{1}';", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
+                    sb.Append("AuthType=IFD;");
                     break;
                 case "On-premises using Windows integrated security":
+                    sb.Append("AuthType=AD;");
                     break;
             }
 
@@ -158,21 +161,19 @@ namespace CrmConnectionWindow
         {
             try
             {
-                CrmConnection connection = CrmConnection.Parse(connectionString);
-                using (OrganizationService orgService = new OrganizationService(connection))
-                {
-                    WhoAmIRequest wRequest = new WhoAmIRequest();
-                    WhoAmIResponse wResponse = (WhoAmIResponse)orgService.Execute(wRequest);
-                    _logger.WriteToOutputWindow("Connected To CRM Organization: " + wResponse.OrganizationId, Logger.MessageType.Info);
+                var client = new CrmServiceClient(connectionString);
 
-                    OrgId = wResponse.OrganizationId.ToString();
+                WhoAmIRequest wRequest = new WhoAmIRequest();
+                WhoAmIResponse wResponse = (WhoAmIResponse)client.OrganizationServiceProxy.Execute(wRequest);
+                _logger.WriteToOutputWindow("Connected To CRM Organization: " + wResponse.OrganizationId, Logger.MessageType.Info);
 
-                    RetrieveVersionRequest vRequest = new RetrieveVersionRequest();
-                    RetrieveVersionResponse vResponse = (RetrieveVersionResponse)orgService.Execute(vRequest);
-                    _logger.WriteToOutputWindow("Version: " + vResponse.Version, Logger.MessageType.Info);
+                OrgId = wResponse.OrganizationId.ToString();
 
-                    return vResponse;
-                }
+                RetrieveVersionRequest vRequest = new RetrieveVersionRequest();
+                RetrieveVersionResponse vResponse = (RetrieveVersionResponse)client.OrganizationServiceProxy.Execute(vRequest);
+                _logger.WriteToOutputWindow("Version: " + vResponse.Version, Logger.MessageType.Info);
+
+                return vResponse;
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

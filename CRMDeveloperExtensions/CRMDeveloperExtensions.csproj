@@ -23,6 +23,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -41,7 +42,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CRMDeveloperExtensions</RootNamespace>
     <AssemblyName>CRMDeveloperExtensions</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <!-- <GeneratePkgDefFile>false</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
@@ -498,6 +499,22 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonResources\CommonResources.csproj">
+      <Project>{4f82019c-685b-4349-ace2-091ad63004b9}</Project>
+      <Name>CommonResources</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrmConnectionWindow\CrmConnectionWindow.csproj">
+      <Project>{ccbcccd5-4ade-4b52-b77b-6c453dc30e1d}</Project>
+      <Name>CrmConnectionWindow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\InfoWindow\InfoWindow.csproj">
+      <Project>{aef6906b-3a68-4614-8790-0d6099b91462}</Project>
+      <Name>InfoWindow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OutputLogger\OutputLogger.csproj">
+      <Project>{062e2258-9817-4834-a946-65cb2b57eab3}</Project>
+      <Name>OutputLogger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PluginDeployer\PluginDeployer.csproj">
       <Project>{910BCD37-04C5-480F-8A22-D7518C42C3BE}</Project>
       <Name>PluginDeployer</Name>
