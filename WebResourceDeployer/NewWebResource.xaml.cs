@@ -23,9 +23,7 @@ namespace WebResourceDeployer
 {
     public partial class NewWebResource
     {
-        private static IOrganizationService _orgService;
         private readonly CrmConn _connection;
-        private readonly Project _project;
         private readonly Logger _logger;
 
         public Guid NewId;
@@ -42,7 +40,6 @@ namespace WebResourceDeployer
             _logger = new Logger();
 
             _connection = connection;
-            _project = project;
 
             bool result = GetSolutions(selectedSolutionId);
 

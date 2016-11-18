@@ -30,7 +30,6 @@ namespace SolutionPackager
         private readonly DTE _dte;
         private readonly DTE2 _dte2;
         private readonly Logger _logger;
-        private static IOrganizationService _orgService;
 
         public SolutionList()
         {
