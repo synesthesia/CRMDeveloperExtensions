@@ -782,19 +782,7 @@ namespace WebResourceDeployer
                                     LinkFromEntityName = "solutioncomponent",
                                     LinkFromAttributeName = "objectid",
                                     LinkToEntityName = "webresource",
-                                    LinkToAttributeName = "webresourceid",
-                                    LinkCriteria = new FilterExpression
-                                    {
-                                        Conditions =
-                                        {
-                                            new ConditionExpression
-                                            {
-                                                AttributeName = "iscustomizable",
-                                                Operator = ConditionOperator.Equal,
-                                                Values = {true}
-                                            }
-                                        }
-                                    }
+                                    LinkToAttributeName = "webresourceid"
                                 }
                             },
                         PageInfo = new PagingInfo
