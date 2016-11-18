@@ -30,6 +30,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
 using WebResourceDeployer.Models;
+using Task = System.Threading.Tasks.Task;
 using Window = EnvDTE.Window;
 
 namespace WebResourceDeployer
@@ -688,7 +689,7 @@ namespace WebResourceDeployer
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveWebResourcesFromCrm(client));
+            EntityCollection results = await Task.Run(() => RetrieveWebResourcesFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -1336,9 +1337,9 @@ namespace WebResourceDeployer
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(ConnPane.SelectedConnection.Version);
             if (version.Major == 5 && version.Revision < 3200)
-                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(items, project, client));
+                success = await Task.Run(() => UpdateAndPublishSingle(items, project, client));
             else
-                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishMultiple(items, project, client));
+                success = await Task.Run(() => UpdateAndPublishMultiple(items, project, client));
 
             LockOverlay.Visibility = Visibility.Hidden;
 
@@ -1412,28 +1413,28 @@ namespace WebResourceDeployer
                 var orgService = client.OrganizationServiceProxy;
                 //using (OrganizationService orgService = new OrganizationService(connection))
                 //{
-                    _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
-                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
+                _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
-                    ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)orgService.Execute(emRequest);
+                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)orgService.Execute(emRequest);
 
-                    foreach (var responseItem in emResponse.Responses)
-                    {
-                        if (responseItem.Fault == null) continue;
+                foreach (var responseItem in emResponse.Responses)
+                {
+                    if (responseItem.Fault == null) continue;
 
-                        _logger.WriteToOutputWindow(
-                            "Error Updating And Publishing Web Resource(s) To CRM: " + responseItem.Fault.Message +
-                            Environment.NewLine + responseItem.Fault.TraceText, Logger.MessageType.Error);
-                        wasError = true;
-                    }
+                    _logger.WriteToOutputWindow(
+                        "Error Updating And Publishing Web Resource(s) To CRM: " + responseItem.Fault.Message +
+                        Environment.NewLine + responseItem.Fault.TraceText, Logger.MessageType.Error);
+                    wasError = true;
+                }
 
-                    if (wasError)
-                    {
-                        MessageBox.Show(
-                            "Error Updating And Publishing Web Resource(s) To CRM. See the Output Window for additional details.");
-                        _dte.StatusBar.Clear();
-                        return false;
-                    }
+                if (wasError)
+                {
+                    MessageBox.Show(
+                        "Error Updating And Publishing Web Resource(s) To CRM. See the Output Window for additional details.");
+                    _dte.StatusBar.Clear();
+                    return false;
+                }
                 //}
 
                 _logger.WriteToOutputWindow("Updated And Published Web Resource(s)", Logger.MessageType.Info);
@@ -1471,49 +1472,49 @@ namespace WebResourceDeployer
                 var orgService = client.OrganizationServiceProxy;
                 //using (OrganizationService orgService = new OrganizationService(connection))
                 //{
-                    foreach (var webResourceItem in items)
+                foreach (var webResourceItem in items)
+                {
+                    Entity webResource = new Entity("webresource") { Id = webResourceItem.WebResourceId };
+
+                    string filePath = Path.GetDirectoryName(project.FullName) +
+                                      webResourceItem.BoundFile.Replace("/", "\\");
+                    if (!File.Exists(filePath)) continue;
+
+                    string extension = Path.GetExtension(filePath);
+
+                    List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
+                    string content;
+                    //TypeScript
+                    if ((extension.ToUpper() == ".TS"))
                     {
-                        Entity webResource = new Entity("webresource") { Id = webResourceItem.WebResourceId };
-
-                        string filePath = Path.GetDirectoryName(project.FullName) +
-                                          webResourceItem.BoundFile.Replace("/", "\\");
-                        if (!File.Exists(filePath)) continue;
-
-                        string extension = Path.GetExtension(filePath);
-
-                        List<string> imageExs = new List<string>() { ".ICO", ".PNG", ".GIF", ".JPG" };
-                        string content;
-                        //TypeScript
-                        if ((extension.ToUpper() == ".TS"))
-                        {
-                            content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
-                            webResource["content"] = EncodeString(content);
-                        }
-                        //Images
-                        else if (imageExs.Any(s => extension.ToUpper().EndsWith(s)))
-                        {
-                            content = EncodedImage(filePath, extension);
-                            webResource["content"] = content;
-                        }
-                        //Everything else
-                        else
-                        {
-                            content = File.ReadAllText(filePath);
-                            webResource["content"] = EncodeString(content);
-                        }
-
-                        UpdateRequest request = new UpdateRequest { Target = webResource };
-                        orgService.Execute(request);
-                        _logger.WriteToOutputWindow("Uploaded Web Resource", Logger.MessageType.Info);
-
-                        publishXml += "<webresource>{" + webResource.Id + "}</webresource>";
+                        content = File.ReadAllText(Path.ChangeExtension(filePath, ".js"));
+                        webResource["content"] = EncodeString(content);
                     }
-                    publishXml += "</webresources></importexportxml>";
+                    //Images
+                    else if (imageExs.Any(s => extension.ToUpper().EndsWith(s)))
+                    {
+                        content = EncodedImage(filePath, extension);
+                        webResource["content"] = content;
+                    }
+                    //Everything else
+                    else
+                    {
+                        content = File.ReadAllText(filePath);
+                        webResource["content"] = EncodeString(content);
+                    }
 
-                    PublishXmlRequest pubRequest = new PublishXmlRequest { ParameterXml = publishXml };
+                    UpdateRequest request = new UpdateRequest { Target = webResource };
+                    orgService.Execute(request);
+                    _logger.WriteToOutputWindow("Uploaded Web Resource", Logger.MessageType.Info);
 
-                    orgService.Execute(pubRequest);
-                    _logger.WriteToOutputWindow("Published Web Resource(s)", Logger.MessageType.Info);
+                    publishXml += "<webresource>{" + webResource.Id + "}</webresource>";
+                }
+                publishXml += "</webresources></importexportxml>";
+
+                PublishXmlRequest pubRequest = new PublishXmlRequest { ParameterXml = publishXml };
+
+                orgService.Execute(pubRequest);
+                _logger.WriteToOutputWindow("Published Web Resource(s)", Logger.MessageType.Info);
                 //}
 
                 return true;
@@ -1881,7 +1882,7 @@ namespace WebResourceDeployer
             List<CrmSolution> solutions = new List<CrmSolution>();
             var client = new CrmServiceClient(ConnPane.SelectedConnection.ConnectionString);
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveSolutionsFromCrm(client));
+            EntityCollection results = await Task.Run(() => RetrieveSolutionsFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -2025,6 +2026,79 @@ namespace WebResourceDeployer
             FilePopup.Placement = PlacementMode.Relative;
             FilePopup.IsOpen = true;
             ProjectFileList.IsDropDownOpen = true;
+        }
+
+        private async void DeleteWebResource_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (ConnPane.SelectedConnection == null) return;
+                string connString = ConnPane.SelectedConnection.ConnectionString;
+                if (string.IsNullOrEmpty(connString)) return;
+
+                _dte.StatusBar.Text = "Deleting web resource...";
+                _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
+                LockMessage.Content = "Deleting...";
+                LockOverlay.Visibility = Visibility.Visible;
+
+                Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
+
+                string result = await Task.Run(() => DeleteWebResource(webResourceId, connString));
+                if (!string.IsNullOrEmpty(result))
+                {
+                    MessageBox.Show(result);
+                    return;
+                }
+
+                List<WebResourceItem> webResources = (List<WebResourceItem>)WebResourceGrid.ItemsSource;
+                if (webResources == null) return;
+
+                webResources.RemoveAll(w => w.WebResourceId == webResourceId);
+                webResources = HandleMappings(webResources);
+                WebResourceGrid.ItemsSource = webResources;
+
+                FilterWebResources();
+
+                _logger.WriteToOutputWindow("Deleted Web Resource " + webResourceId,
+                       Logger.MessageType.Info);
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteToOutputWindow(
+                    "Error Performing Delete Operation: " + ex.Message + Environment.NewLine + ex.StackTrace,
+                    Logger.MessageType.Error);
+            }
+            finally
+            {
+                _dte.StatusBar.Clear();
+                _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
+                LockOverlay.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private string DeleteWebResource(Guid webResourceId, string connString)
+        {
+            try
+            {
+                var client = new CrmServiceClient(connString);
+                client.Delete("webresource", webResourceId);
+
+                return null;
+            }
+            catch (FaultException<OrganizationServiceFault> crmEx)
+            {
+                _logger.WriteToOutputWindow(
+                    "Error Performing Delete Operation: " + crmEx.Message + Environment.NewLine + crmEx.StackTrace,
+                    Logger.MessageType.Error);
+                return crmEx.Message;
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteToOutputWindow(
+                    "Error Performing Delete Operation: " + ex.Message + Environment.NewLine + ex.StackTrace,
+                    Logger.MessageType.Error);
+                return ex.Message;
+            }
         }
     }
 }

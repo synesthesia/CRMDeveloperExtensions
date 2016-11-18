@@ -373,7 +373,7 @@ namespace WebResourceDeployer
                 else
                 {
                     DisplayName.Text = DisplayName.Text.Substring(0, DisplayName.Text.Length - 3) + ".js";
-                    Name.Text = fileName.Substring(0, fileName.Length - 3) + ".js"; ;
+                    Name.Text = fileName.Substring(0, fileName.Length - 3) + ".js";
                 }
 
                 if (string.IsNullOrEmpty(ex))
