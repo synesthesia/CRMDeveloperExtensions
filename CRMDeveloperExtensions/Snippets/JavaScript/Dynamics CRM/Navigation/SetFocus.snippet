@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Set Navigation Focu (5.0+)</Title>
-      <Shortcut>CRMNavigationSetFocus</Shortcut>
-      <Description>Sets the focus on the item.</Description>
+      <Shortcut>XrmNavigationItemsSetFocus</Shortcut>
+      <Description>5.0+ Sets the focus on the item.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/gg309606.aspx#BKMK_setFocus</HelpUrl>
         <Author>Jason Lattimer</Author>
       <Keywords>
@@ -22,7 +22,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[navigation.setFocus()$end$]]>
+        <![CDATA[Xrm.Page.ui.navigation.items.get(navigationindex|"navigationname").setFocus()$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

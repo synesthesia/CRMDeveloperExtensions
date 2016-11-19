@@ -3,19 +3,9 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Add OnChange (5.0+)</Title>
-      <Shortcut>CRMAddOnChange</Shortcut>
+      <Shortcut>XrmAttributeAddOnChange</Shortcut>
       <Description>
-        Sets a function to be called when the attribute value is changed.
-        Example:
-        
-        function addMessageToOnChange()
-        {
-            Xrm.Page.data.entity.attributes.get(0).addOnChange(displayOrgName);
-        }
-        function displayOrgName(execContext)
-        {
-            Xrm.Utility.alertDialog(execContext.getContext().getOrgUniqueName());
-        }
+        5.0+ Sets a function to be called when the attribute value is changed.
       </Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/gg334409.aspx#BKMK_addOnChange</HelpUrl>
       <Author>Jason Lattimer</Author>

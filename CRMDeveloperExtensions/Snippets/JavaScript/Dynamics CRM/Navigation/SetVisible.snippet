@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Set Navigation Visible (5.0+)</Title>
-      <Shortcut>CRMNavigationSetVisible</Shortcut>
-      <Description>Sets a value that indicates whether the item is visible.</Description>
+      <Shortcut>XrmNavigationItemsSetVisible</Shortcut>
+      <Description>5.0+ Sets a value that indicates whether the item is visible.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/gg309606.aspx#BKMK_setVisible</HelpUrl>
         <Author>Jason Lattimer</Author>
       <Keywords>
@@ -22,7 +22,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[navigation.setVisible(true|false)$end$]]>
+        <![CDATA[Xrm.Page.ui.navigation.items.get(navigationindex|"navigationname").setVisible(true|false)$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

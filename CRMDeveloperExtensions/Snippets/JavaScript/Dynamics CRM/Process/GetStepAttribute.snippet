@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Get Step Attribute (7.0+)</Title>
+      <Shortcut>XrmProcessGetStagesGetStepsGetAttribute</Shortcut>
+      <Description>7.0+ Returns the logical name of the attribute associated to the step.</Description>
+      <HelpUrl>https://msdn.microsoft.com/en-us/library/6b79eb8c-8293-4d3a-a3a7-ea35157cde37#BKMK_Step</HelpUrl>
+      <Author>Jason Lattimer</Author>
+      <Keywords>
+        <Keyword>Dynamics CRM</Keyword>
+        <Keyword>CRM</Keyword>
+        <Keyword>Process</Keyword>
+        <Keyword>2015</Keyword>
+        <Keyword>2016</Keyword>
+      </Keywords>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Code Language="JavaScript">
+        <![CDATA[Xrm.Page.data.process.getActiveProcess().getStages().get(stageindex).getSteps().get(stepindex).getAttribute()$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

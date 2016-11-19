@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Get Sections (7.0+)</Title>
-      <Shortcut>CRMGetStages</Shortcut>
-      <Description>Returns an collection of stages in the process.</Description>
+      <Shortcut>XrmProcessGetStages</Shortcut>
+      <Description>7.0+ Returns an collection of stages in the process.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/dn817878.aspx#BKMK_Process</HelpUrl>
       <Author>Jason Lattimer</Author>
       <Keywords>
@@ -22,7 +22,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[process.getStages()$end$]]>
+        <![CDATA[Xrm.Page.data.process.getActiveProcess().getStages()$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Get Navigation Visible (5.0+)</Title>
-      <Shortcut>CRMNavigationGetVisible</Shortcut>
-      <Description>Returns a value that indicates whether the item is currently visible.</Description>
+      <Shortcut>XrmNavigationItemsGetVisible</Shortcut>
+      <Description>5.0+ Returns a value that indicates whether the item is currently visible.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/gg309606.aspx#BKMK_getVisible</HelpUrl>
         <Author>Jason Lattimer</Author>
       <Keywords>
@@ -22,7 +22,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[navigation.getVisible()$end$]]>
+        <![CDATA[Xrm.Page.ui.navigation.items.get(navigationindex|"navigationname").getVisible()$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

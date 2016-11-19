@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Get Process Id (7.0+)</Title>
-      <Shortcut>CRMProcessGetId</Shortcut>
-      <Description>Returns the unique identifier of the process.</Description>
+      <Shortcut>XrmProcessGetId</Shortcut>
+      <Description>7.0+ Returns the unique identifier of the process.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/dn817878.aspx#BKMK_Process</HelpUrl>
       <Author>Jason Lattimer</Author>
       <Keywords>
@@ -20,7 +20,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[process.getId()$end$]]>
+        <![CDATA[Xrm.Page.data.process.getActiveProcess().getId()$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Update Offline Record (8.2+)</Title>
+      <Shortcut>XrmMobileUpdateOfflineRecord</Shortcut>
+      <Description>8.2+ Updates an entity record in Dynamics 365 mobile clients while working in the offline mode.</Description>
+      <HelpUrl>https://msdn.microsoft.com/en-us/library/mt787123.aspx#BKMK_updateRecord</HelpUrl>
+      <Author>Jason Lattimer</Author>
+      <Keywords>
+        <Keyword>Dynamics CRM</Keyword>
+        <Keyword>CRM</Keyword>
+        <Keyword>Mobile</Keyword>
+        <Keyword>2016</Keyword>
+      </Keywords>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Code Language="JavaScript">
+        <![CDATA[var entity = {};
+        entity.name = "test";
+        
+        Xrm.Mobile.offline.updateRecord("entityName", "id", entity).then([successFunction], [errorFunction]);$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Set Navigation Label (5.0+)</Title>
-      <Shortcut>CRMNavigationSetLabel</Shortcut>
-      <Description>Sets the label for the item.</Description>
+      <Shortcut>XrmNavigationItemsSetLabel</Shortcut>
+      <Description>5.0+ Sets the label for the item.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/gg309606.aspx#BKMK_setLabel</HelpUrl>
         <Author>Jason Lattimer</Author>
       <Keywords>
@@ -22,7 +22,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[navigation.setLabel("value")$end$]]>
+        <![CDATA[Xrm.Page.ui.navigation.items.get(navigationindex|"navigationname").setLabel("value")$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

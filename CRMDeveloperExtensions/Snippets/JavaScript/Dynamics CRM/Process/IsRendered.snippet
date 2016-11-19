@@ -2,9 +2,9 @@
 <CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
   <CodeSnippet Format="1.0.0">
     <Header>
-      <Title>Is Rendered(7.0+)</Title>
-      <Shortcut>CRMProcessIsRendered</Shortcut>
-      <Description>Returns true if the process is rendered, false if not.</Description>
+      <Title>Is Rendered (7.0+)</Title>
+      <Shortcut>XrmProcessIsRendered</Shortcut>
+      <Description>7.0+ Returns true if the process is rendered, false if not.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/dn817878.aspx#BKMK_Process</HelpUrl>
       <Author>Jason Lattimer</Author>
       <Keywords>
@@ -20,7 +20,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[process.isRendered()$end$]]>
+        <![CDATA[Xrm.Page.data.process.getActiveProcess().isRendered()$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>

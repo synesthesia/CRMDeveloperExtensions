@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Add OnKeyPress (8.0+)</Title>
+      <Shortcut>XrmControlsAddOnKeyPress</Shortcut>
+      <Description>8.0+ Use this to add a function as an event handler for the keypress event so that the function is called when you type a character in the specific text or number field.</Description>
+      <HelpUrl>https://msdn.microsoft.com/en-us/library/gg334266.aspx#BKMK_addOnKeyPress</HelpUrl>
+      <Author>Jason Lattimer</Author>
+      <Keywords>
+        <Keyword>Dynamics CRM</Keyword>
+        <Keyword>CRM</Keyword>
+        <Keyword>Controls</Keyword>
+        <Keyword>2016</Keyword>
+      </Keywords>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Code Language="JavaScript">
+        <![CDATA[Xrm.Page.getControl("controlname").addOnKeyPress(functionName)$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

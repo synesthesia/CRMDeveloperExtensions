@@ -3,8 +3,8 @@
   <CodeSnippet Format="1.0.0">
     <Header>
       <Title>Get Process Name (7.0+)</Title>
-      <Shortcut>CRMProcessGetName</Shortcut>
-      <Description>Returns the name of the process.</Description>
+      <Shortcut>XrmProcessGetName</Shortcut>
+      <Description>7.0+ Returns the name of the process.</Description>
       <HelpUrl>https://msdn.microsoft.com/en-us/library/dn817878.aspx#BKMK_Process</HelpUrl>
       <Author>Jason Lattimer</Author>
       <Keywords>
@@ -20,7 +20,7 @@
     </Header>
     <Snippet>
       <Code Language="JavaScript">
-        <![CDATA[process.getName()$end$]]>
+        <![CDATA[Xrm.Page.data.process.getActiveProcess().getName()$end$]]>
       </Code>
     </Snippet>
   </CodeSnippet>
