@@ -54,7 +54,7 @@
     </CommandPlacement>
     <CommandPlacement guid="GuidEditorCommandsCmdSet" id="EditorGroup" priority="0xFFFF">
       <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_HTML" />
-    </CommandPlacement>   
+    </CommandPlacement>
     <CommandPlacement guid="GuidEditorCommandsCmdSet" id="EditorGroup" priority="0xFFFF">
       <Parent guid="HtmlEditorWindows2" id="IDMX_HTM_SOURCE_HTML"/>
     </CommandPlacement>
@@ -69,12 +69,12 @@
 
     <GuidSymbol name ="GuidItemMenuCommandsCmdSet" value="{44EC1EE2-36CB-4D17-B951-896254C73D35}">
       <IDSymbol name="ItemMenuGroup" value="0x1020" />
-=      <IDSymbol name="CmdidWebResourceDeployerPublish" value="0x0100" />
+      <IDSymbol name="CmdidWebResourceDeployerPublish" value="0x0100" />
     </GuidSymbol>
 
     <GuidSymbol name ="GuidEditorCommandsCmdSet" value="{D3593638-DF55-428F-9570-4FAA63E7CB3A}">
       <IDSymbol name="EditorGroup" value="0x1020" />
-=      <IDSymbol name="CmdidWebResourceEditorPublish" value="0x0100" />
+      <IDSymbol name="CmdidWebResourceEditorPublish" value="0x0100" />
     </GuidSymbol>
 
     <GuidSymbol name="HtmlEditorWindows" value="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}">
@@ -85,7 +85,7 @@
     <GuidSymbol name="CssEditorWindows" value="{64DA400E-B4AD-4D67-AA92-4B7ACB01ECD5}">
       <IDSymbol name="IDMX_HTM_SOURCE_CSS" value="0x002" />
     </GuidSymbol>
-      
+
     <GuidSymbol name="HtmlEditorWindows2" value="{78F03954-2FB8-4087-8CE7-59D71710B3BB}">
       <IDSymbol name="IDMX_HTM_SOURCE_HTML" value="1"/>
     </GuidSymbol>
