@@ -376,7 +376,7 @@ namespace TemplateWizards
 
                 if (_isUnitTest != "True") return;
 
-                InstallPackage(installer, project, "Moq", "4.2.1502.0911");
+                InstallPackage(installer, project, "Moq", "4.5.28");
                 if (_isNunit)
                 {
                     InstallPackage(installer, project, "NUnitTestAdapter.WithFramework", "2.0.0");
