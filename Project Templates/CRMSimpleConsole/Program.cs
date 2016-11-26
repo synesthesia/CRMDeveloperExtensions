@@ -1,4 +1,37 @@
-﻿using System;
+﻿$if$ ($useXrmToolingClientUsing$ == 1)using Microsoft.Crm.Sdk.Messages;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Tooling.Connector;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+
+namespace CRMSimpleConsole
+{
+	class Program
+	{
+		private static IOrganizationService _orgService;
+
+		public static void Main(string[] args)
+		{
+			try
+			{
+				CrmServiceClient crmService = new 
+					CrmServiceClient(ConfigurationManager.ConnectionStrings["CRMConnectionString"].ConnectionString);				
+				_orgService = crmService.OrganizationWebProxyClient ?? (IOrganizationService)crmService.OrganizationServiceProxy;
+
+				//Do stuff
+			}
+			catch (FaultException<OrganizationServiceFault> ex)
+			{
+				string message = ex.Message;
+				throw;
+			}
+		}
+	}
+}$else$using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -34,4 +67,4 @@ namespace CRMSimpleConsole
             }
         }
     }
-}
+}$endif$

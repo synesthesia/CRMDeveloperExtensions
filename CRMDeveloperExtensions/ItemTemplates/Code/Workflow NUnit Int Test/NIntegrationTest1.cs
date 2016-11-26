@@ -1,5 +1,5 @@
-﻿using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
+﻿$if$ ($useXrmToolingClientUsing$ == 1)using Microsoft.Xrm.Tooling.Connector;$else$using Microsoft.Xrm.Client;
+using Microsoft.Xrm.Client.Services;$endif$
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
 using Moq;
@@ -120,10 +120,9 @@ namespace $rootnamespace$
             if (connectionString.IndexOf("[orgname]", StringComparison.OrdinalIgnoreCase) >= 0)
                 throw new Exception("CRM connection string not set in app.config.");
 
-            CrmConnection connection =
-                CrmConnection.Parse(ConfigurationManager.ConnectionStrings["CRMConnectionString"].ConnectionString);
-            
-            return new OrganizationService(connection);
+            $if$ ($useXrmToolingClientUsing$ == 1)CrmServiceClient crmService = new CrmServiceClient(connectionString);				
+            return crmService.OrganizationWebProxyClient ?? (IOrganizationService)crmService.OrganizationServiceProxy;$else$CrmConnection connection = CrmConnection.Parse(connectionString);               
+            return new OrganizationService(connection);$endif$
         }
     }
 }

@@ -28,7 +28,7 @@
   </WizardExtension>
   <WizardData>
     <!--Valid values are Plug-in or Workflow or Item-->
-    <CRMProjectType>Plug-in</CRMProjectType>
+    <CRMProjectType>Console</CRMProjectType>
     <NeedsClient>True</NeedsClient>
     <IsUnitTest>False</IsUnitTest>
   </WizardData>

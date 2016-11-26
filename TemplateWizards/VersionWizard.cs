@@ -87,6 +87,12 @@ namespace TemplateWizards
 
                         replacementsDictionary.Add("$fullclassname$", testClassPickerform.FullClassname);
                         replacementsDictionary.Add("$assemblyname$", testClassPickerform.AssemblyName);
+                        _sdkVersion = GetSdkVersion(vsproject.Project);
+                        if (_sdkVersion == "CRM 2016 (8.0.X)" || _sdkVersion == "CRM 2016 (8.1.X)" || _sdkVersion == "CRM 2016 (8.2.X)")
+                            replacementsDictionary.Add("$useXrmToolingClientUsing$", "1");
+
+                        else
+                            replacementsDictionary.Add("$useXrmToolingClientUsing$", "0");
                     }
 
                     return;
@@ -98,7 +104,7 @@ namespace TemplateWizards
                     projectItems = GetSourceProjects();
 
                 //Display the form prompting for the SDK version and/or project to unit test against
-                if (_crmProjectType == "Plug-in" || _crmProjectType == "Workflow")
+                if (_crmProjectType == "Plug-in" || _crmProjectType == "Workflow" || _crmProjectType == "Console")
                 {
                     var form = new SdkProjectPicker((_isUnitTest == "True"), projectItems, defaultSdkVersion);
                     form.ShowDialog();
@@ -107,6 +113,17 @@ namespace TemplateWizards
                     _project = form.Project;
                     _isNunit = form.Nunit;
                 }
+
+                if (_sdkVersion == null)
+                {
+                    Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
+                    if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
+                        _sdkVersion = GetSdkVersion(((Project)activeSolutionProjects.GetValue(0)).Object);
+                }
+                if (_sdkVersion == "CRM 2016 (8.0.X)" || _sdkVersion == "CRM 2016 (8.1.X)" || _sdkVersion == "CRM 2016 (8.2.X)")
+                    replacementsDictionary.Add("$useXrmToolingClientUsing$", "1");
+                else
+                    replacementsDictionary.Add("$useXrmToolingClientUsing$", "0");
 
                 //If UnitTest Project - set the reference to the project being tested
                 if (_isUnitTest == "True")
@@ -163,6 +180,7 @@ namespace TemplateWizards
 
             switch (_crmProjectType)
             {
+                case "Console":
                 case "Plug-in":
                 case "Workflow":
                     HandleCrmAssemblyProjects(project, installer);
@@ -249,7 +267,6 @@ namespace TemplateWizards
                         filename = xrm80.FileNames[0];
                         xrm80.Remove();
                         File.Delete(filename);
-
                         break;
                     case "CRM 2016 (8.0.X)":
                         filename = xrm6.FileNames[0];
@@ -318,7 +335,7 @@ namespace TemplateWizards
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "7.1.1");
                         if (_needsClient == "True")
-                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0.1");
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", null);
                         break;
                     case "CRM 2016 (8.0.X)":
                         project.DTE.SuppressUI = true;
@@ -328,7 +345,7 @@ namespace TemplateWizards
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "8.0.2.1");
                         if (_needsClient == "True")
-                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0.1");
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.XrmTooling.CoreAssembly", "8.0.2");
                         break;
                     case "CRM 2016 (8.1.X)":
                         project.DTE.SuppressUI = true;
@@ -338,7 +355,7 @@ namespace TemplateWizards
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", "8.1.0.2");
                         if (_needsClient == "True")
-                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", "7.1.0.1");
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.XrmTooling.CoreAssembly", null);
                         break;
                     case "CRM 2016 (8.2.X)":
                         project.DTE.SuppressUI = true;
@@ -348,7 +365,7 @@ namespace TemplateWizards
                         if (_crmProjectType == "Workflow")
                             InstallPackage(installer, project, "Microsoft.CrmSdk.Workflow", null);
                         if (_needsClient == "True")
-                            InstallPackage(installer, project, "Microsoft.CrmSdk.Extensions", null);
+                            InstallPackage(installer, project, "Microsoft.CrmSdk.XrmTooling.CoreAssembly", null);
                         break;
                 }
 
@@ -638,57 +655,7 @@ namespace TemplateWizards
 
                     if (isUnitTestProject) continue;
 
-                    /*Examine the NuGet packages.config file to determine the CRM SDK version of the target project
-                Looking at the assembly version doesn't work the underlying assembly version doesn't always change
-                if no updates were done between versions. Example Microsoft.CrmSdk.Extensions assembly versions did not
-                change between 7.0.x and 7.1.x*/
-                    string sdkVersion = String.Empty;
-                    var packagePath = Path.GetDirectoryName(project.FullName);
-                    if (File.Exists(packagePath + "\\packages.config"))
-                    {
-                        XmlDocument packageDoc = new XmlDocument();
-                        packageDoc.Load(packagePath + "\\packages.config");
-
-                        XmlNodeList packages = packageDoc.GetElementsByTagName("packages");
-                        if (packages.Count > 0)
-                        {
-                            XmlNodeList packageDetails = packages[0].ChildNodes;
-                            foreach (XmlNode package in packageDetails)
-                            {
-                                if (package.Attributes == null || package.Attributes["id"] == null) continue;
-                                if (package.Attributes["id"].Value != "Microsoft.CrmSdk.CoreAssemblies") continue;
-                                if (package.Attributes["version"] == null) continue;
-
-                                switch (package.Attributes["version"].Value)
-                                {
-                                    case "5.0.18":
-                                        sdkVersion = "CRM 2011 (5.0.X)";
-                                        break;
-                                    case "6.0.4":
-                                        sdkVersion = "CRM 2013 (6.0.X)";
-                                        break;
-                                    case "6.1.1":
-                                        sdkVersion = "CRM 2013 (6.1.X)";
-                                        break;
-                                    case "7.0.1":
-                                        sdkVersion = "CRM 2015 (7.0.X)";
-                                        break;
-                                    case "7.1.1":
-                                        sdkVersion = "CRM 2015 (7.1.X)";
-                                        break;
-                                    case "8.0.2.1":
-                                        sdkVersion = "CRM 2016 (8.0.X)";
-                                        break;
-                                    case "8.1.0.2":
-                                        sdkVersion = "CRM 2016 (8.1.X)";
-                                        break;
-                                    default:
-                                        sdkVersion = "CRM 2016 (8.2.X)";
-                                        break;
-                                }
-                            }
-                        }
-                    }
+                    var sdkVersion = GetSdkVersion(project);
 
                     ComboBoxItem item = new ComboBoxItem { Content = project.Name, Tag = sdkVersion };
                     projectItems.Add(item);
@@ -700,6 +667,54 @@ namespace TemplateWizards
             }
 
             return projectItems;
+        }
+
+        private static string GetSdkVersion(Project project)
+        {
+            /*Examine the NuGet packages.config file to determine the CRM SDK version of the target project
+            Looking at the assembly version doesn't work the underlying assembly version doesn't always change
+            if no updates were done between versions. Example Microsoft.CrmSdk.Extensions assembly versions did not
+            change between 7.0.x and 7.1.x*/
+            string sdkVersion = String.Empty;
+            var packagePath = Path.GetDirectoryName(project.FullName);
+            if (File.Exists(packagePath + "\\packages.config"))
+            {
+                XmlDocument packageDoc = new XmlDocument();
+                packageDoc.Load(packagePath + "\\packages.config");
+
+                XmlNodeList packages = packageDoc.GetElementsByTagName("packages");
+                if (packages.Count > 0)
+                {
+                    XmlNodeList packageDetails = packages[0].ChildNodes;
+                    foreach (XmlNode package in packageDetails)
+                    {
+                        if (package.Attributes == null || package.Attributes["id"] == null) continue;
+                        if (package.Attributes["id"].Value != "Microsoft.CrmSdk.CoreAssemblies") continue;
+                        if (package.Attributes["version"] == null) continue;
+
+                        switch (package.Attributes["version"].Value)
+                        {
+                            case "5.0.18":
+                                return "CRM 2011 (5.0.X)";
+                            case "6.0.4":
+                                return "CRM 2013 (6.0.X)";
+                            case "6.1.1":
+                                return "CRM 2013 (6.1.X)";
+                            case "7.0.1":
+                                return "CRM 2015 (7.0.X)";
+                            case "7.1.1":
+                                return "CRM 2015 (7.1.X)";
+                            case "8.0.2.1":
+                                return "CRM 2016 (8.0.X)";
+                            case "8.1.0.2":
+                                return "CRM 2016 (8.1.X)";
+                            default:
+                                return "CRM 2016 (8.2.X)";
+                        }
+                    }
+                }
+            }
+            return sdkVersion;
         }
 
         /// <summary>

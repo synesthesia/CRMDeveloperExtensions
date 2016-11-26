@@ -1,6 +1,4 @@
-﻿using Microsoft.Xrm.Client;
-using Microsoft.Xrm.Client.Services;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Moq;
 using NUnit.Framework;
 using System;
