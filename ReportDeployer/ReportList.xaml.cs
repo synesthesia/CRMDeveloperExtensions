@@ -371,7 +371,7 @@ namespace ReportDeployer
         {
             string projectName = ConnPane.SelectedProject.Name;
             _dte.StatusBar.Text = "Connecting to CRM...";
-            CrmServiceClient client = await Task.Run(() => CreateNewClient(ConnPane.SelectedConnection.ConnectionString));
+            CrmServiceClient client = await Task.Run(() => CreateNewClient(connString));
             SharedGlobals.SetGlobal("CurrentRdClient", client, _dte);
 
             _dte.StatusBar.Text = "Getting reports...";

@@ -70,7 +70,7 @@ namespace PluginDeployer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CRM Developer Extensions - Plug-in Deployer.
+        ///   Looks up a localized string similar to CRM DevEx - Plug-in Deployer.
         /// </summary>
         internal static string ToolWindowTitle {
             get {

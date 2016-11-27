@@ -70,7 +70,7 @@ namespace SolutionPackager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CRM Developer Extensions - Solution Packager.
+        ///   Looks up a localized string similar to CRM DevEx - Solution Packager.
         /// </summary>
         internal static string ToolWindowTitle {
             get {
