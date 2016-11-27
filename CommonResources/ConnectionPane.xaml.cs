@@ -125,7 +125,7 @@ namespace CommonResources
 
             //WindowEventsOnWindowActivated in this project can be called when activating another window
             //so we don't want to contine further unless our window is active
-            if (!gotFocus.Caption.StartsWith("CRM Developer Extensions")) return;
+            if (!gotFocus.Caption.StartsWith("CRM DevEx")) return;
 
             ProjectsDdl.IsEnabled = true;
             AddConnection.IsEnabled = true;
