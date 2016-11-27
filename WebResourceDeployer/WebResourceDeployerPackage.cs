@@ -125,7 +125,8 @@ namespace WebResourceDeployer
             Guid webResourceId = GetMapping(projectItem, selectedConnection);
             if (webResourceId == Guid.Empty) return;
 
-            var client = new CrmServiceClient(selectedConnection.ConnectionString);
+            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", selectedConnection.ConnectionString, _dte);
+
 
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(selectedConnection.Version);

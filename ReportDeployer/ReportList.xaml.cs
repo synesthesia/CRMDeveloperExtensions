@@ -25,6 +25,7 @@ using System.Windows.Media;
 using System.Xml;
 using Button = System.Windows.Controls.Button;
 using CheckBox = System.Windows.Controls.CheckBox;
+using Task = System.Threading.Tasks.Task;
 using Window = EnvDTE.Window;
 
 namespace ReportDeployer
@@ -360,17 +361,25 @@ namespace ReportDeployer
             Reports.IsEnabled = true;
         }
 
+        private static CrmServiceClient CreateNewClient(string connString)
+        {
+            var client = new CrmServiceClient(connString);
+            return client;
+        }
+
         private async Task<bool> GetReports(string connString)
         {
             string projectName = ConnPane.SelectedProject.Name;
-            var connection = new CrmServiceClient(connString);
+            _dte.StatusBar.Text = "Connecting to CRM...";
+            CrmServiceClient client = await Task.Run(() => CreateNewClient(ConnPane.SelectedConnection.ConnectionString));
+            SharedGlobals.SetGlobal("CurrentRdClient", client, _dte);
 
-            _dte.StatusBar.Text = "Connecting to CRM and getting reports...";
+            _dte.StatusBar.Text = "Getting reports...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveReportsFromCrm(connection));
+            EntityCollection results = await Task.Run(() => RetrieveReportsFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -743,7 +752,7 @@ namespace ReportDeployer
 
             try
             {
-                var client = new CrmServiceClient(connString);
+                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentRdClient", connString, _dte);
                 Entity report = client.OrganizationServiceProxy.Retrieve("report", reportId,
                     new ColumnSet("bodytext", "filename"));
 
@@ -835,7 +844,7 @@ namespace ReportDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            var connection = new CrmServiceClient(connString);
+            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentRdClient", connString, _dte);
 
             LockMessage.Content = "Deploying...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -844,9 +853,9 @@ namespace ReportDeployer
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(ConnPane.SelectedConnection.Version);
             if (version.Major == 5 && version.Revision < 3200)
-                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(items, project, connection));
+                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishSingle(items, project, client));
             else
-                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishMultiple(items, project, connection));
+                success = await System.Threading.Tasks.Task.Run(() => UpdateAndPublishMultiple(items, project, client));
 
             LockOverlay.Visibility = Visibility.Hidden;
 

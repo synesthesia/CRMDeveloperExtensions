@@ -192,12 +192,16 @@ namespace SolutionPackager
 
         private async Task<bool> GetSolutions(string connString)
         {
-            _dte.StatusBar.Text = "Connecting to CRM and getting solutions...";
+            _dte.StatusBar.Text = "Connecting to CRM...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await Task.Run(() => GetSolutionsFromCrm(connString));
+            CrmServiceClient client = CreateNewClient(connString);
+            SharedGlobals.SetGlobal("CurrentSpClient", client, _dte);
+
+            _dte.StatusBar.Text = "Getting solutions...";
+            EntityCollection results = await Task.Run(() => GetSolutionsFromCrm(client));
             if (results == null)
             {
                 _dte.StatusBar.Clear();
@@ -381,11 +385,10 @@ namespace SolutionPackager
             return null;
         }
 
-        private EntityCollection GetSolutionsFromCrm(string connString)
+        private EntityCollection GetSolutionsFromCrm(CrmServiceClient client)
         {
             try
             {
-                var client = new CrmServiceClient(connString);
                 QueryExpression query = new QueryExpression
                 {
                     EntityName = "solution",
@@ -910,11 +913,17 @@ namespace SolutionPackager
             project.ProjectItems.AddFromFile(savePath + "\\" + filename);
         }
 
+        private static CrmServiceClient CreateNewClient(string connString)
+        {
+            var client = new CrmServiceClient(connString);
+            return client;
+        }
+
         private string GetSolutionFromCrm(string connString, CrmSolution selectedSolution, bool managed)
         {
             try
             {
-                var client = new CrmServiceClient(connString);
+                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentSpClient", connString, _dte);
                 // Hardcode connection timeout to one-hour to support large solutions.
                 client.OrganizationServiceProxy.Timeout = new TimeSpan(1, 0, 0);
 

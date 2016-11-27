@@ -22,6 +22,7 @@ using System.Windows.Controls;
 using System.Xml;
 using VSLangProj;
 using Path = System.IO.Path;
+using Task = System.Threading.Tasks.Task;
 using Window = EnvDTE.Window;
 
 namespace PluginDeployer
@@ -33,7 +34,7 @@ namespace PluginDeployer
         private readonly Logger _logger;
         private bool _isIlMergeInstalled;
 
-        const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+        private const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
 
         public PluginList()
         {
@@ -175,12 +176,12 @@ namespace PluginDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            var client = new CrmServiceClient(connString);
+            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentPdClient", connString, _dte);
 
             LockMessage.Content = "Updating...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            bool success = await System.Threading.Tasks.Task.Run(() => UpdateCrmAssembly(assemblyItem, client));
+            bool success = await Task.Run(() => UpdateCrmAssembly(assemblyItem, client));
 
             LockOverlay.Visibility = Visibility.Hidden;
 
@@ -347,18 +348,27 @@ namespace PluginDeployer
             }
         }
 
-        private async Task<bool> GetPlugins(string connString)
+        private static CrmServiceClient CreateNewClient(string connString)
         {
             var client = new CrmServiceClient(connString);
+            return client;
+        }
 
-            _dte.StatusBar.Text = "Connecting to CRM and getting assemblies...";
+        private async Task<bool> GetPlugins(string connString)
+        {
+            _dte.StatusBar.Text = "Connecting to CRM...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            EntityCollection results = await System.Threading.Tasks.Task.Run(() => RetrieveAssembliesFromCrm(client));
+            CrmServiceClient client = await Task.Run(() => CreateNewClient(ConnPane.SelectedConnection.ConnectionString));
+
+            _dte.StatusBar.Text = "Getting assemblies...";
+
+            EntityCollection results = await Task.Run(() => RetrieveAssembliesFromCrm(client));
             if (results == null)
             {
+                SharedGlobals.SetGlobal("CurrentPdClient", null, _dte);
                 _dte.StatusBar.Clear();
                 _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
@@ -366,6 +376,7 @@ namespace PluginDeployer
                 return false;
             }
 
+            SharedGlobals.SetGlobal("CurrentPdClient", client, _dte);
             _logger.WriteToOutputWindow("Retrieved Assemblies From CRM", Logger.MessageType.Info);
 
             ObservableCollection<AssemblyItem> assemblies = new ObservableCollection<AssemblyItem>();
@@ -417,16 +428,13 @@ namespace PluginDeployer
         {
             try
             {
-                var orgService = client.OrganizationServiceProxy;
-                //using (OrganizationService orgService = new OrganizationService(connection))
-                //{
-                    QueryExpression query = new QueryExpression
+                QueryExpression query = new QueryExpression
+                {
+                    EntityName = "pluginassembly",
+                    ColumnSet = new ColumnSet("name", "version"),
+                    Criteria = new FilterExpression
                     {
-                        EntityName = "pluginassembly",
-                        ColumnSet = new ColumnSet("name", "version"),
-                        Criteria = new FilterExpression
-                        {
-                            Conditions =
+                        Conditions =
 						{
 							new ConditionExpression
 							{
@@ -435,8 +443,8 @@ namespace PluginDeployer
 								Values = { false }
 							}
 						}
-                        },
-                        LinkEntities =
+                    },
+                    LinkEntities =
 					    {
 						    new LinkEntity
 						    {
@@ -449,7 +457,7 @@ namespace PluginDeployer
 							    JoinOperator = JoinOperator.LeftOuter
 						    }
 					    },
-                        Orders =
+                    Orders =
 					    {
 						    new OrderExpression
 						    {
@@ -457,10 +465,9 @@ namespace PluginDeployer
 							    OrderType = OrderType.Ascending
 						    }
 					    }
-                    };
+                };
 
-                    return orgService.RetrieveMultiple(query);
-                //}
+                return client.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {

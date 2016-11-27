@@ -99,9 +99,9 @@ namespace ReportDeployer
             Guid reportId = GetMapping(projectItem, selectedConnection);
             if (reportId == Guid.Empty) return;
 
-            var connection = new CrmServiceClient(selectedConnection.ConnectionString);
+            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentRdClient", selectedConnection.ConnectionString, _dte);
 
-            UpdateAndPublishSingle(connection, projectItem, reportId);
+            UpdateAndPublishSingle(client, projectItem, reportId);
         }
 
         private void UpdateAndPublishSingle(CrmServiceClient client, ProjectItem projectItem, Guid reportId)
