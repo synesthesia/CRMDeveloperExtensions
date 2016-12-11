@@ -41,17 +41,15 @@ namespace WebResourceDeployer
         private readonly DTE _dte;
         private readonly Solution _solution;
         private readonly IVsSolution _vsSolution;
-
         private List<WebResourceItem> _movedWebResourceItems;
         private List<string> _movedBoundFiles;
         private uint _movedItemid;
         private bool _projectEventsRegistered;
         private readonly Logger _logger;
-
         private readonly FieldInfo _menuDropAlignmentField;
-
         readonly string[] _extensions = { "HTM", "HTML", "CSS", "JS", "XML", "PNG", "JPG", "GIF", "XAP", "XSL", "XSLT", "ICO", "TS" };
         readonly string[] _folderExtensions = { "BUNDLE", "TT" };
+        private const string WindowType = "WebResourceDeployer";
 
         public WebResourceList()
         {
@@ -141,7 +139,7 @@ namespace WebResourceDeployer
                 if (window.Caption != WebResourceDeployer.Resources.ResourceManager.GetString("ToolWindowTitle")) continue;
 
                 ResetForm();
-                SharedGlobals.SetGlobal("CurrentWrClient", null, _dte);
+                SharedConnection.ClearCurrentConnection(WindowType, _dte);
                 _logger.DeleteOutputWindow();
                 window.Close();
                 return;
@@ -683,7 +681,7 @@ namespace WebResourceDeployer
         private async Task<bool> GetWebResources(string connString)
         {
             string projectName = ConnPane.SelectedProject.Name;
-            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", connString, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
 
             _dte.StatusBar.Text = "Getting web resources...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
@@ -793,7 +791,7 @@ namespace WebResourceDeployer
                         }
                     };
 
-                    EntityCollection partialResults = client.OrganizationServiceProxy.RetrieveMultiple(query);
+                    EntityCollection partialResults = client.RetrieveMultiple(query);
 
                     if (partialResults.MoreRecords)
                     {
@@ -1189,8 +1187,8 @@ namespace WebResourceDeployer
 
             try
             {
-                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", connString, _dte);
-                Entity webResource = client.OrganizationServiceProxy.Retrieve("webresource", webResourceId,
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
+                Entity webResource = client.Retrieve("webresource", webResourceId,
                     new ColumnSet("content", "name", "webresourcetype"));
 
                 _logger.WriteToOutputWindow("Downloaded Web Resource: " + webResource.Id, Logger.MessageType.Info);
@@ -1317,7 +1315,7 @@ namespace WebResourceDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", connString, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
 
             LockMessage.Content = "Publishing...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -1400,8 +1398,7 @@ namespace WebResourceDeployer
 
                 bool wasError = false;
                 var orgService = client.OrganizationServiceProxy;
-                //using (OrganizationService orgService = new OrganizationService(connection))
-                //{
+
                 _dte.StatusBar.Text = "Updating & publishing web resource(s)...";
                 _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
@@ -1424,7 +1421,6 @@ namespace WebResourceDeployer
                     _dte.StatusBar.Clear();
                     return false;
                 }
-                //}
 
                 _logger.WriteToOutputWindow("Updated And Published Web Resource(s)", Logger.MessageType.Info);
 
@@ -1565,6 +1561,12 @@ namespace WebResourceDeployer
             FilterWebResources();
         }
 
+        private void ConnPane_OnConnectionStarted(object sender, EventArgs e)
+        {
+            _dte.StatusBar.Text = "Connecting to CRM...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
+        }
+
         private void ConnPane_OnProjectChanged(object sender, EventArgs e)
         {
             WebResourceGrid.ItemsSource = null;
@@ -1664,13 +1666,13 @@ namespace WebResourceDeployer
                 string connString = ConnPane.SelectedConnection.ConnectionString;
                 if (string.IsNullOrEmpty(connString)) return;
 
-                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", connString, _dte);
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
                 _dte.StatusBar.Text = "Downloading file for compare...";
                 _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
 
                 //Get the file from CRM and save in temp files
                 Guid webResourceId = new Guid(((Button)sender).CommandParameter.ToString());
-                Entity webResource = client.OrganizationServiceProxy.Retrieve("webresource", webResourceId,
+                Entity webResource = client.Retrieve("webresource", webResourceId,
                     new ColumnSet("content", "name"));
 
                 _logger.WriteToOutputWindow("Retrieved Web Resource " + webResourceId + " For Compare",
@@ -1734,7 +1736,8 @@ namespace WebResourceDeployer
             Guid solutionId = (SolutionList.SelectedItem != null)
                 ? ((CrmSolution)SolutionList.SelectedItem).SolutionId
                 : Guid.Empty;
-            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection, ConnPane.SelectedProject, GetProjectFiles(ConnPane.SelectedProject), solutionId);
+            NewWebResource newWebResource = new NewWebResource(ConnPane.SelectedConnection,
+                GetProjectFiles(ConnPane.SelectedProject), solutionId, _dte);
             bool? result = newWebResource.ShowDialog();
 
             if (result != true) return;
@@ -1859,12 +1862,6 @@ namespace WebResourceDeployer
             FilterWebResources();
         }
 
-        private static CrmServiceClient CreateNewClient(string connString)
-        {
-            var client = new CrmServiceClient(connString);
-            return client;
-        }
-
         private async Task<bool> GetSolutions()
         {
             _dte.StatusBar.Text = "Connecting to CRM...";
@@ -1872,21 +1869,21 @@ namespace WebResourceDeployer
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(ConnPane.SelectedConnection.ConnectionString, WindowType, _dte);
+
             List<CrmSolution> solutions = new List<CrmSolution>();
-            CrmServiceClient client = await Task.Run(() => CreateNewClient(ConnPane.SelectedConnection.ConnectionString));
 
             _dte.StatusBar.Text = "Getting solutions...";
             EntityCollection results = await Task.Run(() => RetrieveSolutionsFromCrm(client));
             if (results == null)
             {
-                SharedGlobals.SetGlobal("CurrentWrClient", null, _dte);
+                SharedConnection.ClearCurrentConnection(WindowType, _dte);
                 _dte.StatusBar.Clear();
                 LockOverlay.Visibility = Visibility.Hidden;
                 MessageBox.Show("Error Retrieving Solutions. See the Output Window for additional details.");
                 return false;
             }
 
-            SharedGlobals.SetGlobal("CurrentWrClient", client, _dte);
             _logger.WriteToOutputWindow("Retrieved Solutions From CRM", Logger.MessageType.Info);
 
             foreach (Entity entity in results.Entities)
@@ -1961,7 +1958,7 @@ namespace WebResourceDeployer
                         }
                 };
 
-                return client.OrganizationServiceProxy.RetrieveMultiple(query);
+                return client.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -2076,7 +2073,7 @@ namespace WebResourceDeployer
         {
             try
             {
-                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", connString, _dte);
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
                 client.Delete("webresource", webResourceId);
 
                 return null;

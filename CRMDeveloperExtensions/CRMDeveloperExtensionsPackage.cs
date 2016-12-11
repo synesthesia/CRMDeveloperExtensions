@@ -8,6 +8,7 @@ using SolutionPackager;
 using System;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
+using CommonResources;
 using WebResourceDeployer;
 
 namespace CRMDeveloperExtensions
@@ -75,6 +76,9 @@ namespace CRMDeveloperExtensions
             CommandID packagerWindowCommandId = new CommandID(GuidList.GuidCrmDevExCmdSet, (int)PkgCmdIdList.CmdidSolutionPackagerWindow);
             OleMenuCommand packageWindowItem = new OleMenuCommand(ShowSolutionPackagerToolWindow, packagerWindowCommandId);
             mcs.AddCommand(packageWindowItem);
+
+            //Enable Logging
+            SharedConnection.EnableLogging(_dte);
         }
 
         private void ShowWrdToolWindow(object sender, EventArgs e)

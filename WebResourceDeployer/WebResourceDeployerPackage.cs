@@ -27,6 +27,7 @@ namespace WebResourceDeployer
     {
         private DTE _dte;
         private Logger _logger;
+        private const string WindowType = "WebResourceDeployer";
 
         protected override void Initialize()
         {
@@ -125,8 +126,7 @@ namespace WebResourceDeployer
             Guid webResourceId = GetMapping(projectItem, selectedConnection);
             if (webResourceId == Guid.Empty) return;
 
-            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentWrClient", selectedConnection.ConnectionString, _dte);
-
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(selectedConnection.ConnectionString, WindowType, _dte);
 
             //Check if < CRM 2011 UR12 (ExecuteMutliple)
             Version version = Version.Parse(selectedConnection.Version);
@@ -174,7 +174,7 @@ namespace WebResourceDeployer
                 _dte.StatusBar.Text = "Updating & publishing web resource...";
                 _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
-                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)client.OrganizationServiceProxy.Execute(emRequest);
+                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)client.Execute(emRequest);
 
                 bool wasError = false;
                 foreach (var responseItem in emResponse.Responses)
@@ -221,7 +221,7 @@ namespace WebResourceDeployer
                 webResource["content"] = EncodeString(content);
 
                 UpdateRequest request = new UpdateRequest { Target = webResource };
-                client.OrganizationServiceProxy.Execute(request);
+                client.Execute(request);
                 _logger.WriteToOutputWindow("Uploaded Web Resource", Logger.MessageType.Info);
 
                 publishXml += "<webresource>{" + webResource.Id + "}</webresource>";
@@ -229,7 +229,7 @@ namespace WebResourceDeployer
 
                 PublishXmlRequest pubRequest = new PublishXmlRequest { ParameterXml = publishXml };
 
-                client.OrganizationServiceProxy.Execute(pubRequest);
+                client.Execute(pubRequest);
                 _logger.WriteToOutputWindow("Published Web Resource", Logger.MessageType.Info);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)

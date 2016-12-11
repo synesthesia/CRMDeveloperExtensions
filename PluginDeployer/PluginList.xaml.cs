@@ -33,8 +33,8 @@ namespace PluginDeployer
         private readonly Solution _solution;
         private readonly Logger _logger;
         private bool _isIlMergeInstalled;
-
         private const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+        private const string WindowType = "PluginDeployer";
 
         public PluginList()
         {
@@ -109,6 +109,12 @@ namespace PluginDeployer
             Assemblies.IsEnabled = false;
         }
 
+        private void ConnPane_OnConnectionStarted(object sender, EventArgs e)
+        {
+            _dte.StatusBar.Text = "Connecting to CRM...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
+        }
+
         private async void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
             bool gotPlugins = await GetPlugins(e.ConnectionString);
@@ -176,7 +182,7 @@ namespace PluginDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentPdClient", connString, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
 
             LockMessage.Content = "Updating...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -229,7 +235,7 @@ namespace PluginDeployer
                 Entity crmAssembly = new Entity("pluginassembly") { Id = assemblyItem.AssemblyId };
                 crmAssembly["content"] = Convert.ToBase64String(File.ReadAllBytes(path));
 
-                client.OrganizationServiceProxy.Update(crmAssembly);
+                client.Update(crmAssembly);
 
                 //Update assembly name and version numbers
                 assemblyItem.Version = assemblyVersion;
@@ -348,12 +354,6 @@ namespace PluginDeployer
             }
         }
 
-        private static CrmServiceClient CreateNewClient(string connString)
-        {
-            var client = new CrmServiceClient(connString);
-            return client;
-        }
-
         private async Task<bool> GetPlugins(string connString)
         {
             _dte.StatusBar.Text = "Connecting to CRM...";
@@ -361,14 +361,14 @@ namespace PluginDeployer
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            CrmServiceClient client = await Task.Run(() => CreateNewClient(ConnPane.SelectedConnection.ConnectionString));
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(ConnPane.SelectedConnection.ConnectionString, WindowType, _dte);
 
             _dte.StatusBar.Text = "Getting assemblies...";
 
             EntityCollection results = await Task.Run(() => RetrieveAssembliesFromCrm(client));
             if (results == null)
             {
-                SharedGlobals.SetGlobal("CurrentPdClient", null, _dte);
+                SharedConnection.ClearCurrentConnection(WindowType, _dte);
                 _dte.StatusBar.Clear();
                 _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
@@ -376,7 +376,6 @@ namespace PluginDeployer
                 return false;
             }
 
-            SharedGlobals.SetGlobal("CurrentPdClient", client, _dte);
             _logger.WriteToOutputWindow("Retrieved Assemblies From CRM", Logger.MessageType.Info);
 
             ObservableCollection<AssemblyItem> assemblies = new ObservableCollection<AssemblyItem>();

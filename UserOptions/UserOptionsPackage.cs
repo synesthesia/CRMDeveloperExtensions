@@ -16,9 +16,14 @@ namespace UserOptions
     [Guid("1D9ECCF3-5D2F-4112-9B25-264596873DC9")]
     public class OptionPageCustom : DialogPage
     {
-        private string _defaultCrmSdkVersion = "CRM 2015 (7.1.X)";
+        private string _defaultCrmSdkVersion = "CRM 2016 (8.2.X)";
         private string _defaultProjectKeyFileName = "MyKey";
         private bool _enableCrmSdkSearch = true;
+
+        public OptionPageCustom()
+        {
+            EnableXrmToolingLogging = false;
+        }
 
         public string DefaultCrmSdkVersion
         {
@@ -40,6 +45,10 @@ namespace UserOptions
 
         public bool UseDefaultWebBrowser { get; set; }
 
+        public bool EnableXrmToolingLogging { get; set; }
+
+        public string XrmToolingLogPath { get; set; }
+
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         protected override IWin32Window Window
@@ -51,7 +60,9 @@ namespace UserOptions
                     DefaultCrmSdkVersion = this,
                     DefaultProjectKeyFileName = this,
                     UseDefaultWebBrowser = this,
-                    EnableCrmSdkSearch = this
+                    EnableCrmSdkSearch = this,
+                    EnableXrmLogging = this,
+                    XrmLogPath = this
                 };
                 page.Initialize();
                 return page;

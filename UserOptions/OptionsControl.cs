@@ -15,6 +15,8 @@ namespace UserOptions
         internal OptionPageCustom DefaultProjectKeyFileName;
         internal OptionPageCustom UseDefaultWebBrowser;
         internal OptionPageCustom EnableCrmSdkSearch;
+        internal OptionPageCustom EnableXrmLogging;
+        internal OptionPageCustom XrmLogPath;
 
         public void Initialize()
         {
@@ -24,6 +26,8 @@ namespace UserOptions
             DefaultKeyFileName.Text = DefaultProjectKeyFileName.DefaultProjectKeyFileName;
             DefaultWebBrowser.Checked = UseDefaultWebBrowser.UseDefaultWebBrowser;
             EnableSdkSearch.Checked = EnableCrmSdkSearch.EnableCrmSdkSearch;
+            EnableLogging.Checked = EnableXrmLogging.EnableXrmToolingLogging;
+            LogPath.Text = XrmLogPath.XrmToolingLogPath;
         }
 
         private void DefaultSdkVersion_SelectedIndexChanged(object sender, EventArgs e)
@@ -63,9 +67,9 @@ namespace UserOptions
 
         private void HandleIllegalFileName()
         {
-            MessageBox.Show("Illegal file name");
+            MessageBox.Show(@"Folder does not exist or unable to access");
             DefaultProjectKeyFileName.DefaultProjectKeyFileName = "MyKey";
-            DefaultKeyFileName.Text = "MyKey";
+            DefaultKeyFileName.Text = @"MyKey";
         }
 
         private void DefaultWebBrowser_CheckedChanged(object sender, EventArgs e)
@@ -76,6 +80,33 @@ namespace UserOptions
         private void EnableSdkSearch_CheckedChanged(object sender, EventArgs e)
         {
             EnableCrmSdkSearch.EnableCrmSdkSearch = EnableSdkSearch.Checked;
+        }
+
+        private void EnableLogging_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableXrmLogging.EnableXrmToolingLogging = EnableLogging.Checked;
+        }
+
+        private void OpenFolder_Click(object sender, EventArgs e)
+        {
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result != DialogResult.OK)
+                return;
+
+            string path = folderBrowserDialog.SelectedPath;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                XrmLogPath.XrmToolingLogPath = null;
+                LogPath.Text = null;
+                return;
+            }
+
+            if (!path.EndsWith("\\"))
+                path += "\\";
+
+            XrmLogPath.XrmToolingLogPath = path;
+            LogPath.Text = path;
         }
     }
 }

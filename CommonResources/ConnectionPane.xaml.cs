@@ -29,6 +29,7 @@ namespace CommonResources
         public event EventHandler<ConnectionAddedEventArgs> ConnectionAdded;
         public event EventHandler ConnectionDeleted;
         public event EventHandler<ConnectEventArgs> Connected;
+        public event EventHandler ConnectionStarted;
 
         public Project SelectedProject { get; private set; }
         public CrmConn SelectedConnection { get; private set; }
@@ -354,7 +355,7 @@ namespace CommonResources
 
         private void AddConnection_Click(object sender, RoutedEventArgs e)
         {
-            var connection = new Connection(null, null);
+            var connection = new Connection(null, null, SourceWindow, _dte);
 
             bool? result = connection.ShowDialog();
 
@@ -375,7 +376,6 @@ namespace CommonResources
                 if (conn.Name != connection.ConnectionName) continue;
 
                 Connections.SelectedItem = conn;
-                // TODO: Should this actually fire OnConnectionSelected?
                 OnConnectionAdded(new ConnectionAddedEventArgs
                 {
                     AddedConnection = conn
@@ -542,7 +542,7 @@ namespace CommonResources
             if (string.IsNullOrEmpty(SelectedConnection.ConnectionString)) return;
 
             string name = SelectedConnection.Name;
-            Connection connection = new Connection(name, SelectedConnection.ConnectionString);
+            Connection connection = new Connection(name, SelectedConnection.ConnectionString, SourceWindow, _dte);
             bool? result = connection.ShowDialog();
 
             if (!result.HasValue || !result.Value) return;
@@ -670,6 +670,8 @@ namespace CommonResources
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
+            OnConnectionStarted();
+
             if (SelectedConnection == null) return;
 
             string connString = SelectedConnection.ConnectionString;
@@ -719,6 +721,12 @@ namespace CommonResources
         {
             var handler = ConnectionModified;
             if (handler != null) handler(this, e);
+        }
+
+        protected virtual void OnConnectionStarted()
+        {
+            var handler = ConnectionStarted;
+            if (handler != null) handler(this, EventArgs.Empty);
         }
     }
 

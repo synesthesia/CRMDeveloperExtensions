@@ -1,7 +1,6 @@
 ﻿using CommonResources.Models;
 using EnvDTE;
 using System.Linq;
-using Microsoft.Xrm.Tooling.Connector;
 
 namespace CommonResources
 {
@@ -28,15 +27,6 @@ namespace CommonResources
                 else //Internal VS browser
                     dte.ItemOperations.Navigate(baseUrl + url);
             }
-        }
-
-        public static CrmServiceClient GetCachedConnection(string connName, string connString, DTE dte)
-        {
-            var currentWrClient = SharedGlobals.GetGlobal(connName, dte);
-            if (currentWrClient == null)
-                return new CrmServiceClient(connString);
-
-            return (CrmServiceClient)currentWrClient;
         }
     }
 }

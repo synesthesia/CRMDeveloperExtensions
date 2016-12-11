@@ -30,6 +30,7 @@ namespace SolutionPackager
         private readonly DTE _dte;
         private readonly DTE2 _dte2;
         private readonly Logger _logger;
+        private const string WindowType = "SolutionPackager";
 
         public SolutionList()
         {
@@ -69,6 +70,12 @@ namespace SolutionPackager
             }
 
             DownloadManaged.IsEnabled = enabled;
+        }
+
+        private void ConnPane_OnConnectionStarted(object sender, EventArgs e)
+        {
+            _dte.StatusBar.Text = "Connecting to CRM...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
         }
 
         private void ConnPane_OnConnectionChanged(object sender, ConnectionSelectedEventArgs e)
@@ -197,13 +204,13 @@ namespace SolutionPackager
             LockMessage.Content = "Working...";
             LockOverlay.Visibility = Visibility.Visible;
 
-            CrmServiceClient client = CreateNewClient(connString);
-            SharedGlobals.SetGlobal("CurrentSpClient", client, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
 
             _dte.StatusBar.Text = "Getting solutions...";
             EntityCollection results = await Task.Run(() => GetSolutionsFromCrm(client));
             if (results == null)
             {
+                SharedConnection.ClearCurrentConnection(WindowType, _dte);
                 _dte.StatusBar.Clear();
                 _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
@@ -433,7 +440,7 @@ namespace SolutionPackager
                         }
                 };
 
-                return client.OrganizationServiceProxy.RetrieveMultiple(query);
+                return client.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -913,19 +920,16 @@ namespace SolutionPackager
             project.ProjectItems.AddFromFile(savePath + "\\" + filename);
         }
 
-        private static CrmServiceClient CreateNewClient(string connString)
-        {
-            var client = new CrmServiceClient(connString);
-            return client;
-        }
-
         private string GetSolutionFromCrm(string connString, CrmSolution selectedSolution, bool managed)
         {
             try
             {
-                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentSpClient", connString, _dte);
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
                 // Hardcode connection timeout to one-hour to support large solutions.
-                client.OrganizationServiceProxy.Timeout = new TimeSpan(1, 0, 0);
+                if (client.OrganizationServiceProxy != null)
+                    client.OrganizationServiceProxy.Timeout = new TimeSpan(1, 0, 0);
+                if (client.OrganizationWebProxyClient != null)
+                    client.OrganizationWebProxyClient.InnerChannel.OperationTimeout = new TimeSpan(1, 0, 0);
 
                 ExportSolutionRequest request = new ExportSolutionRequest
                 {
@@ -933,7 +937,7 @@ namespace SolutionPackager
                     SolutionName = selectedSolution.UniqueName
                 };
 
-                ExportSolutionResponse response = (ExportSolutionResponse)client.OrganizationServiceProxy.Execute(request);
+                ExportSolutionResponse response = (ExportSolutionResponse)client.Execute(request);
 
                 var tempFolder = Path.GetTempPath();
                 string fileName = Path.GetFileName(selectedSolution.UniqueName + "_" +

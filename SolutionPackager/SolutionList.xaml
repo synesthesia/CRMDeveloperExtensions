@@ -17,7 +17,8 @@
         <commonResources:ConnectionPane Name="ConnPane" Grid.Column="0" ConnectionSelected="ConnPane_OnConnectionChanged"
                                         ConnectionAdded="ConnPane_OnConnectionAdded" ConnectionDeleted="ConnPane_OnConnectionDeleted"
                                         Connected="ConnPane_OnConnected" ProjectChanged="ConnPane_OnProjectChanged"
-                                        ConnectionModified="ConnPane_OnConnectionModified" SourceWindow="SolutionPackager" />
+                                        ConnectionModified="ConnPane_OnConnectionModified" SourceWindow="SolutionPackager"
+                                        ConnectionStarted="ConnPane_OnConnectionStarted" />
         <Grid Column="1" HorizontalAlignment="Stretch">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">

@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using CommonResources;
 using CommonResources.Models;
 using WebResourceDeployer.Models;
 using Microsoft.Xrm.Tooling.Connector;
@@ -25,20 +26,21 @@ namespace WebResourceDeployer
     {
         private readonly CrmConn _connection;
         private readonly Logger _logger;
-
+        private readonly DTE _dte;
         public Guid NewId;
         public int NewType;
         public string NewName;
         public string NewDisplayName;
         public string NewBoundFile;
         public Guid NewSolutionId;
+        private const string WindowType = "WebResourceDeployer";
 
-        public NewWebResource(CrmConn connection, Project project, ObservableCollection<ComboBoxItem> projectFiles, Guid selectedSolutionId)
+        public NewWebResource(CrmConn connection, ObservableCollection<ComboBoxItem> projectFiles, Guid selectedSolutionId, DTE dte)
         {
             InitializeComponent();
 
             _logger = new Logger();
-
+            _dte = dte;
             _connection = connection;
 
             bool result = GetSolutions(selectedSolutionId);
@@ -59,7 +61,7 @@ namespace WebResourceDeployer
             {
                 List<CrmSolution> solutions = new List<CrmSolution>();
 
-                var client = new CrmServiceClient(_connection.ConnectionString);
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(_connection.ConnectionString, WindowType, _dte);
                 QueryExpression query = new QueryExpression
                 {
                     EntityName = "solution",
@@ -104,7 +106,7 @@ namespace WebResourceDeployer
                         }
                 };
 
-                EntityCollection results = client.OrganizationServiceProxy.RetrieveMultiple(query);
+                EntityCollection results = client.RetrieveMultiple(query);
 
 
                 foreach (Entity entity in results.Entities)
@@ -196,7 +198,7 @@ namespace WebResourceDeployer
         {
             try
             {
-                var client = new CrmServiceClient(_connection.ConnectionString);
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(_connection.ConnectionString, WindowType, _dte);
                 Entity webResource = new Entity("webresource");
                 webResource["name"] = prefix + name;
                 webResource["webresourcetype"] = new OptionSetValue(type);
@@ -229,7 +231,7 @@ namespace WebResourceDeployer
                     webResource["content"] = EncodeString(content);
                 }
 
-                Guid id = client.OrganizationServiceProxy.Create(webResource);
+                Guid id = client.Create(webResource);
 
                 _logger.WriteToOutputWindow("New Web Resource Created: " + id, Logger.MessageType.Info);
 
@@ -243,7 +245,7 @@ namespace WebResourceDeployer
                         ComponentId = id
                     };
                     AddSolutionComponentResponse response =
-                        (AddSolutionComponentResponse)client.OrganizationServiceProxy.Execute(scRequest);
+                        (AddSolutionComponentResponse)client.Execute(scRequest);
 
                     _logger.WriteToOutputWindow("New Web Resource Added To Solution: " + response.id, Logger.MessageType.Info);
                 }

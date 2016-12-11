@@ -35,11 +35,10 @@ namespace ReportDeployer
         //All DTE objects need to be declared here or else things stop working
         private readonly DTE _dte;
         private readonly Solution _solution;
-
         private readonly IVsSolution _vsSolution;
-
         private bool _projectEventsRegistered;
         private readonly Logger _logger;
+        private const string WindowType = "ReportDeployer";
 
         public ReportList()
         {
@@ -344,6 +343,12 @@ namespace ReportDeployer
             return projectFiles;
         }
 
+        private void ConnPane_OnConnectionStarted(object sender, EventArgs e)
+        {
+            _dte.StatusBar.Text = "Connecting to CRM...";
+            _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
+        }
+
         private async void ConnPane_OnConnected(object sender, ConnectEventArgs e)
         {
             bool gotReports = await GetReports(e.ConnectionString);
@@ -361,18 +366,11 @@ namespace ReportDeployer
             Reports.IsEnabled = true;
         }
 
-        private static CrmServiceClient CreateNewClient(string connString)
-        {
-            var client = new CrmServiceClient(connString);
-            return client;
-        }
-
         private async Task<bool> GetReports(string connString)
         {
             string projectName = ConnPane.SelectedProject.Name;
             _dte.StatusBar.Text = "Connecting to CRM...";
-            CrmServiceClient client = await Task.Run(() => CreateNewClient(connString));
-            SharedGlobals.SetGlobal("CurrentRdClient", client, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
 
             _dte.StatusBar.Text = "Getting reports...";
             _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationSync);
@@ -382,6 +380,7 @@ namespace ReportDeployer
             EntityCollection results = await Task.Run(() => RetrieveReportsFromCrm(client));
             if (results == null)
             {
+                SharedConnection.ClearCurrentConnection(WindowType, _dte);
                 _dte.StatusBar.Clear();
                 _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationSync);
                 LockOverlay.Visibility = Visibility.Hidden;
@@ -452,7 +451,7 @@ namespace ReportDeployer
                         }
                 };
 
-                return client.OrganizationServiceProxy.RetrieveMultiple(query);
+                return client.RetrieveMultiple(query);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)
             {
@@ -752,8 +751,8 @@ namespace ReportDeployer
 
             try
             {
-                CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentRdClient", connString, _dte);
-                Entity report = client.OrganizationServiceProxy.Retrieve("report", reportId,
+                CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
+                Entity report = client.Retrieve("report", reportId,
                     new ColumnSet("bodytext", "filename"));
 
                 _logger.WriteToOutputWindow("Downloaded Report: " + report.Id, Logger.MessageType.Info);
@@ -844,7 +843,7 @@ namespace ReportDeployer
 
             string connString = ConnPane.SelectedConnection.ConnectionString;
             if (connString == null) return;
-            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentRdClient", connString, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(connString, WindowType, _dte);
 
             LockMessage.Content = "Deploying...";
             LockOverlay.Visibility = Visibility.Visible;
@@ -902,7 +901,7 @@ namespace ReportDeployer
                 _dte.StatusBar.Text = "Updating report(s)...";
                 _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
 
-                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)client.OrganizationServiceProxy.Execute(emRequest);
+                ExecuteMultipleResponse emResponse = (ExecuteMultipleResponse)client.Execute(emRequest);
 
                 foreach (var responseItem in emResponse.Responses)
                 {
@@ -964,7 +963,7 @@ namespace ReportDeployer
                     report["bodytext"] = File.ReadAllText(filePath);
 
                     UpdateRequest request = new UpdateRequest { Target = report };
-                    client.OrganizationServiceProxy.Execute(request);
+                    client.Execute(request);
                     _logger.WriteToOutputWindow("Uploaded Report", Logger.MessageType.Info);
                 }
                 return true;

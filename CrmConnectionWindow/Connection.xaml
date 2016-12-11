@@ -4,15 +4,15 @@
         Title="CRM Developer Extensions" Height="400" Width="500" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="300" />
+            <RowDefinition Height="400" />
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="0" Content="Connect" Click="Connect_Click" x:Name="Connect" Margin="10,330,10,-51" />
+        <Button Grid.Row="0" Content="Connect" Click="Connect_Click" x:Name="Connect" Margin="10,320,10,50" />
         <TextBlock Margin="10,10,10,0" VerticalAlignment="Top" TextDecorations="Underline" FontWeight="Bold"> 
                 Connect to Dynamics CRM
         </TextBlock>
-        <TextBox x:Name="ConnString" Margin="10,215,10,0" TextWrapping="Wrap" IsEnabled="False"
-                 Text="Url=https://orgname.crm.dynamics.com; Username=administrator@orgname.onmicrosoft.com; Password=********;" VerticalAlignment="Top" Height="76" />
+        <TextBox x:Name="ConnString" Margin="10,248,10,0" TextWrapping="Wrap" IsEnabled="False"
+                 Text="Url=https://orgname.crm.dynamics.com; Username=administrator@orgname.onmicrosoft.com; Password=********;" VerticalAlignment="Top" Height="66" />
         <Label Content="Name" Margin="10,44,332,0" VerticalAlignment="Top" Height="23" Foreground="Red" />
         <TextBox x:Name="Name" Height="23" Margin="75,44,10,0" TextWrapping="Wrap" VerticalAlignment="Top" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <ComboBox x:Name="ConnectionType" Margin="75,72,10,0" VerticalAlignment="Top" SelectionChanged="ConnectionType_SelectionChanged">
@@ -20,6 +20,7 @@
             <ComboBoxItem Content="On-premises with provided user credentials"/>
             <ComboBoxItem Content="On-premises using Windows integrated security"/>
             <ComboBoxItem Content="On-premises (IFD) with claims"/>
+            <ComboBoxItem Content="OAuth"/>
         </ComboBox>
         <Grid x:Name="LockOverlay" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" ZIndex="10" Background="{DynamicResource OverlayColor}" Visibility="Hidden">
             <Label x:Name="LockMessage" Content="Connecting..." VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="36"></Label>
@@ -34,6 +35,8 @@
                  Text="administrator@orgname.onmicrosoft.com" ToolTip="For best results user should be a System Administrator in CRM" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
         <Label x:Name="PasswordLabel" Content="Password" HorizontalAlignment="Left" Margin="10,183,0,0" VerticalAlignment="Top" Height="23" Foreground="Red"/>
         <PasswordBox x:Name="Password" Margin="75,183,10,0" VerticalAlignment="Top" Height="23"  PasswordChar="*" PasswordChanged="Password_PasswordChanged" Password="password" GotKeyboardFocus="Textbox_OnGotKeyboardFocus" />
+        <Label x:Name="AppIdLabel" Content="AppId" HorizontalAlignment="Left" Margin="10,211,0,0" VerticalAlignment="Top" Height="26"/>
+        <TextBox x:Name="AppId" Margin="75,211,10,0" VerticalAlignment="Top" Height="23" TextChanged="AppId_OnTextChanged" IsEnabled="False" />
     </Grid>
     <Window.Resources>
         <SolidColorBrush x:Key="OverlayColor" Color="White" Opacity="0.5" />

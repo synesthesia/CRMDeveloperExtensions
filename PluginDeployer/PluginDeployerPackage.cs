@@ -23,6 +23,7 @@ namespace PluginDeployer
     {
         private DTE _dte;
         private Logger _logger;
+        private const string WindowType = "PluginDeployer";
 
         protected override void Initialize()
         {
@@ -54,7 +55,7 @@ namespace PluginDeployer
             foreach (Window window in _dte.Windows)
             {
                 if (window.Caption != Resources.ResourceManager.GetString("ToolWindowTitle")) continue;
-                
+
                 windowOpen = window.Visible;
                 break;
             }
@@ -101,7 +102,7 @@ namespace PluginDeployer
             Guid assemblyId = SelectedAssemblyItem.Item.AssemblyId;
             if (assemblyId == Guid.Empty) return;
 
-            var client = new CrmServiceClient(selectedConnection.ConnectionString);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(selectedConnection.ConnectionString, WindowType, _dte);
 
             UpdateAndPublishSingle(client, project);
         }
@@ -144,7 +145,7 @@ namespace PluginDeployer
                 Entity crmAssembly = new Entity("pluginassembly") { Id = SelectedAssemblyItem.Item.AssemblyId };
                 crmAssembly["content"] = Convert.ToBase64String(File.ReadAllBytes(path));
 
-                client.OrganizationServiceProxy.Update(crmAssembly);
+                client.Update(crmAssembly);
 
                 //Update assembly name and version numbers
                 SelectedAssemblyItem.Item.Version = assemblyVersion;

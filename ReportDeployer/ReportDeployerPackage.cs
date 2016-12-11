@@ -24,6 +24,7 @@ namespace ReportDeployer
     {
         private DTE _dte;
         private Logger _logger;
+        private const string WindowType = "ReportDeployer";
 
         protected override void Initialize()
         {
@@ -99,7 +100,7 @@ namespace ReportDeployer
             Guid reportId = GetMapping(projectItem, selectedConnection);
             if (reportId == Guid.Empty) return;
 
-            CrmServiceClient client = SharedWindow.GetCachedConnection("CurrentRdClient", selectedConnection.ConnectionString, _dte);
+            CrmServiceClient client = SharedConnection.GetCurrentConnection(selectedConnection.ConnectionString, WindowType, _dte);
 
             UpdateAndPublishSingle(client, projectItem, reportId);
         }
@@ -117,7 +118,7 @@ namespace ReportDeployer
                 report["bodytext"] = File.ReadAllText(projectItem.FileNames[1]);
 
                 UpdateRequest request = new UpdateRequest { Target = report };
-                client.OrganizationServiceProxy.Execute(request);
+                client.Execute(request);
                 _logger.WriteToOutputWindow("Deployed Report", Logger.MessageType.Info);
             }
             catch (FaultException<OrganizationServiceFault> crmEx)

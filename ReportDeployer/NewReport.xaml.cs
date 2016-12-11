@@ -87,7 +87,7 @@ namespace ReportDeployer
                         }
                 };
 
-                EntityCollection results = client.OrganizationServiceProxy.RetrieveMultiple(query);
+                EntityCollection results = client.RetrieveMultiple(query);
 
                 foreach (Entity entity in results.Entities)
                 {
@@ -170,7 +170,7 @@ namespace ReportDeployer
                 report["languagecode"] = 1033; //TODO: handle multiple 
                 report["ispersonal"] = (viewableIndex == 0);
 
-                Guid id = client.OrganizationServiceProxy.Create(report);
+                Guid id = client.Create(report);
 
                 _logger.WriteToOutputWindow("Report Created: " + id, Logger.MessageType.Info);
 
@@ -184,7 +184,7 @@ namespace ReportDeployer
                         ComponentId = id
                     };
                     AddSolutionComponentResponse response =
-                        (AddSolutionComponentResponse)client.OrganizationServiceProxy.Execute(scRequest);
+                        (AddSolutionComponentResponse)client.Execute(scRequest);
 
                     _logger.WriteToOutputWindow("New Report Added To Solution: " + response.id, Logger.MessageType.Info);
                 }
