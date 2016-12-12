@@ -12,15 +12,14 @@ namespace CRMSimpleConsole
 {
 	class Program
 	{
-		private static IOrganizationService _orgService;
+		private static CrmServiceClient _client;
 
 		public static void Main(string[] args)
 		{
 			try
 			{
-				CrmServiceClient crmService = new 
+				CrmServiceClient _client = new 
 					CrmServiceClient(ConfigurationManager.ConnectionStrings["CRMConnectionString"].ConnectionString);				
-				_orgService = crmService.OrganizationWebProxyClient ?? (IOrganizationService)crmService.OrganizationServiceProxy;
 
 				//Do stuff
 			}
