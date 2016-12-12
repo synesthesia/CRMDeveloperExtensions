@@ -70,7 +70,7 @@ namespace ReportDeployer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CRM DevEx - Report Deployer.
+        ///   Looks up a localized string similar to CRM DevEx: Report Deployer.
         /// </summary>
         internal static string ToolWindowTitle {
             get {
