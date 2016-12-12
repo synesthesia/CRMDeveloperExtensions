@@ -1235,6 +1235,7 @@ namespace WebResourceDeployer
                 foreach (WebResourceItem item in items.Where(w => w.WebResourceId == webResourceId))
                 {
                     item.BoundFile = boundName;
+                    item.AllowCompare = SetAllowCompare(item.Type);
 
                     CheckBox publishAll =
                         FindVisualChildren<CheckBox>(WebResourceGrid)
