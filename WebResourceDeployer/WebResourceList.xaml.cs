@@ -2023,6 +2023,10 @@ namespace WebResourceDeployer
 
         private async void DeleteWebResource_OnClick(object sender, RoutedEventArgs e)
         {
+            MessageBoxResult deleteResult = MessageBox.Show("Are you sure?" + Environment.NewLine + Environment.NewLine +
+                    "This will attempt to delete the web resource from CRM.", "Delete Web Resource", MessageBoxButton.YesNo);
+            if (deleteResult != MessageBoxResult.Yes) return;
+
             try
             {
                 if (ConnPane.SelectedConnection == null) return;
