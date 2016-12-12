@@ -677,6 +677,9 @@ namespace CommonResources
             string connString = SelectedConnection.ConnectionString;
             if (string.IsNullOrEmpty(connString)) return;
 
+            bool isValid = ValidateXrmToolingConnString(connString);
+            if (!isValid) return;
+
             Expander.IsExpanded = false;
 
             OnConnected(new ConnectEventArgs
@@ -685,6 +688,21 @@ namespace CommonResources
             });
 
             AddOrUpdateConnection(SelectedProject, SelectedConnection.Name, SelectedConnection.ConnectionString, SelectedConnection.OrgId, SelectedConnection.Version, false);
+        }
+
+        private static bool ValidateXrmToolingConnString(string connString)
+        {
+            if (connString.ToUpper().Contains("AUTHTYPE="))
+                return true;
+
+            MessageBox.Show("You are using an old connection string which does not work with the new Xrm.Tooling connection" + Environment.NewLine + Environment.NewLine +
+                "Your options are:" + Environment.NewLine + Environment.NewLine +
+                "1. Create a new connection & remap items" + Environment.NewLine +
+                "2. Open the CRMDeveloperExtensions.config at the project root and replace the Base64 encoded connection string with " +
+                "one created from a new connection or a Base64 encoded version from: https://msdn.microsoft.com/en-us/library/mt608573.aspx",
+                "Upgrade Connection String");
+
+            return false;
         }
 
         protected virtual void OnProjectChanged()
