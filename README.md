@@ -10,14 +10,19 @@ Supported versions of Visual Studio include 2012, 2013, & 2015 and will be distr
 
 Install in Visual Studio under Tools -> Extensions and Updates -> Search Online for "Dynamics CRM Developer Extensions" or install directly from the [Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/0f9ab063-acec-4c55-bd6c-5eb7c6cffec4).
 
-####New in v1.3.3.0####
+####New in v1.3.4.0####
 
-* Updated to handle 8.1 SDK assemblies
-* Added 8.1 JavaScript snippets
-* Added DefinatelyTyped CRM 8.0 support
-* Support for linked JavaScript files
-* New user options to enable/disable add -> new item context menu entries (needs to be enabled in Tools - Options)
-* Support for mapping.xml file in Solution Packager
+* CRM/D365 v8.2 support
+* Updated to handle 8.2 SDK assemblies
+* Added 8.2 JavaScript snippets
+* Changed JavaScript snippet format to be easier to use - prefixes start with "Xrm"
+* **Changed CRM connection to use Xrm.Tooling - this is a breaking change!**
+   * For existing projects you will either need to:
+      * Create a new connection & remap items
+      * Open the CRMDeveloperExtensions.config at the project root and replace the Base64 encoded connection string with one created from a new connection or a Base64 encoded version from: [https://msdn.microsoft.com/en-us/library/mt608573.aspx] (https://msdn.microsoft.com/en-us/library/mt608573.aspx)
+* Added OAuth as a new connection type
+* Added option to enable verbose logging from Xrm.Tooling
+* Updated project templates to use Xrm.Tooling for connections with SDK versions 8.0+
 * Various bug fixes and usability enhancements
 
 **Solution Packager**
