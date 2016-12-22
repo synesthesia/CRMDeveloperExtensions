@@ -815,6 +815,8 @@ namespace PluginDeployer
 
         private bool IsIlMergeInstalled()
         {
+            if (ConnPane.SelectedProject == null) return false;
+
             var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
             if (componentModel == null) return false;
 

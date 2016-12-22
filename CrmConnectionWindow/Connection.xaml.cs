@@ -176,6 +176,10 @@ namespace CrmConnectionWindow
                     sb.Append("AuthType=IFD;");
                     break;
                 case "On-premises with provided user credentials":
+                    sb.AppendFormat("Domain={0};", Domain.Text.Trim());
+                    sb.AppendFormat("Username={0};Password={1};", Username.Text.Trim(), Password.Password.Trim().Replace("'", "''"));
+                    sb.Append("AuthType=AD;");
+                    break;
                 case "On-premises using Windows integrated security":
                     sb.Append("AuthType=AD;");
                     break;
@@ -259,7 +263,7 @@ namespace CrmConnectionWindow
                     if (setDefaults)
                     {
                         Url.Text = "http://servername/orgname";
-                        Username.Text = "domain\\username";
+                        Username.Text = "username";
                         Password.Password = "********";
                         Domain.Text = "domain";
                         AppId.Text = null;
