@@ -128,6 +128,17 @@
     <None Include="Snippets\JavaScript\Dynamics CRM\Process\AddOnProcessStatusChange.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Process\SetActiveProcessInstance.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Process\GetProcessInstances.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\ForEachQuickFormControls.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormRefresh.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormIsLoaded.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormSetLabel.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormGetLabel.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormGetVisible.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormGetParent.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormGetName.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormGetControlType.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormGetControl.snippet" />
+    <None Include="Snippets\JavaScript\Dynamics CRM\UI\QuickFormControls.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Utility\GetBarcodeValue.snippet" />
     <None Include="Snippets\JavaScript\Dynamics CRM\Utility\GetCurrentPosition.snippet" />
     <None Include="Snippets\XML\Dynamics CRM\CRMConnStringOnPremIfd.snippet">
