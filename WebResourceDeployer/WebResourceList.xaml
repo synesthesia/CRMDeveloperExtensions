@@ -6,6 +6,7 @@
              x:Class="WebResourceDeployer.WebResourceList"     
              xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.11.0"
              xmlns:commonResources="clr-namespace:CommonResources;assembly=CommonResources"
+             xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.14.0"
              mc:Ignorable="d" 
              d:DesignHeight="350" d:DesignWidth="1100"
              x:Name="WrdWindow">
@@ -24,11 +25,11 @@
                 <Button x:Name="Info" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Info_OnClick" Background="White">
                     <Image Source="/CommonResources;component/Resources/info-24.png" Width="24" Height="24" ToolTip="Information"></Image>
                 </Button>
-                <TextBlock Text="Solution" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" Height="22" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"/>
+                <TextBlock Text="Solution" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" Height="22" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"/>
                 <ComboBox x:Name="SolutionList" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" SelectionChanged="SolutionList_OnSelectionChanged" 
                           DisplayMemberPath="Name" IsEnabled="False" Width="200">
                 </ComboBox>
-                <TextBlock Text="Filter" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" Height="22" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"/>
+                <TextBlock Text="Filter" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" Height="22" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"/>
                 <ComboBox x:Name="WebResourceType" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" SelectionChanged="WebResourceType_SelectionChanged" 
                           IsEnabled="False" Width="113">
                     <ComboBoxItem Content="" Tag=""/>
@@ -44,7 +45,7 @@
                     <ComboBoxItem Content="ICO format" Tag="10"/>
                 </ComboBox>
                 <CheckBox x:Name="ShowManaged" Content="Show Managed" Margin="5,5,0,0" VerticalAlignment="Top" Checked="ShowManaged_Checked" Unchecked="ShowManaged_Checked" 
-                          IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
+                          IsEnabled="False" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
                 <Button x:Name="Publish" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Publish_Click" IsEnabled="False" Background="White">
                     <Image Source="/CommonResources;component/Resources/publish-24.png" Width="24" Height="24" ToolTip="Publish To CRM"></Image>
                 </Button>
@@ -57,12 +58,12 @@
                 <Button x:Name="Solutions" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="Solutions_OnClick" IsEnabled="False" Background="White">
                     <Image Source="/CommonResources;component/Resources/solutions_24.png" Width="24" Height="24" ToolTip="Open CRM Solutions Page"></Image>
                 </Button>
-                <TextBlock x:Name="ItemCount" Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" />
+                <TextBlock x:Name="ItemCount" Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
             </StackPanel>
             <DataGrid x:Name="WebResourceGrid" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" Margin="5,37,0,0" VerticalContentAlignment="Stretch" 
-                      VerticalAlignment="Stretch"  CanUserResizeRows="False" EnableRowVirtualization="true" AutoGenerateColumns="False" CanUserAddRows="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"
-                      RowHeight="24" IsEnabled="False" CanUserDeleteRows="False" SelectionChanged="WebResourceGrid_SelectionChanged" RowBackground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowBackgroundKey}}"
-                      Background="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowBackgroundKey}}" HeadersVisibility="Column" EnableColumnVirtualization="True" MaxWidth="2560" MaxHeight="1600">
+                      VerticalAlignment="Stretch"  CanUserResizeRows="False" EnableRowVirtualization="true" AutoGenerateColumns="False" CanUserAddRows="False" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"
+                      RowHeight="24" IsEnabled="False" CanUserDeleteRows="False" SelectionChanged="WebResourceGrid_SelectionChanged" RowBackground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}"
+                      Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}" HeadersVisibility="Column" EnableColumnVirtualization="True" MaxWidth="2560" MaxHeight="1600">
                 <DataGrid.Columns>
                     <DataGridTextColumn Visibility="Collapsed" Binding="{Binding WebResourceId}"></DataGridTextColumn>
                     <DataGridTextColumn Header="Type" Binding="{Binding TypeName}" IsReadOnly="True" CanUserResize="False"></DataGridTextColumn>
@@ -165,8 +166,8 @@
                 </DataGrid.Columns>
                 <DataGrid.Resources>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
-                        <Setter Property="DataGridTextColumn.Foreground" Value="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"></Setter>
-                        <Setter Property="Background" Value="{DynamicResource {x:Static vsfx:VsBrushes.ToolboxHeadingBeginKey}}"></Setter>
+                        <Setter Property="DataGridTextColumn.Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"></Setter>
+                        <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ToolboxHeadingBeginKey}}"></Setter>
                         <Setter Property="BorderBrush" Value="Black"/>
                         <Setter Property="BorderThickness" Value="0, 0, 1, 1"/>
                         <Setter Property="Padding" Value="4,4,4,4"></Setter>

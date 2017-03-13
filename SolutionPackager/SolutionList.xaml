@@ -6,6 +6,7 @@
              x:Class="SolutionPackager.SolutionList"
              xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.11.0"
              xmlns:commonResources="clr-namespace:CommonResources;assembly=CommonResources"
+             xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.14.0"
              mc:Ignorable="d" 
              d:DesignHeight="350" d:DesignWidth="1100"
              Name="SPWindow">
@@ -39,7 +40,7 @@
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Solutions</Label>
+                    <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}">Solutions</Label>
                     <ComboBox x:Name="SolutionToPackage" Margin="5,5,0,0" VerticalAlignment="Top" ToolTip="Solution To Package" SelectionChanged="SolutionToPackage_OnSelectionChanged" 
                               IsEnabled="False" MinWidth="200">
                         <ComboBox.ItemTemplate>
@@ -58,7 +59,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Vertical">
                     <CheckBox x:Name="DownloadManaged" Margin="5,5,0,0" Content="Download Managed Solution?" Width="200" HorizontalAlignment="Left" 
-                              Checked="DownloadManaged_Checked" Unchecked="DownloadManaged_Checked" IsEnabled="False" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}"></CheckBox>
+                              Checked="DownloadManaged_Checked" Unchecked="DownloadManaged_Checked" IsEnabled="False" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"></CheckBox>
                 </StackPanel>
             </StackPanel>
             <Grid x:Name="LockOverlay" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" ZIndex="10" Background="{DynamicResource OverlayColor}" Visibility="Hidden">
