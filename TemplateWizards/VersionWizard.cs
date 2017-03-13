@@ -52,7 +52,7 @@ namespace TemplateWizards
 
                 //Find default SDK version
                 var props = _dte.Properties["CRM Developer Extensions", "General"];
-                string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value;
+                string defaultSdkVersion = props.Item("DefaultCrmSdkVersion").Value.ToString();
 
                 //TypeScript projects
                 if (_crmProjectType == "TypeScript")
@@ -76,7 +76,7 @@ namespace TemplateWizards
                     Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
                     if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
                     {
-                        VSProject vsproject = ((Project)activeSolutionProjects.GetValue(0)).Object;
+                        VSProject vsproject = (VSProject) ((Project)activeSolutionProjects.GetValue(0)).Object;
                         referencedProjects.AddRange(from Reference reference in vsproject.References
                                                     where reference.SourceProject != null
                                                     select reference.Name);
@@ -118,7 +118,7 @@ namespace TemplateWizards
                 {
                     Array activeSolutionProjects = (Array)_dte.ActiveSolutionProjects;
                     if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
-                        _sdkVersion = GetSdkVersion(((Project)activeSolutionProjects.GetValue(0)).Object);
+                        _sdkVersion = GetSdkVersion(((Project)activeSolutionProjects.GetValue(0)));
                 }
                 if (_sdkVersion == "CRM 2016 (8.0.X)" || _sdkVersion == "CRM 2016 (8.1.X)" || _sdkVersion == "CRM 2016 (8.2.X)")
                     replacementsDictionary.Add("$useXrmToolingClientUsing$", "1");
@@ -502,7 +502,7 @@ namespace TemplateWizards
                 }
 
                 var props = _dte.Properties["CRM Developer Extensions", "General"];
-                string defaultKeyFileName = props.Item("DefaultProjectKeyFileName").Value;
+                string defaultKeyFileName = (string) props.Item("DefaultProjectKeyFileName").Value;
 
                 foreach (ProjectItem item in project.ProjectItems)
                 {
