@@ -1,14 +1,26 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Templates", "Project Templates", "{03259B5D-4711-48F0-A39F-1F8B28418D0A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "References", "References", "{EA407396-1C90-46D9-AD3F-D2289379C311}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Crm2016", "Crm2016", "{2B659611-4C6D-4DE0-90F7-7A2AD442E1DF}"
+	ProjectSection(SolutionItems) = preProject
+		References\Crm2016\Microsoft.Crm.Sdk.Proxy.dll = References\Crm2016\Microsoft.Crm.Sdk.Proxy.dll
+		References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.dll = References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+		References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll = References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll
+		References\Crm2016\Microsoft.Xrm.Sdk.Deployment.dll = References\Crm2016\Microsoft.Xrm.Sdk.Deployment.dll
+		References\Crm2016\Microsoft.Xrm.Sdk.dll = References\Crm2016\Microsoft.Xrm.Sdk.dll
+		References\Crm2016\Microsoft.Xrm.Tooling.Connector.dll = References\Crm2016\Microsoft.Xrm.Tooling.Connector.dll
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMDeveloperExtensions", "CRMDeveloperExtensions\CRMDeveloperExtensions.csproj", "{A4FDB41F-E97D-42FC-BF45-E762A4F87F7A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemplateWizards", "TemplateWizards\TemplateWizards.csproj", "{4F1D342A-3F47-485C-888F-B85E54A8662B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserOptions", "UserOptions\UserOptions.csproj", "{75D1747A-598A-48F9-927C-381BEDC355E6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Templates", "Project Templates", "{03259B5D-4711-48F0-A39F-1F8B28418D0A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMPluginProject", "Project Templates\CRMPluginProject\CRMPluginProject.csproj", "{56E63E6D-35E9-48B5-A549-1321610F197A}"
 EndProject
@@ -43,18 +55,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRMSolutionPackage", "Project Templates\CRMSolutionPackage\CRMSolutionPackage.csproj", "{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonResources", "CommonResources\CommonResources.csproj", "{4F82019C-685B-4349-ACE2-091AD63004B9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "References", "References", "{EA407396-1C90-46D9-AD3F-D2289379C311}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Crm2016", "Crm2016", "{2B659611-4C6D-4DE0-90F7-7A2AD442E1DF}"
-	ProjectSection(SolutionItems) = preProject
-		References\Crm2016\Microsoft.Crm.Sdk.Proxy.dll = References\Crm2016\Microsoft.Crm.Sdk.Proxy.dll
-		References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.dll = References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.dll
-		References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll = References\Crm2016\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll
-		References\Crm2016\Microsoft.Xrm.Sdk.Deployment.dll = References\Crm2016\Microsoft.Xrm.Sdk.Deployment.dll
-		References\Crm2016\Microsoft.Xrm.Sdk.dll = References\Crm2016\Microsoft.Xrm.Sdk.dll
-		References\Crm2016\Microsoft.Xrm.Tooling.Connector.dll = References\Crm2016\Microsoft.Xrm.Tooling.Connector.dll
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +131,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{2B659611-4C6D-4DE0-90F7-7A2AD442E1DF} = {EA407396-1C90-46D9-AD3F-D2289379C311}
 		{56E63E6D-35E9-48B5-A549-1321610F197A} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
 		{CBE6269C-2B9B-460C-9AE1-89DA739B30A8} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
 		{89C0A8D4-D301-4789-BE22-0CFD7BDEAFA0} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
@@ -139,6 +140,5 @@ Global
 		{BEB2646D-B31B-4E4E-802D-C66FBB5A92C9} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
 		{EBC4B023-F605-41F0-AA56-7844BCA0B3CE} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
 		{B7747AA4-0BF1-4DB9-8725-AC1CF5E1FDA7} = {03259B5D-4711-48F0-A39F-1F8B28418D0A}
-		{2B659611-4C6D-4DE0-90F7-7A2AD442E1DF} = {EA407396-1C90-46D9-AD3F-D2289379C311}
 	EndGlobalSection
 EndGlobal
