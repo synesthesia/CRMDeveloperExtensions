@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="PluginDeployer.PluginList"
-             xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.11.0"
+             xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:commonResources="clr-namespace:CommonResources;assembly=CommonResources"
+             xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.14.0"
              mc:Ignorable="d" 
              d:DesignHeight="350" d:DesignWidth="1100"
              Name="PluginWindow">
@@ -39,11 +40,11 @@
                     <Button x:Name="RegistrationTool" Margin="5,5,0,0" VerticalAlignment="Top" Padding="2,2,2,2" Click="RegistrationTool_OnClick" Background="White">
                         <Image Source="Resources/registrationtool_24.jpg" Width="24" Height="24" ToolTip="Launch Plug-in Registrion Tool"></Image>
                     </Button>
-                    <TextBlock Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}" 
+                    <TextBlock Margin="10,5,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" 
                                Text="Use SDK Plug-in Registration Tool for initial deployment and step/image management" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">Assembly</Label>
+                    <Label HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}">Assembly</Label>
                     <ComboBox x:Name="Assemblies" Margin="5,5,0,0" DisplayMemberPath="DisplayName" SelectedValuePath="BoundProject" IsEnabled="False" SelectionChanged="Assemblies_SelectionChanged"
                               ToolTip="{Binding Path=BoundProject}" Width="350">
                     </ComboBox>

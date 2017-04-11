@@ -191,3 +191,5 @@ ModelManifest.xml
 #GhostDoc
 *GhostDoc.xml
 /CRMDeveloperExtensions.Vsix
+infrastructure/IdentityServer3
+infrastructure/IdentityServer3.EntityFramework
